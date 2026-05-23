@@ -1,0 +1,4 @@
+# Local preview servers
+__pycache__/
+.DS_Store
+*.tmp
