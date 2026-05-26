@@ -64,6 +64,8 @@
     <div class="status-grid">
         <div class="status-yes">
             <h4>Working today</h4>
+
+            <p><strong>Language core</strong></p>
             <ul>
                 <li>Lexer + parser + analyzer + transpiler (4 stages, ~5K lines of Python)</li>
                 <li>Types: <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>String</code>, <code>Char</code>, <code>Unit</code>, tuples, <code>List</code>, <code>Map</code>, <code>Set</code>, <code>Option</code>, <code>Result</code>, <code>Fun(...) -&gt; ...</code></li>
@@ -78,18 +80,39 @@
                 <li>Range expressions (<code>a..b</code> exclusive, <code>a..=b</code> inclusive), <code>Range&lt;Int&gt;</code> as a type</li>
                 <li>Python interop via the <code>Unsafe</code> capability boundary</li>
                 <li><strong>Module system</strong>: <code>import foo.bar</code> with transitive imports, cycle detection, name conflicts, qualified access (<code>foo.fn()</code>, <code>import foo as F</code>), search paths via <code>CAPA_PATH</code>, and <code>pub</code> visibility enforcement</li>
+                <li><strong>Package manager</strong>: <code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>, git and path deps, automatic <code>./vendor/</code> resolution when a manifest is present</li>
+            </ul>
+
+            <p><strong>Tooling</strong></p>
+            <ul>
+                <li>CLI: tokenize, <code>--parse</code>, <code>--check</code>, <code>--transpile</code>, <code>--run</code>, <code>--watch</code>, <code>--fmt</code>, <code>--fmt-check</code>, <code>--doc</code>, <code>--manifest</code>, <code>--cyclonedx</code>, <code>--spdx</code>, <code>--vex</code>, <code>--provenance</code>, <code>--wasm</code>, <code>--wasm --component</code>, <code>--prefer-wasm</code>, <code>init</code>, <code>lsp</code>, <code>repl</code></li>
+                <li>Project scaffolding via <code>capa init</code></li>
                 <li><strong>REPL</strong> (<code>capa repl</code>, MVP): every standard capability pre-bound, multi-line <code>if</code>/<code>for</code>/<code>while</code>/<code>match</code>, dot-commands (<code>.exit</code>, <code>.quit</code>, <code>.help</code>, <code>.show</code>, <code>.reset</code>, <code>.types &lt;expr&gt;</code>), stdout-diffing across turns; v2 with incremental analyzer state is still pending</li>
                 <li><strong>Watch mode</strong> (<code>capa --watch</code>): re-runs on file or imported-module change</li>
-                <li>CLI: tokenize, <code>--parse</code>, <code>--check</code>, <code>--transpile</code>, <code>--run</code>, <code>--watch</code>, <code>--fmt</code>, <code>--fmt-check</code>, <code>--doc</code>, <code>--manifest</code>, <code>--cyclonedx</code>, <code>--spdx</code>, <code>--vex</code>, <code>--provenance</code>, <code>init</code>, <code>lsp</code>, <code>repl</code></li>
-                <li>Project scaffolding via <code>capa init</code></li>
                 <li>Line-level canonical formatter (<code>capa --fmt</code> / <code>--fmt-check</code>)</li>
                 <li>Doc-comment HTML generator (<code>capa --doc</code>) with paragraphs, inline code, fenced code blocks, lists, and a trait section</li>
                 <li>VSCode syntax highlighting extension</li>
                 <li><strong>Language server (LSP)</strong>: diagnostics, hover, go-to-definition, find-references, document symbols (outline), code actions (Quick Fix for &quot;did you mean?&quot;), rename, completion (keywords + built-ins + module + locals + type-aware methods after <code>.</code>), semantic tokens (type-aware highlighting). Runs via <code>capa lsp</code> with the optional <code>[lsp]</code> extra. One-line config for Helix, Neovim, Zed, VSCode.</li>
+            </ul>
+
+            <p><strong>Supply-chain artefacts</strong></p>
+            <ul>
                 <li><strong>Audit artefacts</strong>: <code>--manifest</code>, <code>--cyclonedx</code> 1.5 SBOM, <code>--spdx</code> 2.3 SBOM, <code>--vex</code> per-function exploitability claims, <code>--provenance</code> SLSA L1 attestation, per-function ineligibility proofs (<code>provably_excluded_capabilities</code>)</li>
+                <li><strong>Three-layer supply-chain hardening on the seed libraries</strong> (<code>capa_cli</code>, <code>capa_datetime</code>, <code>capa_log</code>, <code>capa_http</code>): lockfile SHA pin (catches tag retags) + GPG tag signatures with <code>verify_key</code> pinning (catches account compromise) + SLSA L2 build provenance via Sigstore Rekor (each release fires <code>actions/attest-build-provenance@v1</code>). Consumer side: <code>capa install</code> runs <code>gh attestation verify</code> when a dep declares a <code>verify_key</code>.</li>
+                <li>SBOM and capability audit tooling written in Capa: <code>examples/sbom_diff.capa</code>, <code>examples/sbom_capability_audit.capa</code>, <code>examples/spdx_parser.capa</code> (JSON + tag-value), <code>examples/cyclonedx_parser.capa</code> (incl. services / vulnerabilities + VEX analysis)</li>
+            </ul>
+
+            <p><strong>Wasm</strong></p>
+            <ul>
                 <li><strong>Wasm Component Model backend</strong>: <code>capa --wasm --run</code> (core wasm host bridge) and <code>capa --wasm --component --run</code> (Component Model artifact through an external wasmtime.component runtime); <code>capa --wasm --component --output app.wasm</code> produces a standalone Component Model <code>.wasm</code> artifact with the WIT spec embedded. Output is bit-identical with the Python pipeline across the three downstream demos (audit-trail-reporter, policy-eval, sbom-watch). Generic monomorphisation, nested closures, <code>Fun</code>-typed callee inference, and <code>List&lt;Bool&gt;</code> higher-order functions all lower through. <code>pip install -e .[wasm]</code> pulls in <code>wasmtime&gt;=20</code>; the new <code>--prefer-wasm</code> flag (or <code>CAPA_PREFER_WASM=1</code>) makes <code>capa --run</code> try the Wasm backend first with silent fallback to Python.</li>
+            </ul>
+
+            <p><strong>Quality / tests</strong></p>
+            <ul>
+                <li><strong>Agda mechanisation</strong> of all four soundness theorems for the &lambda;<sub>cap</sub> calculus, lives in <a href="https://github.com/nelsonduarte/capa-language/tree/main/proofs"><code>proofs/</code></a>. Capability soundness, attenuation monotonicity, the structural / flow / linear layers each checked by the type-checker in addition to the prose proof in <code>docs/semantics.md</code>.</li>
+                <li><strong>Property-based testing through Phase 4</strong>: 50k+ generated programs stress-tested across plain / attenuated / via_helper / consumed call shapes; the Phase 4 strategy lifts the invariant <code>wasm_runtime_classes ⊆ manifest_classes</code> all the way through the Wasm backend.</li>
                 <li><strong>Compile-time benchmarks</strong> (<code>benchmarks/compile_bench.py</code>): lex / parse / analyse wallclock measured across three synthetic programs. Baseline on Windows 11 + CPython 3.14: small 10-fn ~3.5 ms, medium 100-fn ~55 ms, large 1000-fn ~450 ms.</li>
-                <li>1634 unit + end-to-end tests, green on Ubuntu / macOS / Windows × Python 3.10 / 3.12 / 3.14</li>
+                <li>1634 unit + end-to-end tests, green on Ubuntu / macOS / Windows &times; Python 3.10 / 3.12 / 3.14</li>
             </ul>
         </div>
     </div>
@@ -109,6 +132,27 @@
             <div class="item-body">
                 <strong>"Capa would have caught X" demo, event-stream</strong>
                 <p>A safe Capa version of the <code>flat_map</code> function whose JavaScript counterpart shipped a Bitcoin-wallet exfiltrator in 2018. Attack-attempt code shown rejected by the analyzer with source-aligned errors. Lives in <code>examples/demo_event_stream.capa</code> + <code>docs/demo-event-stream.md</code>.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>CVE case studies: six concrete + four design-pattern</strong>
+                <p>Six concrete incidents transliterated into Capa with the analyzer's rejection trace inline: event-stream, eslint-scope, node-ipc, xz-utils, torchtriton, ua-parser-js. Plus four design-pattern studies for vulnerability classes that show up across libraries: PyYAML (arbitrary-class deserialisation), Jinja2 SSTI, lxml XXE, and pickle. Each case study ships as <code>examples/cve_*.capa</code> + <code>docs/cve_*.md</code>.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>LLM tool-use sandbox demo</strong>
+                <p><a href="https://github.com/nelsonduarte/capa_agent_demo"><code>capa_agent_demo</code></a> v0.1.0 (2026-05-23). A four-tool agent harness written in ~400 lines of Capa, talking to the real Anthropic Messages API. The LLM's blast radius is statically bounded by the agent loop's signature; the tool surface (<code>ReadOnlyFs</code>, <code>GetOnlyHttp</code>) is built from attenuated wrappers around the built-in capabilities so the model can read but not write, and reach a single host but not the rest of the internet. Ships with the full three-layer supply-chain stack (signed tag + SLSA L2 attestation in Sigstore Rekor). Writeup in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/llm-tool-sandbox.md"><code>docs/llm-tool-sandbox.md</code></a>.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>Agda mechanisation of the soundness theorems</strong>
+                <p>All four soundness theorems for the &lambda;<sub>cap</sub> calculus mechanised under <a href="https://github.com/nelsonduarte/capa-language/tree/main/proofs"><code>proofs/</code></a>: capability soundness, attenuation monotonicity, the structural / flow / linear layers. Type-checked by Agda in addition to the prose proofs in <code>docs/semantics.md</code>.</p>
             </div>
         </li>
         <li>
@@ -327,6 +371,27 @@
             <div class="item-body">
                 <strong>Consolidated regulatory mapping</strong>
                 <p><code>docs/regulatory.md</code>. Comparative table covering CRA, NIS2, DORA (cybersecurity articles only), NIST SSDF (SP 800-218), OWASP SCVS. Headline matrix: 8 Capa artefacts versus 5 frameworks, with four-level classification (direct / indirect / partial / out of scope). Keeps <code>docs/cra.md</code> as the CRA deep-dive; this is the multi-jurisdiction view. <strong>Tier 2 complete.</strong></p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>Three-layer supply-chain hardening (seed libraries)</strong>
+                <p><code>capa_cli</code>, <code>capa_datetime</code>, <code>capa_log</code>, <code>capa_http</code> all ship with three stacked layers of attestation: lockfile SHA pin (catches tag retags), GPG tag signatures with a <code>verify_key</code> in each consumer's <code>capa.toml</code> (catches account compromise that moves a tag to an attacker commit), and SLSA L2 build provenance via Sigstore Rekor (<code>actions/attest-build-provenance@v1</code> fires on every <code>v*</code> tag push). Consumer side: <code>capa install</code> runs <code>gh attestation verify</code> implicitly when a dep declares <code>verify_key</code> and is GitHub-hosted, refuses on mismatch, and graceful-skips on missing tarball / missing <code>gh</code> / non-GitHub host.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>Empirical SBOM-diff micro-validation</strong>
+                <p>A side-by-side comparison of a config-loader pattern in naive Python vs the same logic under Capa's discipline, with the CycloneDX SBOMs each version emits laid out next to each other. The reproducible artefact behind the "the capability-aware SBOM is a strict information gain over a PURL-only SBOM" claim in the positioning document. Lives in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/empirical_micro.md"><code>docs/empirical_micro.md</code></a>, with the sources at <code>examples/empirical_config_naive.py</code> and <code>examples/empirical_config.capa</code>.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>SBOM-parser writeup</strong>
+                <p>Cross-cutting documentation of the two parsers (<code>spdx_parser</code> / <code>spdx_tag_parser</code> for SPDX 2.3, <code>cyclonedx_parser</code> for CycloneDX 1.5), the optional-field coverage matrices, and how the Capa versions thread the parsed structures back into the audit pipeline. Lives in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/sbom-parsers.md"><code>docs/sbom-parsers.md</code></a>.</p>
             </div>
         </li>
     </ul>

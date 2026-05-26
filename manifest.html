@@ -225,7 +225,7 @@
     <ul>
         <li><strong>Whether a capability holder behaves well.</strong> A function that legitimately receives <code>Net</code> can do whatever <code>Net</code> allows, including misuse. The manifest documents the <em>permission surface</em>; it does not predict <em>behaviour</em>.</li>
         <li><strong>Anything beyond an <code>Unsafe</code> boundary.</strong> Once a value crosses into Python interop, the discipline ends. The manifest marks the crossing (<code>has_unsafe: true</code>); content beyond it must be audited separately.</li>
-        <li><strong>Dependencies you did not write.</strong> v1 only describes the program you compile. Aggregating manifests across the dependency graph is on the roadmap; it requires a package manager first.</li>
+        <li><strong>Dependencies you did not write.</strong> v1 only describes the program you compile. Per-package manifests exist for every dep installed through <code>capa.toml</code>; aggregating them into a single graph-wide view (one manifest covering the program plus its transitive deps) is the remaining tooling step.</li>
     </ul>
 </section>
 

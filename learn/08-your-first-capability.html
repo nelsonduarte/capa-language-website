@@ -71,19 +71,19 @@
     <p>Seven capability types are baked into the language:</p>
 
     <ul>
-        <li><code>Stdio</code> &middot; standard output and input. <code>println</code>, <code>print</code>, <code>eprintln</code>, <code>readln</code>.</li>
-        <li><code>Fs</code> &middot; the filesystem. <code>read_to_string</code>, <code>write_string</code>, <code>exists</code>, <code>list_dir</code>.</li>
-        <li><code>Net</code> &middot; the network. <code>get</code>, <code>post</code> (HTTP).</li>
-        <li><code>Env</code> &middot; environment variables. <code>get</code>, <code>allows</code>.</li>
-        <li><code>Clock</code> &middot; wall-clock time. <code>now_secs</code>, <code>sleep_secs</code>.</li>
-        <li><code>Random</code> &middot; non-deterministic randomness. <code>float_unit</code>, <code>int_range</code>, <code>shuffle</code>.</li>
+        <li><code>Stdio</code> &middot; standard output and input. <code>println</code>, <code>print</code>, <code>eprintln</code>, <code>read_line</code>.</li>
+        <li><code>Fs</code> &middot; the filesystem. <code>read</code>, <code>write</code>, <code>exists</code>, <code>list_dir</code>.</li>
+        <li><code>Net</code> &middot; the network. <code>get</code> (HTTP).</li>
+        <li><code>Env</code> &middot; environment variables. <code>get</code>, <code>args</code>.</li>
+        <li><code>Clock</code> &middot; wall-clock time. <code>now_secs</code>, <code>sleep</code>.</li>
+        <li><code>Random</code> &middot; non-deterministic randomness. <code>float_unit</code>, <code>int_range</code>, <code>with_seed</code>.</li>
         <li><code>Unsafe</code> &middot; the escape hatch. Anything that crosses into Python interop.</li>
     </ul>
 
     <p>Any function that needs one of these declares it as a parameter:</p>
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">read_config</span>(fs: <span class="cap">Fs</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">String</span>, <span class="ty-builtin">IoError</span>&gt;
-    <span class="kw-ctrl">return</span> fs.<span class="fn-call">read_to_string</span>(<span class="str">"config.txt"</span>)
+    <span class="kw-ctrl">return</span> fs.<span class="fn-call">read</span>(<span class="str">"config.txt"</span>)
 
 <span class="kw-decl">fun</span> <span class="fn-name">fetch_users</span>(net: <span class="cap">Net</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">String</span>, <span class="ty-builtin">IoError</span>&gt;
     <span class="kw-ctrl">return</span> net.<span class="fn-call">get</span>(<span class="str">"https://api.example.com/users"</span>)</code></pre>
@@ -111,7 +111,7 @@
     <p>When <code>main</code> needs more than one capability, list them as additional parameters:</p>
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>, fs: <span class="cap">Fs</span>)
-    <span class="kw-ctrl">match</span> fs.<span class="fn-call">read_to_string</span>(<span class="str">"hello.txt"</span>)
+    <span class="kw-ctrl">match</span> fs.<span class="fn-call">read</span>(<span class="str">"hello.txt"</span>)
         <span class="variant">Ok</span>(text) -&gt;
             stdio.<span class="fn-call">println</span>(text)
         <span class="variant">Err</span>(e) -&gt;
@@ -146,10 +146,10 @@
     <p>First: trying to use a capability you did not declare.</p>
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
-    <span class="kw-storage">let</span> contents = fs.<span class="fn-call">read_to_string</span>(<span class="str">"hello.txt"</span>)</code></pre>
+    <span class="kw-storage">let</span> contents = fs.<span class="fn-call">read</span>(<span class="str">"hello.txt"</span>)</code></pre>
 
 <pre><code>error: undefined name 'fs'
-   2 |     let contents = fs.read_to_string("hello.txt")
+   2 |     let contents = fs.read("hello.txt")
                           ^</code></pre>
 
     <p>The name <code>fs</code> is not in scope. Add it to <code>main</code>'s parameters: <code>fun main(stdio: Stdio, fs: Fs)</code>.</p>
@@ -168,7 +168,7 @@
     <p>If you want a copy with narrower authority, use <code>restrict_to</code> (chapter 9). If you want to pass the capability into a helper function, do so directly: <code>helper(stdio)</code> instead of binding-then-passing.</p>
 
     <div class="callout">
-        <p><strong>Try this.</strong> Write a program that reads <code>hello.txt</code> and prints its length. <code>main</code> takes <code>stdio: Stdio</code> and <code>fs: Fs</code>; the body uses <code>?</code> on the <code>fs.read_to_string</code> call to propagate failure, then prints the string's length.</p>
+        <p><strong>Try this.</strong> Write a program that reads <code>hello.txt</code> and prints its length. <code>main</code> takes <code>stdio: Stdio</code> and <code>fs: Fs</code>; the body uses <code>?</code> on the <code>fs.read</code> call to propagate failure, then prints the string's length.</p>
     </div>
 </section>
 

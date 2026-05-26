@@ -231,6 +231,34 @@ $ pip install -e .</code></pre>
 </section>
 
 <!-- =====================================================
+     Packages
+===================================================== -->
+<section>
+    <h2>Packages</h2>
+
+    <p>Capa projects declare their dependencies in a <code>capa.toml</code> file at the project root. The same file that says "this project depends on <code>capa_log v0.1</code>" also pins the source: a git URL with an exact tag, or a relative path on disk. There is no central registry; deps resolve directly against the source repository.</p>
+
+<pre><code><span class="comment"># capa.toml</span>
+[package]
+name = <span class="str">"my-project"</span>
+version = <span class="str">"0.1.0"</span>
+capa = <span class="str">"&gt;=0.8.4"</span>
+
+[dependencies]
+capa_log = { git = <span class="str">"https://github.com/nelsonduarte/capa_log"</span>, tag = <span class="str">"v0.1"</span> }</code></pre>
+
+    <p>Three commands cover the day-to-day:</p>
+
+<pre><code>$ capa install        <span class="comment"># resolve capa.toml, fetch git deps into ./vendor/, write capa.lock</span>
+$ capa --run main.capa
+$ capa install        <span class="comment"># idempotent: rerun to refresh against capa.lock</span></code></pre>
+
+    <p>When a <code>capa.toml</code> is present, the loader picks up <code>./vendor/</code> and the parent of every <code>path =</code> entry automatically; no <code>CAPA_PATH</code> needed. The <code>capa.lock</code> file pins the resolved git SHA plus a SHA-256 of the fetched tarball so subsequent installs are bit-reproducible. When a dependency carries a <code>verify_key</code> (a GPG public key for tag-signature verification or a Sigstore identity for SLSA L2 attestations), <code>capa install</code> runs the corresponding verification before unpacking and refuses on mismatch.</p>
+
+    <p>Full guide at <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md"><code>docs/packages.md</code></a>: declaration syntax, lockfile format, path vs git deps, attenuated capability re-export across package boundaries, and the three-layer supply-chain stack (lockfile SHA + GPG tag signing + SLSA L2 via Sigstore Rekor).</p>
+</section>
+
+<!-- =====================================================
      First program
 ===================================================== -->
 <section>

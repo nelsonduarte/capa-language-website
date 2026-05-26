@@ -315,6 +315,9 @@ match m.get("a")
 <tr><td><code>read(p: String)</code></td><td><code>Result&lt;String, IoError&gt;</code></td><td>Read the entire file</td></tr>
 <tr><td><code>write(p: String, c: String)</code></td><td><code>Result&lt;(), IoError&gt;</code></td><td>Write (overwrites)</td></tr>
 <tr><td><code>exists(p: String)</code></td><td><code>Bool</code></td><td>Check whether the path exists (returns false on denied paths)</td></tr>
+<tr><td><code>is_dir(p: String)</code></td><td><code>Bool</code></td><td>Whether the path resolves to a directory (returns false on denied paths)</td></tr>
+<tr><td><code>mkdir(p: String)</code></td><td><code>Result&lt;(), IoError&gt;</code></td><td>Create a directory (mkdir -p semantics)</td></tr>
+<tr><td><code>list_dir(p: String)</code></td><td><code>Result&lt;List&lt;String&gt;, IoError&gt;</code></td><td>Sorted entry names (basenames) of the directory</td></tr>
 <tr><td><code>restrict_to(prefix: String)</code></td><td><code>Fs</code></td><td>Attenuated <code>Fs</code> allowing only paths under the prefix. Monotonic.</td></tr>
 <tr><td><code>allows(path: String)</code></td><td><code>Bool</code></td><td>Query the current restriction set without performing I/O</td></tr>
 </tbody>

@@ -420,8 +420,13 @@ import util as U                // alias the module name</code></pre>
 <table class="ref-table">
 <thead><tr><th>Flag</th><th>Output</th></tr></thead>
 <tbody>
+<tr><td><code>repl</code></td><td>Start the Capa REPL with every standard capability pre-bound (subcommand, not a flag).</td></tr>
 <tr><td><code>--run</code></td><td>Transpile to Python and execute in-process.</td></tr>
-<tr><td><code>--compile</code></td><td>Transpile to Python; write <code>.py</code> next to the source.</td></tr>
+<tr><td><code>--transpile</code></td><td>Transpile to Python and print the generated code to stdout.</td></tr>
+<tr><td><code>--watch</code></td><td>Re-run the program every time it (or any of its imported modules) changes on disk. Implies <code>--run</code>.</td></tr>
+<tr><td><code>--wasm</code></td><td>Compile through CIR to WebAssembly text (WAT). With <code>--run</code>, assembles and executes on a wasmtime-backed host that provides the Capa capability interfaces.</td></tr>
+<tr><td><code>--wasm --component</code></td><td>With <code>--output</code>, wrap the core module in a Component Model component (WIT embedded). Consumable by any Component-Model-aware runtime.</td></tr>
+<tr><td><code>--prefer-wasm</code></td><td>With <code>--run</code>: try the Wasm backend first and fall back to the Python pipeline only when CIR or Wasm emission rejects a construct. Also honoured via <code>CAPA_PREFER_WASM=1</code>.</td></tr>
 <tr><td><code>--doc</code></td><td>Self-contained HTML documentation: signatures, doc comments, attributes, per-function call lists.</td></tr>
 <tr><td><code>--manifest</code></td><td>Capa-native JSON manifest: per-function declared capabilities, attributes, <code>Unsafe</code> crossings, call sites, <code>args_flow</code>.</td></tr>
 <tr><td><code>--cyclonedx</code></td><td>CycloneDX 1.5 SBOM (JSON). Capability metadata embedded as <code>properties[]</code> under the <code>capa:*</code> namespace. When any function carries <code>@vex</code>, the VEX block is embedded under <code>vulnerabilities[]</code>.</td></tr>
@@ -456,7 +461,6 @@ import util as U                // alias the module name</code></pre>
 <li>String literals do not support multi-line (use <code>\n</code> for line breaks)</li>
 <li>Nested string literals inside interpolation (<code>"x ${"inner"} y"</code>) are not supported</li>
 <li>Errors inside interpolation report positions starting from the file start</li>
-<li>No module system (<code>import</code> is parsed but analyser-rejected)</li>
 <li>No asynchronous I/O operations</li>
 <li><code>if</code>/<code>match</code> in block-body lambdas need <code>=&gt;</code> before the indented block</li>
 <li>Multi-line <code>match</code> inside parentheses requires inline <code>{ }</code> form</li>

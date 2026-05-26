@@ -214,7 +214,9 @@ error: undefined name 'env'
 <section>
     <h2>Where the type system can take you next</h2>
 
-    <p>Capa is a capability-typed language; dialects of that idea exist in Pony, Koka, the WebAssembly Component Model, and elsewhere. What Capa adds on top is that, because the authority graph already lives in the type system, the compiler can emit standard supply-chain artefacts from source without an external scanner having to approximate the same information from binaries or heuristics. The same compile that rejects ambient authority can also produce, in one pass:</p>
+    <p>Capa is a capability-typed language; dialects of that idea exist in Pony, Koka, the WebAssembly Component Model, and elsewhere. The most recent entrant is Zero (Vercel Labs, May 2026), the only other language with capability-based I/O as its headline: Zero is a systems language in the C / Rust space whose distinctive choice is a toolchain that emits stable error codes and typed repair categories so AI agents can read and repair code without a human in the loop. Zero's audience is the AI-agent toolchain; Capa's audience is the supply-chain auditor. Same intellectual root, different application.</p>
+
+    <p>What Capa adds on top is that, because the authority graph already lives in the type system, the compiler can emit standard supply-chain artefacts from source without an external scanner having to approximate the same information from binaries or heuristics. The same compile that rejects ambient authority can also produce, in one pass:</p>
 
     <ul>
         <li><strong><code>--manifest</code></strong>, Capa-native JSON describing per-function authority, attached metadata, and the call graph.</li>
