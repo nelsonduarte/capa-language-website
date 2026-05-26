@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roadmap | Capa</title>
-    <meta name="description" content="Where Capa is today, what is coming in v0.2 and beyond, what is explicitly out of scope, and what depends on which.">
+    <meta name="description" content="Where Capa is today, what has shipped past v1.0.0-rc3, what is explicitly out of scope, and what depends on which.">
     <meta property="og:title" content="Roadmap | Capa">
     <meta property="og:description" content="What works today, what is coming next, and what is explicitly out of scope. An honest inventory.">
     <meta property="og:type" content="article">
@@ -50,7 +50,7 @@
 
 <div class="page-heading">
     <h1>Roadmap</h1>
-    <p>An honest inventory of what works, what is coming, and what is explicitly out of scope. Capa is in <strong>v1.0.0-rc.2</strong>: the surface is feature-frozen pending feedback, 1080 tests pass on three operating systems, the discipline is implemented end-to-end, the module system is feature-complete, the package manager ships (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>), and the capability manifest, CycloneDX SBOM, SPDX SBOM, CycloneDX VEX, and SLSA L1 provenance are all emitted directly by the compiler. <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> describes the compatibility commitment that starts the moment 1.0.0 ships.</p>
+    <p>An honest inventory of what works, what is coming, and what is explicitly out of scope. Capa is in <strong>v1.0.0-rc3</strong>: the surface is feature-frozen pending feedback, 1634 tests pass on three operating systems, the discipline is implemented end-to-end, the module system is feature-complete, the package manager ships (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>), the capability manifest, CycloneDX SBOM, SPDX SBOM, CycloneDX VEX, and SLSA L1 provenance are all emitted directly by the compiler, and the Wasm Component Model backend is feature-complete for the demo surface. <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> describes the compatibility commitment that starts the moment 1.0.0 ships.</p>
 </div>
 
 <!-- =====================================================
@@ -59,7 +59,7 @@
 <section>
     <h2>Where we are today</h2>
 
-    <p>Capa is in beta. It compiles, type-checks, transpiles to Python, and runs. Every example in this site and in <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples">the examples directory</a> is executable. The boundary between what is real and what is roadmap is sharp:</p>
+    <p>Capa is at v1.0.0-rc3. It compiles, type-checks, transpiles to Python, lowers to WebAssembly (core and Component Model), and runs. Every example in this site and in <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples">the examples directory</a> is executable. The boundary between what is real and what is roadmap is sharp:</p>
 
     <div class="status-grid">
         <div class="status-yes">
@@ -78,7 +78,7 @@
                 <li>Range expressions (<code>a..b</code> exclusive, <code>a..=b</code> inclusive), <code>Range&lt;Int&gt;</code> as a type</li>
                 <li>Python interop via the <code>Unsafe</code> capability boundary</li>
                 <li><strong>Module system</strong>: <code>import foo.bar</code> with transitive imports, cycle detection, name conflicts, qualified access (<code>foo.fn()</code>, <code>import foo as F</code>), search paths via <code>CAPA_PATH</code>, and <code>pub</code> visibility enforcement</li>
-                <li><strong>REPL</strong> (<code>capa repl</code>): every standard capability pre-bound, multi-line <code>if</code>/<code>for</code>/<code>while</code>/<code>match</code>, <code>.types &lt;expr&gt;</code> meta command, stdout-diffing across turns</li>
+                <li><strong>REPL</strong> (<code>capa repl</code>, MVP): every standard capability pre-bound, multi-line <code>if</code>/<code>for</code>/<code>while</code>/<code>match</code>, dot-commands (<code>.exit</code>, <code>.quit</code>, <code>.help</code>, <code>.show</code>, <code>.reset</code>, <code>.types &lt;expr&gt;</code>), stdout-diffing across turns; v2 with incremental analyzer state is still pending</li>
                 <li><strong>Watch mode</strong> (<code>capa --watch</code>): re-runs on file or imported-module change</li>
                 <li>CLI: tokenize, <code>--parse</code>, <code>--check</code>, <code>--transpile</code>, <code>--run</code>, <code>--watch</code>, <code>--fmt</code>, <code>--fmt-check</code>, <code>--doc</code>, <code>--manifest</code>, <code>--cyclonedx</code>, <code>--spdx</code>, <code>--vex</code>, <code>--provenance</code>, <code>init</code>, <code>lsp</code>, <code>repl</code></li>
                 <li>Project scaffolding via <code>capa init</code></li>
@@ -87,19 +87,21 @@
                 <li>VSCode syntax highlighting extension</li>
                 <li><strong>Language server (LSP)</strong>: diagnostics, hover, go-to-definition, find-references, document symbols (outline), code actions (Quick Fix for &quot;did you mean?&quot;), rename, completion (keywords + built-ins + module + locals + type-aware methods after <code>.</code>), semantic tokens (type-aware highlighting). Runs via <code>capa lsp</code> with the optional <code>[lsp]</code> extra. One-line config for Helix, Neovim, Zed, VSCode.</li>
                 <li><strong>Audit artefacts</strong>: <code>--manifest</code>, <code>--cyclonedx</code> 1.5 SBOM, <code>--spdx</code> 2.3 SBOM, <code>--vex</code> per-function exploitability claims, <code>--provenance</code> SLSA L1 attestation, per-function ineligibility proofs (<code>provably_excluded_capabilities</code>)</li>
-                <li>1046 unit + end-to-end tests, green on Ubuntu / macOS / Windows × Python 3.10 / 3.12 / 3.14</li>
+                <li><strong>Wasm Component Model backend</strong>: <code>capa --wasm --run</code> (core wasm host bridge) and <code>capa --wasm --component --run</code> (Component Model artifact through an external wasmtime.component runtime); <code>capa --wasm --component --output app.wasm</code> produces a standalone Component Model <code>.wasm</code> artifact with the WIT spec embedded. Output is bit-identical with the Python pipeline across the three downstream demos (audit-trail-reporter, policy-eval, sbom-watch). Generic monomorphisation, nested closures, <code>Fun</code>-typed callee inference, and <code>List&lt;Bool&gt;</code> higher-order functions all lower through. <code>pip install -e .[wasm]</code> pulls in <code>wasmtime&gt;=20</code>; the new <code>--prefer-wasm</code> flag (or <code>CAPA_PREFER_WASM=1</code>) makes <code>capa --run</code> try the Wasm backend first with silent fallback to Python.</li>
+                <li><strong>Compile-time benchmarks</strong> (<code>benchmarks/compile_bench.py</code>): lex / parse / analyse wallclock measured across three synthetic programs. Baseline on Windows 11 + CPython 3.14: small 10-fn ~3.5 ms, medium 100-fn ~55 ms, large 1000-fn ~450 ms.</li>
+                <li>1634 unit + end-to-end tests, green on Ubuntu / macOS / Windows × Python 3.10 / 3.12 / 3.14</li>
             </ul>
         </div>
     </div>
 </section>
 
 <!-- =====================================================
-     v0.2, public readiness
+     Public-readiness milestones (shipped)
 ===================================================== -->
 <section>
-    <h2>v0.2, public readiness</h2>
+    <h2>Public-readiness milestones</h2>
 
-    <p>The bridge from "working alpha" to "shareable alpha". All three pieces have landed; tagging and flipping the repository to public is the last step.</p>
+    <p>The bridge from "working alpha" to "shareable" closed long ago. The repository is public, governance documents are in place, the site is live, and the project has tagged its way from v0.2.0-alpha through v0.8.4-beta to v1.0.0-rc3.</p>
 
     <ul class="milestone-list">
         <li>
@@ -113,21 +115,21 @@
             <span class="tag done">DONE</span>
             <div class="item-body">
                 <strong>VSCode syntax highlighting</strong>
-                <p>TextMate grammar covering all keyword categories, with built-in capabilities highlighted distinctly. String interpolation, numeric literals in all bases, operators including <code>..</code>, <code>..=</code>, <code>=&gt;</code>, <code>?</code>. Lives in <code>vscode/</code>; install via symlink / junction. Marketplace publication after the public flip.</p>
+                <p>TextMate grammar covering all keyword categories, with built-in capabilities highlighted distinctly. String interpolation, numeric literals in all bases, operators including <code>..</code>, <code>..=</code>, <code>=&gt;</code>, <code>?</code>. Lives in <code>vscode/</code>; install via symlink / junction. Marketplace publication still queued.</p>
             </div>
         </li>
         <li>
             <span class="tag done">DONE</span>
             <div class="item-body">
                 <strong>Public-facing website</strong>
-                <p>A five-page static site (<a href="index.html">Home</a>, <a href="why.html">Why Capa</a>, <a href="learn/index.html">Learn</a>, <a href="start.html">Get started</a>, <a href="roadmap.html">Roadmap</a>). No JS, no framework, no external fonts. Designed to serve directly from GitHub Pages.</p>
+                <p>A static site (<a href="index.html">Home</a>, <a href="why.html">Why Capa</a>, <a href="learn/index.html">Learn</a>, <a href="reference.html">Reference</a>, <a href="start.html">Get started</a>, <a href="roadmap.html">Roadmap</a>). No JS framework, no external fonts. Served directly from GitHub Pages.</p>
             </div>
         </li>
         <li>
-            <span class="tag current">NEXT</span>
+            <span class="tag done">DONE</span>
             <div class="item-body">
-                <strong>Tag v0.2.0-alpha and flip the repository public</strong>
-                <p>One <code>git tag</code> and one <code>gh repo edit --visibility public</code>. After that, ship governance documents (<code>CONTRIBUTING</code>, <code>CHANGELOG</code>, issue templates, <code>SECURITY.md</code>).</p>
+                <strong>Public repository + governance documents</strong>
+                <p>Repository is public; <code>CONTRIBUTING</code>, <code>CHANGELOG</code>, issue templates, <code>SECURITY.md</code>, and <code>STABILITY.md</code> all in place.</p>
             </div>
         </li>
     </ul>
@@ -222,8 +224,41 @@
         <li>
             <span class="tag future">P3</span>
             <div class="item-body">
-                <strong>Package manager / registry</strong>
-                <p>Only meaningful once there is a module system and a plausible audience. Out of scope for v0.2 / v0.3.</p>
+                <strong>Central package registry</strong>
+                <p>The package manager itself shipped (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>; git-URL and path deps). A hosted registry with name resolution, search, and a publish flow is parked: meaningful only once there is a plausible audience, and not on the critical path.</p>
+            </div>
+        </li>
+    </ul>
+
+    <h3>Wasm Component Model backend</h3>
+    <p>Capa lowers through a typed IR (CIR) into a hand-written WAT emitter and a Component Model packager. The backend exists so a Capa program can ship as a portable, capability-confined <code>.wasm</code> artifact runnable on any wasmtime-component host. Feature-complete for the demo surface: the three downstream demos (audit-trail-reporter, policy-eval, sbom-watch) plus capa_showcase run end-to-end via both <code>capa --wasm --run</code> and <code>capa --wasm --component --run</code> with output bit-identical to the Python reference pipeline.</p>
+    <ul class="milestone-list">
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>Core Wasm backend</strong>
+                <p>WAT emitter covers every analysable example: structs, sum types with payloads, pattern matching (including guards), closures, generics with monomorphisation, <code>Fun</code>-typed callee inference, nested closures, <code>List&lt;Bool&gt;</code> and other higher-order operations, Float formatting via a pure-WAT Grisu2 port that is bit-identical with Python's <code>str(float)</code>.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>Component Model packaging</strong>
+                <p><code>capa --wasm --component --output app.wasm</code> produces a standalone Component Model artifact: WIT spec embedded, <code>cabi_realloc</code> exported, canonical-ABI lowering for <code>list&lt;string&gt;</code> / <code>option&lt;string&gt;</code> / <code>result&lt;string, io-error&gt;</code> and friends, <code>export main: func();</code> entry point. The bundled <code>capa/ir/_builtin_json.capa</code> JSON parser keeps the JsonValue tree in the guest's own linear memory, so the artifact has no <code>capa:host/json</code> dependency.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>Wasm as an optional install + <code>--prefer-wasm</code></strong>
+                <p><code>pip install -e .[wasm]</code> pulls in <code>wasmtime&gt;=20</code>. The <code>--prefer-wasm</code> flag (or <code>CAPA_PREFER_WASM=1</code>) makes <code>capa --run</code> try the Wasm backend first, with silent fallback to the Python pipeline when a program uses something the Wasm emitter does not yet handle.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>Inline attenuation enforcement</strong>
+                <p>The lowerer threads a per-function attenuation map (built by <code>capa.manifest._flow._build_attenuation_map</code>) through every privileged op. <code>Fs.restrict_to</code>, <code>Net.restrict_to</code>, and <code>Env.restrict_to_keys</code> all enforce at the Wasm boundary via inline <code>$str_starts_with</code> / <code>$str_contains</code> / <code>$str_eq</code> checks before the host import; the failure path materialises the canonical Err/None into the canonical-ABI return area and skips the host call. Intra-function scope; cross-function chains keep relying on the analyzer's static discipline.</p>
             </div>
         </li>
     </ul>
@@ -234,22 +269,22 @@
         <li>
             <span class="tag done">DONE</span>
             <div class="item-body">
-                <strong>SPDX 2.3 parser written in Capa</strong>
-                <p><code>examples/spdx_parser.capa</code>. Reads an SPDX 2.3 JSON document, builds typed Capa structs, validates referential integrity.</p>
+                <strong>SPDX 2.3 parsers written in Capa</strong>
+                <p><code>examples/spdx_parser.capa</code> reads SPDX 2.3 JSON; <code>examples/spdx_tag_parser.capa</code> handles the tag-value text serialisation. Both build typed Capa structs and run the validators (annotations, hasExtractedLicensingInfos, snippets, externalDocumentRefs, referential integrity). The writeup tying them together is at <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/sbom-parsers.md"><code>docs/sbom-parsers.md</code></a>.</p>
             </div>
         </li>
         <li>
             <span class="tag done">DONE</span>
             <div class="item-body">
                 <strong>CycloneDX 1.5 parser written in Capa</strong>
-                <p><code>examples/cyclonedx_parser.capa</code>. The full-format companion to the audit pipeline.</p>
+                <p><code>examples/cyclonedx_parser.capa</code>. Full-format coverage including services, vulnerabilities + VEX analysis, evidence per component, JSF signatures, externalReferences, compositions.</p>
             </div>
         </li>
         <li>
             <span class="tag done">DONE</span>
             <div class="item-body">
                 <strong>SBOM and capability audit pipeline</strong>
-                <p><code>examples/sbom_capability_audit.capa</code>. Reads a CycloneDX SBOM plus a JSON policy and flags any function whose declared capabilities exceed the policy's allowance.</p>
+                <p><code>examples/sbom_capability_audit.capa</code>. Reads a CycloneDX SBOM plus a JSON policy and flags any function whose declared capabilities exceed the policy's allowance. Policies now carry a <code>structural</code> rule list alongside the per-function map; a single (fn, cap) pair can raise both a per-function and a structural violation.</p>
             </div>
         </li>
         <li>
@@ -347,7 +382,7 @@
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte · v1.0.0-rc.2 · MIT-licensed</p>
+    <p class="colophon">Built by Nelson Duarte · v1.0.0-rc3 · MIT-licensed</p>
 </footer>
 
 </body>

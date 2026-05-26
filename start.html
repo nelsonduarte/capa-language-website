@@ -219,13 +219,15 @@ True</code></pre>
 $ cd capa
 $ pip install -e .</code></pre>
 
-    <p>That's it. You can verify the install by running the test suite (1046 tests, under 30 seconds):</p>
+    <p>That's it. You can verify the install by running the test suite (1634 tests, well under a minute):</p>
 
 <pre><code>$ python -m unittest discover tests</code></pre>
 
     <div class="callout">
         <p><strong>Why <code>pip install -e .</code> matters.</strong> The editable install registers the <code>capa</code> package with Python's import system <em>and</em> adds a <code>capa</code> command on your <code>PATH</code>. After it, both <code>capa &lt;args&gt;</code> and <code>python -m capa &lt;args&gt;</code> work from any directory. Without it, <code>python -m capa</code> only resolves while your current directory is the repo root (Python walks the cwd-relative <code>capa/</code> folder). Running <code>python -m capa init my-project</code> from your Desktop in that case fails with <code>No module named capa</code>. The fix is the install above, or the binary path.</p>
     </div>
+
+    <p><strong>Optional: the Wasm backend.</strong> <code>pip install -e '.[wasm]'</code> pulls in <code>wasmtime&gt;=20</code> and unlocks <code>capa --wasm --run</code>, <code>capa --wasm --component --run</code>, and <code>capa --wasm --component --output app.wasm</code>. Passing <code>--prefer-wasm</code> (or setting <code>CAPA_PREFER_WASM=1</code>) makes a plain <code>capa --run</code> try the Wasm backend first and fall back to the Python pipeline silently when a program uses something the Wasm emitter does not yet handle.</p>
 </section>
 
 <!-- =====================================================
@@ -496,7 +498,7 @@ result = analyze(module, source=source, filename=<span class="str">"program.capa
         </div>
     </div>
 
-    <p>Reload VSCode and any <code>.capa</code> file will be highlighted. A full language server (diagnostics, hover, go-to-definition) is on the roadmap.</p>
+    <p>Reload VSCode and any <code>.capa</code> file will be highlighted. The full language server (diagnostics, hover, go-to-definition, references, symbols, code actions, rename, completion, semantic tokens) ships under <code>capa lsp</code>; see <em>Editor integration</em> above.</p>
 </section>
 
 <!-- =====================================================
@@ -516,7 +518,7 @@ result = analyze(module, source=source, filename=<span class="str">"program.capa
         </a>
         <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples" class="doc-card">
             <h3>Read the examples →</h3>
-            <p>Twenty-one runnable Capa programs in the repository, from <code>hello.capa</code> to user-defined capabilities and the event-stream demo.</p>
+            <p>Over fifty runnable Capa programs in the repository, from <code>hello.capa</code> to user-defined capabilities, SBOM parsers, the event-stream demo, and the CVE case studies.</p>
         </a>
         <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md" class="doc-card">
             <h3>Read the positioning →</h3>
@@ -565,7 +567,7 @@ result = analyze(module, source=source, filename=<span class="str">"program.capa
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte · v0.8.4-beta · MIT-licensed</p>
+    <p class="colophon">Built by Nelson Duarte · v1.0.0-rc3 · MIT-licensed</p>
 </footer>
 
 </body>
