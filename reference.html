@@ -158,6 +158,7 @@ async await yield defer where mut</code></pre>
     Rectangle(Float, Float)
     Square(Float)</code></pre>
 <p>Variants may have zero or more payloads. Variants without a payload (<code>type X = A</code>) are <em>constants</em>, used without <code>()</code>.</p>
+<p>The variant names <code>Ok</code>, <code>Err</code>, <code>Some</code>, and <code>None</code> are reserved: a user-defined sum type cannot redeclare any of them. They belong to the built-in <code>Result</code> and <code>Option</code>; shadowing them would silently change the meaning of pattern matches across a module.</p>
 
 <h3>2.4. Generics</h3>
 <p>Functions and types can take type parameters delimited by <code>&lt;&gt;</code>:</p>
@@ -509,7 +510,7 @@ import util as U                // alias the module name</code></pre>
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte · v1.0.0-rc3 · MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte · v1.0.0-rc.5 · MIT or Apache-2.0</p>
 </footer>
 
 </body>

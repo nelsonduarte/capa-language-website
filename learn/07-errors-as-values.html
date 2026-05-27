@@ -47,13 +47,14 @@
 <section>
     <h2>Option: "might not be there"</h2>
 
-    <p>You met <code>Option&lt;T&gt;</code> implicitly in chapter 5: <code>xs.get(i)</code> returns one. The shape is the obvious one:</p>
+    <p>You met <code>Option&lt;T&gt;</code> implicitly in chapter 5: <code>xs.get(i)</code> returns one. <code>Option</code> is built in; conceptually its shape is:</p>
 
-<pre><code><span class="kw-decl">type</span> <span class="ty-builtin">Option</span>&lt;T&gt; =
+<pre><code><span class="comment">// built-in; the names Some and None are reserved.</span>
+<span class="kw-decl">type</span> <span class="ty-builtin">Option</span>&lt;T&gt; =
     <span class="variant">Some</span>(T)
     <span class="variant">None</span></code></pre>
 
-    <p>It is the standard library's way of saying "this function might not have a sensible value to return". Searching a list, looking up a key, parsing a string that might be malformed: all return <code>Option</code>.</p>
+    <p>It is the standard library's way of saying "this function might not have a sensible value to return". Searching a list, looking up a key, parsing a string that might be malformed: all return <code>Option</code>. You cannot redeclare it: <code>Some</code> and <code>None</code> are reserved variant names and the compiler will refuse to bind them to a user type.</p>
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
     <span class="kw-ctrl">match</span> <span class="fn-call">parse_int</span>(<span class="str">"42"</span>)
@@ -76,16 +77,17 @@
 <section>
     <h2>Result: "operation might fail with a reason"</h2>
 
-    <p>Where <code>Option</code> says "value or no value", <code>Result&lt;T, E&gt;</code> says "value of type <code>T</code> on success, value of type <code>E</code> on failure". The failure carries information.</p>
+    <p>Where <code>Option</code> says "value or no value", <code>Result&lt;T, E&gt;</code> says "value of type <code>T</code> on success, value of type <code>E</code> on failure". The failure carries information. <code>Result</code> is also built in; its shape is:</p>
 
-<pre><code><span class="kw-decl">type</span> <span class="ty-builtin">Result</span>&lt;T, E&gt; =
+<pre><code><span class="comment">// built-in; the names Ok and Err are reserved.</span>
+<span class="kw-decl">type</span> <span class="ty-builtin">Result</span>&lt;T, E&gt; =
     <span class="variant">Ok</span>(T)
     <span class="variant">Err</span>(E)</code></pre>
 
-    <p>Anything that does I/O or talks to the outside world returns a <code>Result</code>. Reading a file, fetching a URL, parsing a JSON document: each one returns <code>Result&lt;T, IoError&gt;</code> or similar.</p>
+    <p>Anything that does I/O or talks to the outside world returns a <code>Result</code>. Reading a file, fetching a URL, parsing a JSON document: each one returns <code>Result&lt;T, IoError&gt;</code> or similar. As with <code>Option</code>, the variant names <code>Ok</code> and <code>Err</code> are reserved; user sum types cannot reuse them.</p>
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>, fs: <span class="cap">Fs</span>)
-    <span class="kw-ctrl">match</span> fs.<span class="fn-call">read_to_string</span>(<span class="str">"config.txt"</span>)
+    <span class="kw-ctrl">match</span> fs.<span class="fn-call">read</span>(<span class="str">"config.txt"</span>)
         <span class="variant">Ok</span>(text) -&gt;
             stdio.<span class="fn-call">println</span>(<span class="str">"file: ${text}"</span>)
         <span class="variant">Err</span>(e) -&gt;
@@ -100,11 +102,11 @@
     <p>Writing <code>match</code> at every call site becomes tedious when half your function is "do thing, propagate failure, do next thing". Capa borrows Rust's <code>?</code>: append it to an expression that returns <code>Result&lt;T, E&gt;</code> or <code>Option&lt;T&gt;</code> and it does the obvious thing.</p>
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">load_config</span>(fs: <span class="cap">Fs</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">String</span>, <span class="ty-builtin">IoError</span>&gt;
-    <span class="kw-storage">let</span> text = fs.<span class="fn-call">read_to_string</span>(<span class="str">"config.txt"</span>)?
+    <span class="kw-storage">let</span> text = fs.<span class="fn-call">read</span>(<span class="str">"config.txt"</span>)?
     <span class="kw-storage">let</span> trimmed = text.<span class="fn-call">trim</span>()
     <span class="kw-ctrl">return</span> <span class="variant">Ok</span>(trimmed)</code></pre>
 
-    <p>Reading this aloud: "let <code>text</code> be the result of <code>read_to_string</code>; if that returned <code>Err</code>, return it from <code>load_config</code> immediately; otherwise unwrap the <code>Ok</code> and bind <code>text</code> to the inner string". The single <code>?</code> replaces a five-line <code>match</code>.</p>
+    <p>Reading this aloud: "let <code>text</code> be the result of <code>read</code>; if that returned <code>Err</code>, return it from <code>load_config</code> immediately; otherwise unwrap the <code>Ok</code> and bind <code>text</code> to the inner string". The single <code>?</code> replaces a five-line <code>match</code>.</p>
 
     <p>The same operator works on <code>Option&lt;T&gt;</code>, propagating <code>None</code> up:</p>
 
@@ -136,12 +138,12 @@
     <p>First: <code>?</code> in a function whose return type does not match. If the inner expression is <code>Result&lt;T, E&gt;</code>, the function must also return a <code>Result&lt;_, E&gt;</code>:</p>
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">read_first_line</span>(fs: <span class="cap">Fs</span>) -&gt; <span class="ty-primitive">String</span>
-    <span class="kw-storage">let</span> text = fs.<span class="fn-call">read_to_string</span>(<span class="str">"config.txt"</span>)?
+    <span class="kw-storage">let</span> text = fs.<span class="fn-call">read</span>(<span class="str">"config.txt"</span>)?
     <span class="kw-ctrl">return</span> text</code></pre>
 
 <pre><code>error: '?' can only propagate to a function returning Result&lt;_, E&gt;
        or Option&lt;_&gt;; this function returns String
-   2 |     let text = fs.read_to_string("config.txt")?
+   2 |     let text = fs.read("config.txt")?
                       ^</code></pre>
 
     <p>Either change the return type to <code>Result&lt;String, IoError&gt;</code>, or stop using <code>?</code> and pattern-match locally.</p>
@@ -202,7 +204,7 @@
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc3 &middot; MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc.5 &middot; MIT or Apache-2.0</p>
 </footer>
 
 </body>

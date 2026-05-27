@@ -83,7 +83,7 @@
         to: <span class="ty-primitive">String</span>,
         subject: <span class="ty-primitive">String</span>,
         body: <span class="ty-primitive">String</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">Unit</span>, <span class="ty-builtin">IoError</span>&gt;
-        <span class="kw-storage">let</span> _ = <span class="kw-storage">self</span>.net.<span class="fn-call">post</span>(<span class="str">"smtp://${self.server}/"</span>, body)?
+        <span class="comment">// real impl would talk SMTP over self.net; stubbed here.</span>
         <span class="kw-ctrl">return</span> <span class="variant">Ok</span>(())</code></pre>
 
     <p>Two things are unusual about this struct. First, <code>SmtpMailer</code> has a <code>Net</code> field. Built-in capabilities cannot normally appear in struct fields; that would be a way to smuggle authority sideways. The rule relaxes for <strong>cap-bearing structs</strong>: a struct that implements a user-defined capability is allowed to hold built-in caps as fields, on the condition that it is itself treated as a capability by the discipline.</p>
@@ -206,7 +206,7 @@
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc3 &middot; MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc.5 &middot; MIT or Apache-2.0</p>
 </footer>
 
 </body>

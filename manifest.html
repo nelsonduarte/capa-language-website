@@ -83,11 +83,14 @@
     <p>Trimmed output:</p>
 
 <pre><code>{
-  <span class="str">"capa_version"</span>: <span class="str">"1.0.0-rc3"</span>,
+  <span class="str">"capa_version"</span>: <span class="str">"1.0.0-rc.5"</span>,
   <span class="str">"schema_version"</span>: 1,
   <span class="str">"functions"</span>: [
     {
       <span class="str">"name"</span>: <span class="str">"verify_token"</span>,
+      <span class="str">"source_name"</span>: <span class="str">"verify_token"</span>,
+      <span class="str">"source_container"</span>: <span class="kw-ctrl">null</span>,
+      <span class="str">"source_module_index"</span>: <span class="kw-ctrl">null</span>,
       <span class="str">"declared_capabilities"</span>: [],
       <span class="str">"provably_excluded_capabilities"</span>: [
         <span class="str">"Clock"</span>, <span class="str">"Db"</span>, <span class="str">"Env"</span>, <span class="str">"Fs"</span>, <span class="str">"Net"</span>,
@@ -107,7 +110,10 @@
       ]
     },
     {
-      <span class="str">"name"</span>: <span class="str">"fetch_user"</span>,
+      <span class="str">"name"</span>: <span class="str">"_capa_m2__fetch_user"</span>,
+      <span class="str">"source_name"</span>: <span class="str">"fetch_user"</span>,
+      <span class="str">"source_container"</span>: <span class="kw-ctrl">null</span>,
+      <span class="str">"source_module_index"</span>: 2,
       <span class="str">"declared_capabilities"</span>: [<span class="str">"Net"</span>],
       <span class="str">"provably_excluded_capabilities"</span>: [
         <span class="str">"Clock"</span>, <span class="str">"Db"</span>, <span class="str">"Env"</span>, <span class="str">"Fs"</span>,
@@ -125,6 +131,8 @@
 }</code></pre>
 
     <p>Three things to notice. First, <code>declared_capabilities</code> is exactly what the function's signature carries: <code>verify_token</code> declares nothing; <code>fetch_user</code> declares <code>Net</code>. The list is sound by construction because Capa's analyzer enforces it: a function cannot use a capability it did not list.</p>
+
+    <p>A side note on the name fields. <code>name</code> is the loader-time identifier (the form the loader uses for cross-module collision stability; non-pub items imported from another module get a <code>_capa_m{N}__</code> prefix). <code>source_name</code>, <code>source_container</code>, and <code>source_module_index</code> are the source-level form, the way the function was actually written. CycloneDX and SPDX emitters display the source-level form in their public <code>name</code> / <code>qualname</code> fields, and keep the loader-time identifier as the <code>bom-ref</code> so two same-source-named helpers from different imports do not collapse into one entry. For a root-module function, <code>source_name</code> equals <code>name</code> and <code>source_module_index</code> is <code>null</code>.</p>
 
     <p>Second, <code>provably_excluded_capabilities</code> is the complement. The compiler emits the set of capabilities the function is <strong>provably incapable</strong> of touching. ``verify_token`` declares nothing, so it provably cannot reach the network, the filesystem, the environment, the clock, or any other built-in. The proof is voided to an empty list when <code>Unsafe</code> is in scope (the escape hatch can side-step the discipline).</p>
 
@@ -295,7 +303,7 @@
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc3 &middot; MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc.5 &middot; MIT or Apache-2.0</p>
 </footer>
 
 </body>

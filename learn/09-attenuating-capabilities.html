@@ -82,7 +82,7 @@
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">cache_user</span>(net: <span class="cap">Net</span>, fs: <span class="cap">Fs</span>, id: <span class="ty-primitive">String</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">Unit</span>, <span class="ty-builtin">IoError</span>&gt;
     <span class="kw-storage">let</span> body = net.<span class="fn-call">get</span>(<span class="str">"https://api.example.com/users/${id}"</span>)?
-    fs.<span class="fn-call">write_string</span>(<span class="str">"/var/cache/users/${id}.json"</span>, body)?
+    fs.<span class="fn-call">write</span>(<span class="str">"/var/cache/users/${id}.json"</span>, body)?
     <span class="kw-ctrl">return</span> <span class="variant">Ok</span>(())
 
 <span class="kw-decl">fun</span> <span class="fn-name">main</span>(net: <span class="cap">Net</span>, fs: <span class="cap">Fs</span>, stdio: <span class="cap">Stdio</span>)
@@ -189,7 +189,7 @@ denied: NetRestricted: attacker.com is not in the allowed host set</code></pre>
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc3 &middot; MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc.5 &middot; MIT or Apache-2.0</p>
 </footer>
 
 </body>

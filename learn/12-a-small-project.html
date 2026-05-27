@@ -134,12 +134,12 @@ Passed: 2/3</code></pre>
 <span class="kw-decl">import</span> report
 
 <span class="kw-decl">fun</span> <span class="fn-name">load_students</span>(fs: <span class="cap">Fs</span>, path: <span class="ty-primitive">String</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-builtin">List</span>&lt;<span class="ty-builtin">Student</span>&gt;, <span class="ty-builtin">IoError</span>&gt;
-    <span class="kw-storage">let</span> text = fs.<span class="fn-call">read_to_string</span>(path)?
+    <span class="kw-storage">let</span> text = fs.<span class="fn-call">read</span>(path)?
     <span class="kw-storage">var</span> students: <span class="ty-builtin">List</span>&lt;<span class="ty-builtin">Student</span>&gt; = []
     <span class="kw-ctrl">for</span> line <span class="kw-ctrl">in</span> text.<span class="fn-call">split</span>(<span class="str">"\n"</span>)
         <span class="kw-ctrl">match</span> <span class="fn-call">parse_line</span>(line)
             <span class="variant">Some</span>(s) -&gt; students.<span class="fn-call">push</span>(s)
-            <span class="variant">None</span> -&gt; <span class="comment">// skip empty / malformed lines silently</span>
+            <span class="variant">None</span> -&gt; ()   <span class="comment">// skip empty / malformed lines silently</span>
     <span class="kw-ctrl">return</span> <span class="variant">Ok</span>(students)
 
 <span class="kw-decl">fun</span> <span class="fn-name">main</span>(fs: <span class="cap">Fs</span>, stdio: <span class="cap">Stdio</span>)
@@ -150,7 +150,7 @@ Passed: 2/3</code></pre>
             <span class="kw-ctrl">return</span>
         <span class="variant">Ok</span>(students) -&gt;
             <span class="kw-storage">let</span> output = <span class="fn-call">render</span>(students)
-            <span class="kw-ctrl">match</span> work_dir.<span class="fn-call">write_string</span>(<span class="str">"report.txt"</span>, output)
+            <span class="kw-ctrl">match</span> work_dir.<span class="fn-call">write</span>(<span class="str">"report.txt"</span>, output)
                 <span class="variant">Err</span>(e) -&gt; stdio.<span class="fn-call">eprintln</span>(<span class="str">"write failed: ${e}"</span>)
                 <span class="variant">Ok</span>(_) -&gt; stdio.<span class="fn-call">println</span>(output)</code></pre>
 
@@ -193,7 +193,7 @@ Passed: 2/3</code></pre>
 
     <p>The twelve chapters of Learn are now behind you. The <a href="../reference.html">language reference</a> and the <a href="../stdlib.html">standard library</a> are the dense companions for lookup. The <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples"><code>examples/</code> directory in the repo</a> has a working program for almost every feature, including the CVE case studies that motivated the design.</p>
 
-    <p>If you build something with Capa, send it. The language is at v1.0.0-rc3; real use is the best feedback.</p>
+    <p>If you build something with Capa, send it. The language is at v1.0.0-rc.5; real use is the best feedback.</p>
 </section>
 
 <nav class="chapter-nav" aria-label="Tutorial navigation">
@@ -234,7 +234,7 @@ Passed: 2/3</code></pre>
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc3 &middot; MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc.5 &middot; MIT or Apache-2.0</p>
 </footer>
 
 </body>

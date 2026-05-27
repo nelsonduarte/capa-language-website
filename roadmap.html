@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roadmap | Capa</title>
-    <meta name="description" content="Where Capa is today, what has shipped past v1.0.0-rc3, what is explicitly out of scope, and what depends on which.">
+    <meta name="description" content="Where Capa is today, what has shipped past v1.0.0-rc.5, what is explicitly out of scope, and what depends on which.">
     <meta property="og:title" content="Roadmap | Capa">
     <meta property="og:description" content="What works today, what is coming next, and what is explicitly out of scope. An honest inventory.">
     <meta property="og:type" content="article">
@@ -50,7 +50,7 @@
 
 <div class="page-heading">
     <h1>Roadmap</h1>
-    <p>An honest inventory of what works, what is coming, and what is explicitly out of scope. Capa is in <strong>v1.0.0-rc3</strong>: the surface is feature-frozen pending feedback, 1634 tests pass on three operating systems, the discipline is implemented end-to-end, the module system is feature-complete, the package manager ships (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>), the capability manifest, CycloneDX SBOM, SPDX SBOM, CycloneDX VEX, and SLSA L1 provenance are all emitted directly by the compiler, and the Wasm Component Model backend is feature-complete for the demo surface. <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> describes the compatibility commitment that starts the moment 1.0.0 ships.</p>
+    <p>An honest inventory of what works, what is coming, and what is explicitly out of scope. Capa is in <strong>v1.0.0-rc.5</strong>: the surface is feature-frozen pending feedback, 1783 tests pass on three operating systems, the discipline is implemented end-to-end, the module system is feature-complete, the package manager ships (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>), the capability manifest, CycloneDX SBOM, SPDX SBOM, CycloneDX VEX, and SLSA L1 provenance are all emitted directly by the compiler, and the Wasm Component Model backend is feature-complete for the demo surface. <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> describes the compatibility commitment that starts the moment 1.0.0 ships.</p>
 </div>
 
 <!-- =====================================================
@@ -59,7 +59,7 @@
 <section>
     <h2>Where we are today</h2>
 
-    <p>Capa is at v1.0.0-rc3. It compiles, type-checks, transpiles to Python, lowers to WebAssembly (core and Component Model), and runs. Every example in this site and in <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples">the examples directory</a> is executable. The boundary between what is real and what is roadmap is sharp:</p>
+    <p>Capa is at v1.0.0-rc.5. It compiles, type-checks, transpiles to Python, lowers to WebAssembly (core and Component Model), and runs. Every example in this site and in <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples">the examples directory</a> is executable. The boundary between what is real and what is roadmap is sharp:</p>
 
     <div class="status-grid">
         <div class="status-yes">
@@ -87,12 +87,12 @@
             <ul>
                 <li>CLI: tokenize, <code>--parse</code>, <code>--check</code>, <code>--transpile</code>, <code>--run</code>, <code>--watch</code>, <code>--fmt</code>, <code>--fmt-check</code>, <code>--doc</code>, <code>--manifest</code>, <code>--cyclonedx</code>, <code>--spdx</code>, <code>--vex</code>, <code>--provenance</code>, <code>--wasm</code>, <code>--wasm --component</code>, <code>--prefer-wasm</code>, <code>init</code>, <code>lsp</code>, <code>repl</code></li>
                 <li>Project scaffolding via <code>capa init</code></li>
-                <li><strong>REPL</strong> (<code>capa repl</code>, MVP): every standard capability pre-bound, multi-line <code>if</code>/<code>for</code>/<code>while</code>/<code>match</code>, dot-commands (<code>.exit</code>, <code>.quit</code>, <code>.help</code>, <code>.show</code>, <code>.reset</code>, <code>.types &lt;expr&gt;</code>), stdout-diffing across turns; v2 with incremental analyzer state is still pending</li>
+                <li><strong>REPL</strong> (<code>capa repl</code>): every standard capability pre-bound, multi-line <code>if</code>/<code>for</code>/<code>while</code>/<code>match</code>, dot-commands (<code>.exit</code>, <code>.quit</code>, <code>.help</code>, <code>.show</code>, <code>.reset</code>, <code>.types &lt;expr&gt;</code>), stdout-diffing across turns. v2 slices A + B landed in rc.4 (readline-style line editing + persistent <code>~/.capa_repl_history</code>; in-process <code>exec()</code> replacing subprocess for ~100x faster turns on Windows). Slice C (true incremental analyzer state across turns) remains the architectural piece, still open.</li>
                 <li><strong>Watch mode</strong> (<code>capa --watch</code>): re-runs on file or imported-module change</li>
-                <li>Line-level canonical formatter (<code>capa --fmt</code> / <code>--fmt-check</code>)</li>
+                <li>AST round-trip formatter with comment preservation (v3, default in <code>--fmt</code>), with a v1+v2 line-level fallback for syntactically broken sources. Design doc at <code>docs/formatter-v3-comment-map-design.md</code>.</li>
                 <li>Doc-comment HTML generator (<code>capa --doc</code>) with paragraphs, inline code, fenced code blocks, lists, and a trait section</li>
                 <li>VSCode syntax highlighting extension</li>
-                <li><strong>Language server (LSP)</strong>: diagnostics, hover, go-to-definition, find-references, document symbols (outline), code actions (Quick Fix for &quot;did you mean?&quot;), rename, completion (keywords + built-ins + module + locals + type-aware methods after <code>.</code>), semantic tokens (type-aware highlighting). Runs via <code>capa lsp</code> with the optional <code>[lsp]</code> extra. One-line config for Helix, Neovim, Zed, VSCode.</li>
+                <li><strong>Language server (LSP)</strong>: diagnostics, hover, go-to-definition, find-references, document symbols (outline), code actions (Quick Fix for &quot;did you mean?&quot;), rename, completion (keywords + built-ins + module + locals + type-aware methods after <code>.</code>), semantic tokens (type-aware highlighting), documentHighlight (cursor identifier highlighted in-document), foldingRange (gutter +/- for function / type / impl / control-flow bodies), formatting + rangeFormatting (Format Document / Format Selection backed by the v3 formatter). Runs via <code>capa lsp</code> with the optional <code>[lsp]</code> extra. One-line config for Helix, Neovim, Zed, VSCode.</li>
             </ul>
 
             <p><strong>Supply-chain artefacts</strong></p>
@@ -112,7 +112,7 @@
                 <li><strong>Agda mechanisation</strong> of all four soundness theorems for the &lambda;<sub>cap</sub> calculus, lives in <a href="https://github.com/nelsonduarte/capa-language/tree/main/proofs"><code>proofs/</code></a>. Capability soundness, attenuation monotonicity, the structural / flow / linear layers each checked by the type-checker in addition to the prose proof in <code>docs/semantics.md</code>.</li>
                 <li><strong>Property-based testing through Phase 4</strong>: 50k+ generated programs stress-tested across plain / attenuated / via_helper / consumed call shapes; the Phase 4 strategy lifts the invariant <code>wasm_runtime_classes ⊆ manifest_classes</code> all the way through the Wasm backend.</li>
                 <li><strong>Compile-time benchmarks</strong> (<code>benchmarks/compile_bench.py</code>): lex / parse / analyse wallclock measured across three synthetic programs. Baseline on Windows 11 + CPython 3.14: small 10-fn ~3.5 ms, medium 100-fn ~55 ms, large 1000-fn ~450 ms.</li>
-                <li>1634 unit + end-to-end tests, green on Ubuntu / macOS / Windows &times; Python 3.10 / 3.12 / 3.14</li>
+                <li>1783 unit + end-to-end tests, green on Ubuntu / macOS / Windows &times; Python 3.10 / 3.12 / 3.14</li>
             </ul>
         </div>
     </div>
@@ -124,7 +124,7 @@
 <section>
     <h2>Public-readiness milestones</h2>
 
-    <p>The bridge from "working alpha" to "shareable" closed long ago. The repository is public, governance documents are in place, the site is live, and the project has tagged its way from v0.2.0-alpha through v0.8.4-beta to v1.0.0-rc3.</p>
+    <p>The bridge from "working alpha" to "shareable" closed long ago. The repository is public, governance documents are in place, the site is live, and the project has tagged its way from v0.2.0-alpha through v0.8.4-beta to v1.0.0-rc.3, v1.0.0-rc.4, and now v1.0.0-rc.5.</p>
 
     <ul class="milestone-list">
         <li>
@@ -248,14 +248,14 @@
             <span class="tag done">DONE (v1)</span>
             <div class="item-body">
                 <strong>Language server (LSP)</strong>
-                <p>Nine features live: diagnostics (full pipeline on every buffer change), hover (signature or <code>name: T</code> in Markdown), go-to-definition, find-references, document symbols (hierarchical outline), code actions (Quick Fix for &quot;did you mean?&quot; hints), rename (workspace edit with new-name validation), completion, and semantic tokens. Completion has both a floor (keywords + built-in types / capabilities / variants / functions) and an analyzer-aware layer: module-level names with their signatures, function-scope locals at the cursor, plus <strong>type-aware method completion after <code>.</code></strong> for built-in and user-defined types alike. Semantic tokens deliver type-aware highlighting beyond what a TextMate grammar can do: capabilities, parameters, <code>let</code>-bound vs <code>var</code>-bound variables, struct fields, and sum-type variants are all coloured distinctly, with a <code>defaultLibrary</code> modifier on built-ins so themes can render them at a different intensity. Mid-edit buffers are handled by a parse-with-placeholder retry so a trailing <code>stdio.</code> still surfaces the right methods. Coverage includes both reference and declaration sites: the parser records <code>name_pos</code> for every declared name, so hovering on <code>foo</code> in <code>fun foo(...)</code> works the same as hovering on a call to <code>foo</code>. Python implementation using <code>pygls&gt;=2.0</code> as an optional dependency; ships with one-line config for Helix and Neovim. <strong>Remaining polish</strong>: positional fidelity inside string interpolation <code>${...}</code>.</p>
+                <p>Twelve features live: diagnostics (full pipeline on every buffer change), hover (signature or <code>name: T</code> in Markdown), go-to-definition, find-references, document symbols (hierarchical outline), code actions (Quick Fix for &quot;did you mean?&quot; hints), rename (workspace edit with new-name validation), completion, semantic tokens, documentHighlight (cursor identifier highlighted in-document), foldingRange (gutter +/- for function / type / impl / control-flow bodies), and formatting + rangeFormatting (Format Document / Format Selection backed by the v3 formatter). Completion has both a floor (keywords + built-in types / capabilities / variants / functions) and an analyzer-aware layer: module-level names with their signatures, function-scope locals at the cursor, plus <strong>type-aware method completion after <code>.</code></strong> for built-in and user-defined types alike. Semantic tokens deliver type-aware highlighting beyond what a TextMate grammar can do: capabilities, parameters, <code>let</code>-bound vs <code>var</code>-bound variables, struct fields, and sum-type variants are all coloured distinctly, with a <code>defaultLibrary</code> modifier on built-ins so themes can render them at a different intensity. Mid-edit buffers are handled by a parse-with-placeholder retry so a trailing <code>stdio.</code> still surfaces the right methods. Coverage includes both reference and declaration sites: the parser records <code>name_pos</code> for every declared name, so hovering on <code>foo</code> in <code>fun foo(...)</code> works the same as hovering on a call to <code>foo</code>. Python implementation using <code>pygls&gt;=2.0</code> as an optional dependency; ships with one-line config for Helix and Neovim. Remaining v2 polish (deferred until a real-user session surfaces a specific need): signatureHelp, inlayHint, workspace/symbol, codeLens, selectionRange.</p>
             </div>
         </li>
         <li>
             <span class="tag done">DONE (v1)</span>
             <div class="item-body">
                 <strong>Formatter (<code>capa --fmt</code> / <code>--fmt-check</code>)</strong>
-                <p>Canonical, non-configurable, idempotent. v1 is line-level: line-ending normalisation, indentation snapped to 4-space multiples (never deepened), trailing whitespace stripped, blank-line clusters collapsed, final newline enforced. Block-comment interiors preserved verbatim. v2 (intra-line operator spacing via AST round-trip, with comment preservation) is queued.</p>
+                <p>Canonical, non-configurable, idempotent. v3 is the default for <code>capa --fmt</code>: an AST round-trip pipeline (lex + parse + walk + emit). Comments survive via a <code>CommentMap</code> side-table keyed by <code>id(node)</code> with four slots (<code>leading</code>, <code>trailing</code>, <code>trailing_header</code>, <code>interior</code>). On any lex / parse / emit failure the pipeline falls back gracefully to the v1+v2 line-level pass, so mid-edit or syntactically-broken files still get safe textual cleanup. Idempotent and byte-exact on 71 corpus files (51 <code>examples/</code> + 20 <code>evaluation/sbom_diff/</code>). Design doc at <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/formatter-v3-comment-map-design.md"><code>docs/formatter-v3-comment-map-design.md</code></a>.</p>
             </div>
         </li>
         <li>
@@ -383,8 +383,8 @@
         <li>
             <span class="tag done">DONE</span>
             <div class="item-body">
-                <strong>Empirical SBOM-diff micro-validation</strong>
-                <p>A side-by-side comparison of a config-loader pattern in naive Python vs the same logic under Capa's discipline, with the CycloneDX SBOMs each version emits laid out next to each other. The reproducible artefact behind the "the capability-aware SBOM is a strict information gain over a PURL-only SBOM" claim in the positioning document. Lives in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/empirical_micro.md"><code>docs/empirical_micro.md</code></a>, with the sources at <code>examples/empirical_config_naive.py</code> and <code>examples/empirical_config.capa</code>.</p>
+                <strong>Empirical SBOM-diff study: 20-library quantitative corpus</strong>
+                <p>Twenty library pairs at <a href="https://github.com/nelsonduarte/capa-language/tree/main/evaluation/sbom_diff"><code>evaluation/sbom_diff/&lt;lib&gt;/</code></a>, each carrying <code>naive.py</code>, <code>capa.capa</code>, and <code>README.md</code>. Headline aggregates: 122 transliterated functions (73 pure / 49 with declared caps), 6 distinct capability axes (Clock, Env, Fs, Net, Random, Stdio), and 61 per-function (function, capability) attribution facts that have no counterpart in a PURL-only SBOM. Pair-combination coverage matrix spans Fs+Env, Fs+Clock, Fs+Net, Net+Clock, Env+Clock, Random+Clock, plus the Fs+Env+Net triple. Reproducible end-to-end via <code>python -m evaluation.sbom_diff.harness</code> + <code>python -m evaluation.sbom_diff.summary</code>. Closes the "quantitative validation" item from paper &sect;5. The single-pair worked example (<code>empirical_config</code>) is kept as the intuition pump; the quantitative corpus is now the headline reference. Primary entry points: <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/sbom_diff/README.md"><code>evaluation/sbom_diff/README.md</code></a> and <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/sbom_diff/summary.md"><code>evaluation/sbom_diff/summary.md</code></a>; the single-pair writeup at <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/empirical_micro.md"><code>docs/empirical_micro.md</code></a> stays in place.</p>
             </div>
         </li>
         <li>
@@ -447,7 +447,7 @@
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte · v1.0.0-rc3 · MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte · v1.0.0-rc.5 · MIT or Apache-2.0</p>
 </footer>
 
 </body>

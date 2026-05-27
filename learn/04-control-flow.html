@@ -51,12 +51,12 @@
     <span class="kw-storage">let</span> n = 7
     <span class="kw-ctrl">if</span> n &gt; 0
         stdio.<span class="fn-call">println</span>(<span class="str">"positive"</span>)
-    <span class="kw-ctrl">else if</span> n &lt; 0
+    <span class="kw-ctrl">elif</span> n &lt; 0
         stdio.<span class="fn-call">println</span>(<span class="str">"negative"</span>)
     <span class="kw-ctrl">else</span>
         stdio.<span class="fn-call">println</span>(<span class="str">"zero"</span>)</code></pre>
 
-    <p>No parentheses around the condition. Indentation marks each branch's body. The chain is <code>if</code> / <code>else if</code> / <code>else</code>; the final <code>else</code> is optional.</p>
+    <p>No parentheses around the condition. Indentation marks each branch's body. The chain is <code>if</code> / <code>elif</code> / <code>else</code>; the final <code>else</code> is optional. (The expression form below uses <code>else if</code>; only the statement form takes <code>elif</code>.)</p>
 </section>
 
 <section>
@@ -218,7 +218,7 @@ hello.capa:2:5: error: 'break' is only valid inside a loop
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc3 &middot; MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc.5 &middot; MIT or Apache-2.0</p>
 </footer>
 
 </body>
