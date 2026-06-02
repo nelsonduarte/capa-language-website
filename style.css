@@ -813,7 +813,7 @@ footer {
 }
 
 .page-heading h1 {
-    font-size: var(--fs-3xl);
+    font-size: 2.25rem;
     margin: 0 0 0.65rem;
     color: var(--fg-bright);
     letter-spacing: -0.03em;
@@ -827,6 +827,13 @@ footer {
     margin: 0 auto;
     font-size: 1.075rem;
     line-height: 1.55;
+}
+
+/* The intro paragraph under the h1 reads as justified body text; the
+   breadcrumb (also a .page-heading p) keeps the heading's centring. */
+.page-heading p:not(.learn-breadcrumb) {
+    text-align: justify;
+    text-wrap: pretty;
 }
 
 /* ============================================================
