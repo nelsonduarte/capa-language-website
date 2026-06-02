@@ -61,12 +61,13 @@
 <li><a href="#exprs">4. Expressions</a></li>
 <li><a href="#patterns">5. Pattern matching</a></li>
 <li><a href="#caps">6. Capabilities</a></li>
-<li><a href="#imports">7. Imports</a></li>
-<li><a href="#main">8. The main program</a></li>
-<li><a href="#attrs">9. Attributes</a></li>
-<li><a href="#cli">10. Compiler CLI</a></li>
-<li><a href="#vs-python">11. Differences from Python</a></li>
-<li><a href="#limits">12. Known limitations</a></li>
+<li><a href="#ifc">7. Information-flow control</a></li>
+<li><a href="#imports">8. Imports</a></li>
+<li><a href="#main">9. The main program</a></li>
+<li><a href="#attrs">10. Attributes</a></li>
+<li><a href="#cli">11. Compiler CLI</a></li>
+<li><a href="#vs-python">12. Differences from Python</a></li>
+<li><a href="#limits">13. Known limitations</a></li>
 </ul>
 </nav>
 
@@ -380,8 +381,83 @@ fun with_consume(consume cap: MyCap)      // ownership transfer</code></pre>
 <p>Attenuated capabilities are also recorded in the <code>--manifest</code> output via the <code>args_flow</code> field. See the <a href="manifest.html">manifest page</a>.</p>
 </section>
 
+<section id="ifc">
+<h2>7. Information-flow control</h2>
+
+<h3>7.1. Security labels</h3>
+<p>Capa tracks a two-point security lattice over values: <code>@public</code> (the default) sits below <code>@secret</code>. A label attaches to a type expression, so it can appear anywhere a type is written: parameters, <code>let</code>/<code>var</code> bindings, return types, and struct fields.</p>
+<pre><code>fun handle(token: @secret String)              // labelled parameter
+let xs: @secret List&lt;Int&gt; = collect()          // labelled binding
+
+type Card { pan: @secret String, brand: String }   // labelled field</code></pre>
+<p>An unlabelled type is <code>@public</code>. The label is part of the flow analysis, not the runtime representation: a <code>@secret String</code> is an ordinary <code>String</code> at run time.</p>
+
+<h3>7.2. Propagation</h3>
+<p>A value's label is the <em>join</em> of every label flowing into it: if any input is <code>@secret</code>, the result is <code>@secret</code>. The join propagates through:</p>
+<ul>
+<li>Binary and unary operators</li>
+<li>String interpolation: <code>"...${secret}..."</code> is <code>@secret</code></li>
+<li>Field reads, which inherit the receiver's label</li>
+<li>Indexing</li>
+<li>The <code>?</code> operator</li>
+</ul>
+<p>A function call returns the join of its argument labels: a pure function of a tainted input is itself tainted.</p>
+
+<h3>7.3. Sources and sinks</h3>
+<p>One source is secret by default: <code>env.get(...)</code> produces a <code>@secret</code> result with no annotation, because environment variables routinely carry credentials. <code>fs.read(...)</code> is intentionally <em>not</em> a source: config and data files are usually public, so annotate the binding <code>@secret</code> yourself when it holds a secret.</p>
+<p>The public sinks are the exfiltration points where a <code>@secret</code> value reaching a sink-position argument is an information-flow violation:</p>
+<table class="ref-table">
+<thead><tr><th>Capability</th><th>Sink methods</th></tr></thead>
+<tbody>
+<tr><td><code>Stdio</code></td><td><code>print</code>, <code>println</code>, <code>eprintln</code></td></tr>
+<tr><td><code>Net</code></td><td><code>get</code>, <code>post</code></td></tr>
+<tr><td><code>Fs</code></td><td><code>write</code></td></tr>
+<tr><td><code>Db</code></td><td><code>exec</code>, <code>query</code></td></tr>
+</tbody>
+</table>
+
+<h3>7.4. Enforcement (warn-then-enforce)</h3>
+<p>By default a violation is a compile-time <em>warning</em>: existing, unlabelled code is unaffected, while labelled code surfaces disclosures without breaking the build. The <code>@strict_ifc()</code> function attribute promotes those warnings into hard errors for that function.</p>
+<p>The leak below is caught: the value bound by the match arm inherits the secret label of the scrutinee, then reaches a <code>Stdio</code> sink.</p>
+<pre><code>@strict_ifc()
+fun dump(stdio: Stdio, env: Env)
+    match env.get("API_KEY")           // env.get is @secret
+        Some(key) -&gt; stdio.println(key)  // error: @secret reaches a sink
+        None -&gt; stdio.println("no key")</code></pre>
+
+<h3>7.5. Declassification</h3>
+<p><code>declassify(value, reason: "...")</code> is the single auditable bridge from <code>@secret</code> to <code>@public</code>. It is the identity at run time and relabels its result <code>@public</code>. The <code>reason</code> must be a named string literal, so the SBOM can record it. Declassifying a value that is not <code>@secret</code> is reported as a no-op warning.</p>
+<pre><code>@strict_ifc()
+fun dump(stdio: Stdio, env: Env)
+    match env.get("API_KEY")
+        Some(key) -&gt; stdio.println(declassify(mask(key), reason: "show masked key in logs"))
+        None -&gt; stdio.println("no key")</code></pre>
+<p>Each call is recorded in the SBOM: per-function <code>declassifications</code> and a <code>declassification_sites</code> count in the summary.</p>
+
+<h3>7.6. Pattern binding</h3>
+<p>A <code>match</code> or <code>let</code> destructure of a secret scrutinee taints the names it binds. After <code>match env.get("K") { Some(key) -&gt; ... }</code>, <code>key</code> is <code>@secret</code>.</p>
+
+<h3>7.7. Anti-laundering</h3>
+<p>Labels cannot be shed by repackaging a value:</p>
+<ul>
+<li>Aggregate literals (struct, list, tuple) carry the join of their element labels</li>
+<li>A <code>for</code>-loop variable inherits the iterable's label</li>
+<li>A secret <code>push</code>/<code>add</code>/<code>set</code> into a mutable <code>List</code>/<code>Set</code>/<code>Map</code> taints the container</li>
+</ul>
+
+<h3>7.8. Implicit flow</h3>
+<p>A sink inside a branch (<code>if</code>/<code>match</code>) guarded by a <code>@secret</code> condition is an implicit flow. It is reported only under <code>@strict_ifc</code>: the default tier focuses on explicit data flows.</p>
+
+<h3>7.9. Boundaries</h3>
+<p>Two limits are by design:</p>
+<ul>
+<li>The analysis is <strong>intra-procedural</strong>: a secret crossing a function boundary requires an explicit <code>@secret</code> parameter (the explicit-flow model)</li>
+<li>Granularity is <strong>whole-aggregate</strong>: per-field precision is future work</li>
+</ul>
+</section>
+
 <section id="imports">
-<h2>7. Imports</h2>
+<h2>8. Imports</h2>
 <pre><code>import util                     // sibling: ./util.capa
 import sinks.csv_sink           // nested: ./sinks/csv_sink.capa
 import capa_log.log             // package dep: &lt;vendor or path&gt;/capa_log/log.capa
@@ -392,7 +468,7 @@ import util as U                // alias the module name</code></pre>
 </section>
 
 <section id="main">
-<h2>8. The main program</h2>
+<h2>9. The main program</h2>
 <p>The entry point is a function called <code>main</code> that may take one or more capabilities as parameters. The capabilities are instantiated by the runtime at boot:</p>
 <pre><code>fun main(stdio: Stdio, fs: Fs, env: Env)
     let argv = env.args()
@@ -401,7 +477,7 @@ import util as U                // alias the module name</code></pre>
 </section>
 
 <section id="attrs">
-<h2>9. Attributes</h2>
+<h2>10. Attributes</h2>
 <p>Functions can carry static, source-level metadata via attribute syntax. The analyzer rejects unknown names, unknown keys, and duplicates; the schema is fixed. v1 recognises four attributes:</p>
 <table class="ref-table">
 <thead><tr><th>Attribute</th><th>Keys</th><th>Role</th></tr></thead>
@@ -416,7 +492,7 @@ import util as U                // alias the module name</code></pre>
 </section>
 
 <section id="cli">
-<h2>10. Compiler CLI</h2>
+<h2>11. Compiler CLI</h2>
 <p>Flag-order reference. All flags take one or more <code>.capa</code> source files. Output goes to stdout unless noted.</p>
 <table class="ref-table">
 <thead><tr><th>Flag</th><th>Output</th></tr></thead>
@@ -440,7 +516,7 @@ import util as U                // alias the module name</code></pre>
 </section>
 
 <section id="vs-python">
-<h2>11. Differences from Python</h2>
+<h2>12. Differences from Python</h2>
 <p>Capa transpiles to Python 3.10+, but the semantics differ:</p>
 <table class="ref-table">
 <thead><tr><th>Capa</th><th>Python</th></tr></thead>
@@ -457,7 +533,7 @@ import util as U                // alias the module name</code></pre>
 </section>
 
 <section id="limits">
-<h2>12. Known limitations</h2>
+<h2>13. Known limitations</h2>
 <ul>
 <li>String literals do not support multi-line (use <code>\n</code> for line breaks)</li>
 <li>Nested string literals inside interpolation (<code>"x ${"inner"} y"</code>) are not supported</li>

@@ -50,7 +50,7 @@
 
 <div class="page-heading">
     <h1>Roadmap</h1>
-    <p>An honest inventory of what works, what is coming, and what is explicitly out of scope. Capa is in <strong>v1.0.0-rc.5</strong>: the surface is feature-frozen pending feedback, 1783 tests pass on three operating systems, the discipline is implemented end-to-end, the module system is feature-complete, the package manager ships (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>), the capability manifest, CycloneDX SBOM, SPDX SBOM, CycloneDX VEX, and SLSA L1 provenance are all emitted directly by the compiler, and the Wasm Component Model backend is feature-complete for the demo surface. <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> describes the compatibility commitment that starts the moment 1.0.0 ships.</p>
+    <p>An honest inventory of what works, what is coming, and what is explicitly out of scope. Capa is in <strong>v1.0.0-rc.5</strong>: the surface is feature-frozen pending feedback, 2203 tests pass on three operating systems, the discipline is implemented end-to-end, information-flow control (a two-point security lattice with declassification recorded in the SBOM) is enforced end-to-end, the module system is feature-complete, the package manager ships (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>), the capability manifest, CycloneDX SBOM, SPDX SBOM, CycloneDX VEX, and SLSA L1 provenance are all emitted directly by the compiler, and the Wasm Component Model backend is fully functional for real programs. <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> describes the compatibility commitment that starts the moment 1.0.0 ships.</p>
 </div>
 
 <!-- =====================================================
@@ -83,6 +83,16 @@
                 <li><strong>Package manager</strong>: <code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>, git and path deps, automatic <code>./vendor/</code> resolution when a manifest is present</li>
             </ul>
 
+            <p><strong>Information-flow control (IFC)</strong></p>
+            <ul>
+                <li>Two-point security lattice (<code>@public</code> below <code>@secret</code>) on types, parameters, and fields</li>
+                <li>Automatic label propagation by join; <code>env.get</code> is a secret-by-default source</li>
+                <li>Secret-to-public sink enforcement on <code>Stdio</code> / <code>Net</code> / <code>Fs</code> / <code>Db</code> sinks: warn-then-enforce by default, hard errors under <code>@strict_ifc()</code></li>
+                <li><code>declassify(value, reason: "...")</code> as the single auditable bridge, recorded in the SBOM as <code>declassification_sites</code> (with reason and source position)</li>
+                <li>Implicit-flow control under <code>@strict_ifc</code>; anti-laundering through aggregates and mutable containers (intra-procedural, whole-aggregate granularity stated honestly)</li>
+                <li>Flagship example: <a href="https://github.com/nelsonduarte/capa_paymentguard"><code>capa_paymentguard</code></a></li>
+            </ul>
+
             <p><strong>Tooling</strong></p>
             <ul>
                 <li>CLI: tokenize, <code>--parse</code>, <code>--check</code>, <code>--transpile</code>, <code>--run</code>, <code>--watch</code>, <code>--fmt</code>, <code>--fmt-check</code>, <code>--doc</code>, <code>--manifest</code>, <code>--cyclonedx</code>, <code>--spdx</code>, <code>--vex</code>, <code>--provenance</code>, <code>--wasm</code>, <code>--wasm --component</code>, <code>--prefer-wasm</code>, <code>init</code>, <code>lsp</code>, <code>repl</code></li>
@@ -104,7 +114,11 @@
 
             <p><strong>Wasm</strong></p>
             <ul>
-                <li><strong>Wasm Component Model backend</strong>: <code>capa --wasm --run</code> (core wasm host bridge) and <code>capa --wasm --component --run</code> (Component Model artifact through an external wasmtime.component runtime); <code>capa --wasm --component --output app.wasm</code> produces a standalone Component Model <code>.wasm</code> artifact with the WIT spec embedded. Output is bit-identical with the Python pipeline across the three downstream demos (audit-trail-reporter, policy-eval, sbom-watch). Generic monomorphisation, nested closures, <code>Fun</code>-typed callee inference, and <code>List&lt;Bool&gt;</code> higher-order functions all lower through. <code>pip install -e .[wasm]</code> pulls in <code>wasmtime&gt;=20</code>; the new <code>--prefer-wasm</code> flag (or <code>CAPA_PREFER_WASM=1</code>) makes <code>capa --run</code> try the Wasm backend first with silent fallback to Python.</li>
+                <li><strong>Wasm Component Model backend</strong>: <code>capa --wasm --run</code> (core wasm host bridge) and <code>capa --wasm --component --run</code> (Component Model artifact through an external wasmtime.component runtime); <code>capa --wasm --component --output app.wasm</code> produces a standalone Component Model <code>.wasm</code> artifact with the WIT spec embedded. Fully functional for real programs: output is bit-identical with the Python pipeline. Generic monomorphisation, nested closures, <code>Fun</code>-typed callee inference, and <code>List&lt;Bool&gt;</code> higher-order functions all lower through. <code>pip install -e .[wasm]</code> pulls in <code>wasmtime&gt;=20</code>; the new <code>--prefer-wasm</code> flag (or <code>CAPA_PREFER_WASM=1</code>) makes <code>capa --run</code> try the Wasm backend first with silent fallback to Python.</li>
+                <li><strong>Sound cross-function attenuation on Wasm and the Component Model host</strong>: every privileged host import takes a capability handle and enforces the receiver's restriction before the syscall, via host-side capability handle tables. Passing a <code>restrict_to("data")</code> cap to a helper that then tries a denied path is correctly denied at the Wasm runtime, byte-identical to Python.</li>
+                <li><strong>All capabilities run on Wasm with parity</strong>: <code>Fs</code> (read / write / exists / is_dir / mkdir / list_dir / allows), <code>Env</code> (get / args / allows), <code>Clock</code> (now_secs / now_monotonic / sleep / allows), <code>Stdio</code> (print / println / eprintln / read_line), <code>Net</code> (get / restrict_to / allows), <code>Random</code> (with_seed / int_range / float_unit, byte-identical seeded output across backends), <code>Db</code>, <code>Proc</code>.</li>
+                <li><strong>Language coverage on Wasm</strong>: <code>String.replace</code> / <code>char_at</code> (<code>Option&lt;String&gt;</code>) / <code>index_of</code> (<code>Option&lt;Int&gt;</code>); <code>Map.keys</code> / <code>values</code>; tuples of any arity; range iteration (<code>for i in 0..n</code>); <code>Option</code> / <code>Result</code> higher-order functions (<code>map</code>, <code>and_then</code>, <code>map_err</code>, <code>or_else</code>, <code>ok</code>, <code>err</code>).</li>
+                <li><code>Unsafe</code> is loudly rejected at Wasm emit time (Python-only).</li>
             </ul>
 
             <p><strong>Quality / tests</strong></p>
@@ -112,7 +126,7 @@
                 <li><strong>Agda mechanisation</strong> of all four soundness theorems for the &lambda;<sub>cap</sub> calculus, lives in <a href="https://github.com/nelsonduarte/capa-language/tree/main/proofs"><code>proofs/</code></a>. Capability soundness, attenuation monotonicity, the structural / flow / linear layers each checked by the type-checker in addition to the prose proof in <code>docs/semantics.md</code>.</li>
                 <li><strong>Property-based testing through Phase 4</strong>: 50k+ generated programs stress-tested across plain / attenuated / via_helper / consumed call shapes; the Phase 4 strategy lifts the invariant <code>wasm_runtime_classes ⊆ manifest_classes</code> all the way through the Wasm backend.</li>
                 <li><strong>Compile-time benchmarks</strong> (<code>benchmarks/compile_bench.py</code>): lex / parse / analyse wallclock measured across three synthetic programs. Baseline on Windows 11 + CPython 3.14: small 10-fn ~3.5 ms, medium 100-fn ~55 ms, large 1000-fn ~450 ms.</li>
-                <li>1783 unit + end-to-end tests, green on Ubuntu / macOS / Windows &times; Python 3.10 / 3.12 / 3.14</li>
+                <li>2203 unit + end-to-end tests pass (2203 passed, 8 skipped), green on Ubuntu / macOS / Windows &times; Python 3.10 / 3.12 / 3.14</li>
             </ul>
         </div>
     </div>
@@ -275,7 +289,7 @@
     </ul>
 
     <h3>Wasm Component Model backend</h3>
-    <p>Capa lowers through a typed IR (CIR) into a hand-written WAT emitter and a Component Model packager. The backend exists so a Capa program can ship as a portable, capability-confined <code>.wasm</code> artifact runnable on any wasmtime-component host. Feature-complete for the demo surface: the three downstream demos (audit-trail-reporter, policy-eval, sbom-watch) plus capa_showcase run end-to-end via both <code>capa --wasm --run</code> and <code>capa --wasm --component --run</code> with output bit-identical to the Python reference pipeline.</p>
+    <p>Capa lowers through a typed IR (CIR) into a hand-written WAT emitter and a Component Model packager. The backend exists so a Capa program can ship as a portable, capability-confined <code>.wasm</code> artifact runnable on any wasmtime-component host. Fully functional for real programs: programs run end-to-end via both <code>capa --wasm --run</code> and <code>capa --wasm --component --run</code> with output bit-identical to the Python reference pipeline.</p>
     <ul class="milestone-list">
         <li>
             <span class="tag done">DONE</span>
@@ -301,8 +315,8 @@
         <li>
             <span class="tag done">DONE</span>
             <div class="item-body">
-                <strong>Inline attenuation enforcement</strong>
-                <p>The lowerer threads a per-function attenuation map (built by <code>capa.manifest._flow._build_attenuation_map</code>) through every privileged op. <code>Fs.restrict_to</code>, <code>Net.restrict_to</code>, and <code>Env.restrict_to_keys</code> all enforce at the Wasm boundary via inline <code>$str_starts_with</code> / <code>$str_contains</code> / <code>$str_eq</code> checks before the host import; the failure path materialises the canonical Err/None into the canonical-ABI return area and skips the host call. Intra-function scope; cross-function chains keep relying on the analyzer's static discipline.</p>
+                <strong>Sound cross-function attenuation enforcement</strong>
+                <p>Enforcement is sound on Wasm and on the Component Model host via host-side capability handle tables: every privileged host import takes a capability handle and enforces the receiver's restriction before the syscall. <code>Fs.restrict_to</code>, <code>Net.restrict_to</code>, and <code>Env.restrict_to_keys</code> all enforce at the Wasm boundary; the failure path materialises the canonical Err/None into the canonical-ABI return area and skips the host call. Cross-function chains are enforced at runtime, not left to the analyzer's static discipline: passing a <code>restrict_to("data")</code> cap to a helper that then tries a denied path is correctly denied at the Wasm runtime, byte-identical to Python.</p>
             </div>
         </li>
     </ul>

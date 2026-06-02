@@ -126,11 +126,23 @@
 </section>
 
 <section>
+    <h2>Where your data can go</h2>
+    <p>Capabilities control which effects a function can use; information-flow control proves where its data can go. Annotate a value <code>@secret</code> and the compiler propagates the label through the program, then rejects any secret that reaches a public sink (<code>Stdio</code>, <code>Net</code>, <code>Fs</code>, <code>Db</code>). Under <code>@strict_ifc</code> that rejection is a compile error rather than a warning. <code>env.get</code> is secret by default, so an API key never lands in a log line by accident.</p>
+<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>, env: <span class="cap">Env</span>)
+    <span class="kw-storage">let</span> key = env.<span class="fn-call">get</span>(<span class="str">"API_KEY"</span>)  <span class="comment">// @secret by default</span>
+    stdio.<span class="fn-call">println</span>(key)            <span class="comment">// rejected: secret reaches a public sink</span></code></pre>
+    <p>The one auditable bridge is <code>declassify(value, reason: "...")</code>, and every use is recorded in the SBOM as <code>declassification_sites</code>: a machine-checkable disclosure record, by construction. The proof of where a secret can flow ships with the manifest, not in a code review thread.</p>
+</section>
+
+<section>
     <h2>Real programs written in Capa</h2>
     <p>Each lives in its own repository, declares its dependencies in <code>capa.toml</code>, and runs through <code>capa install &amp;&amp; capa --run ...</code>.</p>
     <dl class="program-list">
         <dt><a href="https://github.com/nelsonduarte/audit-trail-reporter">audit-trail-reporter</a></dt>
         <dd>AML compliance toolkit. Four detection rules (threshold, watchlist, structuring, velocity), four report sinks, attenuated read+write <code>Fs</code> split. Around 1100 lines across 9 files.</dd>
+
+        <dt><a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a></dt>
+        <dd>Payment-security core. Information-flow control proves card data cannot leave unmasked: the only path to a sink is an audited <code>declassify</code>, recorded in the SBOM.</dd>
 
         <dt><a href="https://github.com/nelsonduarte/sbom-watch">sbom-watch</a></dt>
         <dd>SBOM operationaliser. Cross-references a CycloneDX SBOM against a CVE database and a policy file. CI-friendly exit code. Around 700 lines, 5 files.</dd>
