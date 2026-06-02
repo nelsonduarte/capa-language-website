@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>13. Information-flow control | Learn Capa</title>
+    <meta name="description" content="Chapter 13 of Learn Capa: mark data @secret and let the compiler prove it cannot reach a log or the network without an audited declassify.">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <script src="../theme.js"></script>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="../index.html" class="logo">
+            <img src="../capa_logo.svg" alt="" aria-hidden="true">
+            Capa
+        </a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </label>
+        <div class="nav-links">
+            <a href="../index.html">Home</a>
+            <a href="../why.html">Why Capa</a>
+            <a href="index.html" class="current">Learn</a>
+            <a href="../reference.html">Reference</a>
+            <a href="../start.html">Get started</a>
+            <a href="../roadmap.html">Roadmap</a>
+            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
+            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        </div>
+    </nav>
+</header>
+
+<main>
+
+<div class="page-heading">
+    <p class="learn-breadcrumb"><a href="index.html">Learn</a> &middot; Chapter 13 of 13</p>
+    <h1>Information-flow control</h1>
+    <p>Capabilities decide which effects a function may use. Information-flow control decides where its data may go. This chapter is the second axis: mark a value <code>@secret</code> and the compiler proves it cannot reach a log line or a network call unless you let it through an audited bridge.</p>
+</div>
+
+<section>
+    <h2>The problem</h2>
+
+    <p>A capability lets a function do something powerful, like read environment variables or print to the console. But having the authority to read a secret and the authority to print are, on their own, two separate permissions. Nothing yet stops a function with both from doing this:</p>
+
+<pre><code><span class="kw-decl">fun</span> <span class="fn-name">leak</span>(env: <span class="cap">Env</span>, stdio: <span class="cap">Stdio</span>)
+    <span class="kw-ctrl">match</span> env.<span class="fn-call">get</span>(<span class="str">"API_KEY"</span>)
+        <span class="variant">Some</span>(key) -&gt; stdio.<span class="fn-call">println</span>(key)
+        <span class="variant">None</span> -&gt; stdio.<span class="fn-call">println</span>(<span class="str">"no key"</span>)</code></pre>
+
+    <p>That prints the API key to standard output, where it lands in logs, terminal scrollback, and CI output. It is the single most common way secrets leak. Capability discipline alone does not catch it: both <code>Env</code> and <code>Stdio</code> were legitimately granted.</p>
+
+    <p>Save that as <code>leak.capa</code> and check it:</p>
+
+<pre><code>$ capa --check leak.capa
+warning: information-flow: a @secret value reaches Stdio.println
+  (argument 1), a public sink that sends data out of the program.
+  Route it through declassify(value, reason: "...") if this
+  disclosure is intended.</code></pre>
+
+    <p>The compiler already flagged it, with no annotation from you. The next sections explain why, and how to fix it properly.</p>
+</section>
+
+<section>
+    <h2>Secret by default at the source</h2>
+
+    <p>Environment variables are where API keys, tokens, and credentials live, so <code>Env.get</code> is a <em>secret source</em>: its result is <code>@secret</code> automatically. The value pulled out of the <code>Some</code> arm inherits that label, and printing it is what raised the warning. You did not have to mark anything; the headline leak is caught out of the box.</p>
+</section>
+
+<section>
+    <h2>Labelling your own data</h2>
+
+    <p>For data that does not come from a built-in source, you say so. A two-point lattice carries the label: <code>@public</code> (the default) sits below <code>@secret</code>. The annotation attaches to a type, on a parameter, a binding, a return type, or a struct field:</p>
+
+<pre><code><span class="kw-decl">fun</span> <span class="fn-name">charge</span>(card_number: <span class="attr">@secret</span> <span class="ty-primitive">String</span>, stdio: <span class="cap">Stdio</span>)
+    <span class="comment">// card_number is @secret for the whole function body</span>
+    stdio.<span class="fn-call">println</span>(card_number)   <span class="comment">// warning: secret reaches a public sink</span></code></pre>
+
+    <p>The label is a compile-time property only. It does not change the value or cost anything at runtime; it just travels with the data through the type checker.</p>
+</section>
+
+<section>
+    <h2>How the label travels</h2>
+
+    <p>A value's label is the join of the labels that flow into it: if any input is <code>@secret</code>, the result is too. This holds through arithmetic, string interpolation, field reads, and function calls (a call with a secret argument returns a secret). So none of these escape the net:</p>
+
+<pre><code><span class="kw-storage">let</span> tagged = <span class="str">"key=${card_number}"</span>   <span class="comment">// @secret: interpolation carries it</span>
+<span class="kw-storage">let</span> first6 = card_number.<span class="fn-call">substring</span>(<span class="num">0</span>, <span class="num">6</span>)   <span class="comment">// @secret: derived from a secret</span></code></pre>
+
+    <p>It also follows data into and out of containers: a secret put in a struct, list, tuple, or a mutable <code>Map</code> / <code>Set</code> / <code>List</code>, or iterated over in a <code>for</code> loop, stays secret. You cannot launder it by stashing it somewhere and reading it back.</p>
+</section>
+
+<section>
+    <h2>The sinks</h2>
+
+    <p>A sink is a point where data leaves the program. The built-in public sinks are:</p>
+
+    <ul>
+        <li><code>Stdio.print</code>, <code>Stdio.println</code>, <code>Stdio.eprintln</code></li>
+        <li><code>Net.get</code>, <code>Net.post</code></li>
+        <li><code>Fs.write</code></li>
+        <li><code>Db.exec</code>, <code>Db.query</code></li>
+    </ul>
+
+    <p>A <code>@secret</code> value reaching any of them is an information-flow violation. By default it is a warning, so existing code keeps compiling while labelled code surfaces its disclosures. To make it a hard error, opt the function into strict mode:</p>
+
+<pre><code><span class="attr">@strict_ifc</span>()
+<span class="kw-decl">fun</span> <span class="fn-name">charge</span>(card_number: <span class="attr">@secret</span> <span class="ty-primitive">String</span>, stdio: <span class="cap">Stdio</span>)
+    stdio.<span class="fn-call">println</span>(card_number)   <span class="comment">// now a compile ERROR, not a warning</span></code></pre>
+
+    <p>Strict mode also turns on implicit-flow checking: a sink inside a branch whose condition is secret leaks one bit (whether the branch was taken) even if the printed value is a constant, and strict mode reports that too.</p>
+</section>
+
+<section>
+    <h2>Declassify: the one way across</h2>
+
+    <p>Sometimes you genuinely must disclose a derived form of a secret: the last four digits of a card on a receipt, a salted hash of a password for storage. The single sanctioned bridge from <code>@secret</code> to <code>@public</code> is <code>declassify</code>, and it demands a reason:</p>
+
+<pre><code><span class="kw-decl">fun</span> <span class="fn-name">mask</span>(card_number: <span class="attr">@secret</span> <span class="ty-primitive">String</span>) -&gt; <span class="ty-primitive">String</span>
+    <span class="kw-storage">let</span> n = card_number.<span class="fn-call">length</span>()
+    <span class="kw-storage">let</span> last4 = card_number.<span class="fn-call">substring</span>(n - <span class="num">4</span>, n)
+    <span class="kw-ctrl">return</span> <span class="fn-call">declassify</span>(
+        <span class="str">"**** **** **** ${last4}"</span>,
+        reason: <span class="str">"PCI DSS 3.4: display only the last four digits"</span>
+    )</code></pre>
+
+    <p>The <code>reason</code> must be a plain string literal. <code>declassify</code> is the identity function at runtime (it returns its value unchanged); its whole job is at compile time, where it relabels the result <code>@public</code>. Declassifying a value that was not secret is reported as a no-op, so a stray bridge cannot hide.</p>
+</section>
+
+<section>
+    <h2>Why the reason matters: the SBOM</h2>
+
+    <p>Every <code>declassify</code> call is recorded in the manifest. Ask for it:</p>
+
+<pre><code>$ capa --manifest app.capa | jq '.summary.declassification_sites'
+1
+
+$ capa --manifest app.capa | jq '.functions[] | select(.declassifications | length &gt; 0) | .declassifications'
+[ { "reason": "PCI DSS 3.4: display only the last four digits",
+    "value": "...", "pos": "10:12" } ]</code></pre>
+
+    <p>This is the regulatory payoff. The SBOM does not just say what a program does; it lists exactly where, and why, it discloses sensitive data, generated by the compiler rather than asserted in a document. An auditor reads the list, not your data-handling policy.</p>
+</section>
+
+<section>
+    <h2>The honest boundaries</h2>
+
+    <p>The analysis is deliberately simple, and it is worth knowing its edges:</p>
+
+    <ul>
+        <li><strong>Intra-procedural.</strong> A secret crossing a function boundary needs an explicit <code>@secret</code> parameter. This is by design: a signature stays honest about what it receives, the same philosophy as capabilities.</li>
+        <li><strong>Whole-aggregate granularity.</strong> A secret field taints its whole struct, rather than tracking each field separately. Per-field precision is future work.</li>
+    </ul>
+
+    <p>These keep the feature ergonomic and the diagnostics low-noise, which is the lesson IFC research learned the hard way: a checker that cries wolf gets turned off.</p>
+</section>
+
+<section>
+    <h2>Where you go next</h2>
+
+    <p>That is the whole tour. The <a href="../reference.html">language reference</a> has the full rules in section 6.4, and the <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a> showcase puts capabilities, information-flow control, and a generated EU Cyber Resilience Act conformity pack together on a payment-security core, the compiler proves a card number cannot reach a log or the network unmasked.</p>
+
+    <p>If you build something with Capa, send it. Real use is the best feedback.</p>
+</section>
+
+<nav class="chapter-nav" aria-label="Tutorial navigation">
+    <a class="prev" href="12-a-small-project.html">&larr; 12. A small project</a>
+    <a class="next" href="index.html">Table of contents &rarr;</a>
+</nav>
+
+</main>
+
+<footer>
+    <div class="footer-grid">
+        <div>
+            <h4>Pages</h4>
+            <ul>
+                <li><a href="../why.html">Why Capa</a></li>
+                <li><a href="index.html">Learn</a></li>
+                <li><a href="../reference.html">Reference</a></li>
+                <li><a href="../start.html">Get started</a></li>
+                <li><a href="../roadmap.html">Roadmap</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="../start.html">Getting started</a></li>
+                <li><a href="../reference.html">Reference</a></li>
+                <li><a href="../stdlib.html">Standard library</a></li>
+                <li><a href="../manifest.html">Manifest</a></li>
+                <li><a href="../community.html">Community</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Project</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+                <li><a href="../brand.html">Brand assets</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
+            </ul>
+        </div>
+    </div>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0-rc.6 &middot; MIT or Apache-2.0</p>
+</footer>
+
+</body>
+</html>
