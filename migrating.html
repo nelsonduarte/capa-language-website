@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migrating from Python | Capa</title>
+    <meta name="description" content="Move an existing Python program into Capa one function at a time: a thin Unsafe shell, then typed functions, until the Unsafe is gone and the manifest is a true per-function authority bound.">
+    <meta property="og:title" content="Migrating from Python | Capa">
+    <meta property="og:description" content="Gradual, one-function-at-a-time migration from Python to Capa. The Unsafe capability shrinks and the per-function authority manifest gets more honest at every step.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://capa-language.com/migrating.html">
+    <meta property="og:image" content="https://capa-language.com/capa_logo.png">
+    <meta property="og:site_name" content="Capa">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Migrating from Python | Capa">
+    <meta name="twitter:description" content="Gradual, one-function-at-a-time migration from Python to Capa.">
+    <meta name="twitter:image" content="https://capa-language.com/capa_logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <script src="theme.js"></script>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="index.html" class="logo">
+            <img src="capa_logo.svg" alt="" aria-hidden="true">
+            Capa
+        </a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </label>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="why.html">Why Capa</a>
+            <a href="learn/index.html">Learn</a>
+            <a href="reference.html">Reference</a>
+            <a href="start.html">Get started</a>
+            <a href="migrating.html" class="current">Migrating</a>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
+            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        </div>
+    </nav>
+</header>
+
+<main>
+
+<div class="page-heading">
+    <h1>Migrating from Python</h1>
+    <p>You do not have to rewrite a Python program to get a Capa authority manifest out of it. Wrap the Python file in a thin Capa shell that delegates everything, then move one function at a time into typed Capa. At every step the <code>Unsafe</code> capability shrinks and the per-function manifest gets more honest. The Python file itself never changes; only the <code>.capa</code> file does.</p>
+</div>
+
+<!-- =====================================================
+     Why migrate
+===================================================== -->
+<section>
+    <h2>Why migrate at all</h2>
+
+    <p>Capa programs declare their authority in function signatures. A function that opens a network socket takes a <code>Net</code> parameter; one that reads a file takes <code>Fs</code>; one that does neither takes neither. The compiler reads those signatures and emits a manifest an SBOM consumer (CycloneDX, SPDX, VEX, SLSA provenance) can audit at per-function granularity.</p>
+
+    <p>Python has no equivalent. <code>pip freeze</code> lists packages, not functions; a static analyser is heuristic, and its granularity bottoms out at the import boundary. If you have a Python program whose authority surface you want to make auditable, the cheapest path is not a rewrite. Keep the Python file intact, build a thin Capa shell that does nothing but delegate, and then migrate the program into typed Capa function by function.</p>
+
+    <div class="callout">
+        <p>The running example throughout this page is <code>migrate_logfetcher_naive.py</code>, a ~60-line Python program that touches <code>Fs</code>, <code>Env</code>, and <code>Net</code>. It is paired with three <code>.capa</code> files that show the same behaviour at three stages of hardening. All four live in <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples">the examples directory</a>; the snippets and manifests below are taken straight from them.</p>
+    </div>
+</section>
+
+<!-- =====================================================
+     Stage 1
+===================================================== -->
+<section>
+    <h2>Stage 1: all <code>Unsafe</code>, behaviour preserved</h2>
+
+    <p>Write a Capa file with one entry point that imports the original Python module and calls into it. Everything happens through <code>py_import</code> and <code>py_invoke</code>, which together require the <code>Unsafe</code> capability.</p>
+
+<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>, u: <span class="cap">Unsafe</span>)
+    <span class="fn-call">bootstrap_path</span>(u)
+    <span class="kw-storage">let</span> mod = <span class="fn-call">py_import</span>(u, <span class="str">"migrate_logfetcher_naive"</span>)
+    stdio.<span class="fn-call">println</span>(<span class="str">"step1: delegating to migrate_logfetcher_naive.main() via py_invoke"</span>)
+    <span class="fn-call">py_invoke</span>(u, mod.main, [])</code></pre>
+
+    <p>What <code>capa --manifest</code> reports about this stage:</p>
+
+<pre><code>bootstrap_path -> [Unsafe]
+main           -> [Stdio, Unsafe]</code></pre>
+
+    <p>The <code>Unsafe</code> is the audit signal. An SBOM consumer reading this manifest sees: <em>this program escapes Capa's analysis, so I cannot make claims about its true authority surface</em>. That is honest reporting of the not-yet-migrated state, which is exactly the point.</p>
+</section>
+
+<!-- =====================================================
+     Stage 2
+===================================================== -->
+<section>
+    <h2>Stage 2: move one function at a time</h2>
+
+    <p>Pick the function whose Capa equivalent is simplest. The first easy win is usually one that needs a single built-in capability and does not need to read structured data back from Python. In the example, <code>save_response(path, content)</code> is that function: two strings in, one file written, mapping cleanly to <code>Fs.write</code>.</p>
+
+<pre><code><span class="kw-decl">fun</span> <span class="fn-name">save_response</span>(fs: <span class="cap">Fs</span>, path: <span class="ty-primitive">String</span>, content: <span class="ty-primitive">String</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">Unit</span>, <span class="ty-builtin">IoError</span>&gt;
+    <span class="kw-ctrl">return</span> fs.<span class="fn-call">write</span>(path, content)</code></pre>
+
+    <p>The rest of <code>main</code> still calls back into the Python module for the fetch, parse, and env-read work; only the file write is now typed Capa. The Python file is unchanged. The manifest now reports:</p>
+
+<pre><code>bootstrap_path -> [Unsafe]
+save_response  -> [Fs]                  <- new, typed, no Unsafe
+main           -> [Stdio, Fs, Unsafe]   <- Fs is now visible</code></pre>
+
+    <p>The win is <code>Fs</code> becoming explicit in <code>main</code>'s signature. The SBOM consumer can now see that the file-write authority is exercised by a typed function, not buried inside an <code>Unsafe</code> block.</p>
+</section>
+
+<!-- =====================================================
+     Stage 3
+===================================================== -->
+<section>
+    <h2>Stage 3: fully typed, <code>Unsafe</code> gone</h2>
+
+    <p>Move every remaining function into typed Capa. Once the last <code>py_invoke</code> is gone, the Python file is unreferenced and can be deleted. <code>main</code> now threads the exact capabilities the program uses and nothing more:</p>
+
+<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>, fs: <span class="cap">Fs</span>, env: <span class="cap">Env</span>, net: <span class="cap">Net</span>)
+    <span class="kw-ctrl">match</span> <span class="fn-call">load_config</span>(fs, <span class="str">"config.json"</span>)
+        ...</code></pre>
+
+    <p>And the manifest is a clean per-function authority bound:</p>
+
+<pre><code>config_field   -> []                      pure
+load_config    -> [Fs]
+get_api_key    -> [Env]
+build_url      -> []                      pure
+fetch_status   -> [Net]
+save_response  -> [Fs]
+main           -> [Stdio, Fs, Env, Net]   no Unsafe</code></pre>
+
+    <p>Compare this to stage 1, where the only honest thing the manifest could say about <code>main</code> was <code>[Stdio, Unsafe]</code>. The supply-chain audit story is now load-bearing: the SBOM is a true per-function authority bound rather than a single <code>Unsafe</code> blob.</p>
+</section>
+
+<!-- =====================================================
+     Bridging tricks
+===================================================== -->
+<section>
+    <h2>Bridging tricks for the middle stage</h2>
+
+    <p>The awkward part of the middle stage is moving values back and forth across the Capa-to-Python boundary. A few patterns make it tractable.</p>
+
+    <h3><code>py_invoke</code> returns <code>Unknown</code>, and Capa accepts it anywhere</h3>
+
+    <p>A <code>py_invoke</code> call returns <code>Unknown</code> at the type-system level. Capa lets <code>Unknown</code> stand wherever a concrete type is expected, so you can pass the result of <code>py_invoke</code> straight into a typed Capa function without an explicit cast. That is how stage 2 feeds a Python-side response string into <code>save_response</code>.</p>
+
+    <p>The trade-off is honest: passing <code>Unknown</code> everywhere is unsafe in the type sense, because no real check happens until runtime. It works for the middle stage, but it is a reason to keep moving toward fully typed Capa rather than declaring victory early.</p>
+
+    <h3>Field access on Python dicts via <code>builtins.dict.get</code></h3>
+
+    <p>If a Python function returns a dict and you need a single field, pull it through <code>py_invoke</code> against <code>builtins.dict.get</code>:</p>
+
+<pre><code><span class="kw-storage">let</span> py_builtins = <span class="fn-call">py_import</span>(u, <span class="str">"builtins"</span>)
+<span class="kw-storage">let</span> base = <span class="fn-call">py_invoke</span>(u, py_builtins.dict.get, [cfg, <span class="str">"base_url"</span>])</code></pre>
+
+    <p>This stays <code>Unknown</code> and serves the transitional stage. By stage 3 you replace it with typed <code>JsonValue</code> navigation, for example <code>cfg.as_object()?.get("base_url")?.as_string()?</code>.</p>
+
+    <h3>Result and Option chaining in fully-typed Capa</h3>
+
+    <p>Stage 3's <code>config_field</code> uses the explicit-match style: pattern-match on the <code>Option</code>, return <code>Err</code> with a descriptive message on <code>None</code>. The <code>?</code> operator is also available for <code>Result</code> and <code>Option</code> chaining if you prefer the terser form.</p>
+</section>
+
+<!-- =====================================================
+     Track your progress
+===================================================== -->
+<section>
+    <h2>Track your progress</h2>
+
+    <p>You do not have to read manifests by eye to know how far a migration has come. <code>capa migrate &lt;file.capa&gt;</code> reports it directly:</p>
+
+<pre><code>$ capa migrate examples/migrate_logfetcher_step2_mixed.capa</code></pre>
+
+<pre><code>Migration progress for examples/migrate_logfetcher_step2_mixed.capa
+  [########----------------] 33% Unsafe-free
+  1/3 function(s) are Unsafe-free; 2 still use Unsafe.
+
+Next, consider hardening (fewest bridge calls first):
+  - bootstrap_path  ...:26:1  (5 bridge calls)
+  - main            ...:39:1  (9 bridge calls)</code></pre>
+
+    <p>It surfaces three things:</p>
+
+    <ul>
+        <li><strong>Progress.</strong> The share of functions that no longer touch <code>Unsafe</code>. Stage 1 reports 0%, stage 3 reports 100%.</li>
+        <li><strong>Removable <code>Unsafe</code>.</strong> Functions that still declare an <code>Unsafe</code> parameter but no longer exercise it. The analyser already rejects a capability parameter referenced nowhere, so this specifically catches the one you silenced with a leading underscore (<code>_u: Unsafe</code>) and then left behind once its last <code>py_invoke</code> was migrated away.</li>
+        <li><strong>Next candidates.</strong> The still-<code>Unsafe</code> functions ranked by how few bridge calls they make, so you tackle the cheapest hardening step next.</li>
+    </ul>
+
+    <p>Add <code>--json</code> for the machine-readable form, which is useful in a CI gate that watches the percentage trend upward over a migration.</p>
+</section>
+
+<!-- =====================================================
+     When to stop
+===================================================== -->
+<section>
+    <h2>When to stop</h2>
+
+    <p>The migration is complete when:</p>
+
+    <ul>
+        <li>the Python file is not imported anywhere from your Capa code;</li>
+        <li>no function declares <code>Unsafe</code>, except the legitimate cases where you genuinely need to call out to a Python library Capa has no built-in for;</li>
+        <li>every function's declared capabilities match what it actually needs, and nothing more.</li>
+    </ul>
+
+    <p>You can also stop sooner. If a single function genuinely needs a Python library Capa does not cover, leave that one function with <code>Unsafe</code>; the rest of the program still benefits from typing. The <code>Unsafe</code> is then a precise audit signal pointing at the one place that needs human review.</p>
+</section>
+
+<!-- =====================================================
+     Honest limits
+===================================================== -->
+<section>
+    <h2>Honest limits</h2>
+
+    <ul>
+        <li><strong>Capa's built-in capability surface is narrow.</strong> <code>Net.get</code>, <code>Fs.read</code>, <code>Fs.write</code>, <code>Env.get</code>, <code>Clock.now_secs</code>, <code>Random.float_unit</code>, plus a handful of methods on each. If your Python uses, say, <code>requests</code> with custom headers, gRPC, or sqlite3, that function stays on the <code>Unsafe</code> side of the boundary. The migration story bottoms out at what Capa's standard library covers.</li>
+        <li><strong>The Python file is not safer because of the migration.</strong> It is still Python; it still has ambient authority. The Capa side is the audit surface. Once the migration is complete, you delete the Python file.</li>
+        <li><strong>Runtime.</strong> The default backend transpiles Capa to Python (overhead measured at 1.00x to 1.45x against hand-written Python on the benchmarked workloads). A WebAssembly Component Model backend is also available and functional: <code>capa --wasm --run</code> and <code>capa --wasm --component --run</code> execute real programs with output bit-identical to the Python pipeline, and <code>capa --wasm --component --output app.wasm</code> packages a portable, capability-confined artifact. Note that <code>Unsafe</code> is loudly rejected at Wasm emit time, so the all-<code>Unsafe</code> stages of a migration run on the Python backend; the typed end state runs on either.</li>
+        <li><strong>No incremental compilation.</strong> Each <code>capa --run</code> re-lexes, re-parses, re-analyses, and re-transpiles the whole program. Invisible for files in this size class; it would matter for large projects.</li>
+    </ul>
+</section>
+
+<!-- =====================================================
+     Reproduction
+===================================================== -->
+<section>
+    <h2>Reproduce it</h2>
+
+    <p>The three Capa files compile and emit honest manifests:</p>
+
+<pre><code><span class="comment"># Each stage type-checks</span>
+$ capa --check examples/migrate_logfetcher_step1_unsafe.capa
+$ capa --check examples/migrate_logfetcher_step2_mixed.capa
+$ capa --check examples/migrate_logfetcher_step3_typed.capa
+
+<span class="comment"># The manifest progression: Unsafe shrinks, real capabilities appear</span>
+$ capa --manifest examples/migrate_logfetcher_step1_unsafe.capa \
+    | jq '.functions[] | {name, declared_capabilities}'
+$ capa --manifest examples/migrate_logfetcher_step2_mixed.capa \
+    | jq '.functions[] | {name, declared_capabilities}'
+$ capa --manifest examples/migrate_logfetcher_step3_typed.capa \
+    | jq '.functions[] | {name, declared_capabilities}'</code></pre>
+
+    <p>Running any of the three actually fetches data and writes a file, so you need a <code>config.json</code> next to where you run it and a <code>LOGS_API_KEY</code> environment variable set. The full setup is in the docstring of <a href="https://github.com/nelsonduarte/capa-language/blob/main/examples/migrate_logfetcher_naive.py"><code>migrate_logfetcher_naive.py</code></a>. The full writeup is in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/migration.md"><code>docs/migration.md</code></a>.</p>
+</section>
+
+<!-- =====================================================
+     Where to go next
+===================================================== -->
+<section>
+    <h2>Where to go next</h2>
+
+    <div class="doc-grid">
+        <a href="manifest.html" class="doc-card">
+            <h3>Read the manifest format &rarr;</h3>
+            <p>What <code>capa --manifest</code> emits and how the per-function authority graph maps onto CycloneDX, SPDX, VEX, and SLSA provenance.</p>
+        </a>
+        <a href="start.html" class="doc-card">
+            <h3>Install and run &rarr;</h3>
+            <p>Get <code>capa</code> on your PATH and run your first program, then come back and try the migration commands on the example files.</p>
+        </a>
+        <a href="learn/index.html" class="doc-card">
+            <h3>Tour the language &rarr;</h3>
+            <p>A guided pass through the syntax you will be writing as you move functions out of Python: types, control flow, capabilities, attenuation.</p>
+        </a>
+        <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples" class="doc-card">
+            <h3>Read the example files &rarr;</h3>
+            <p>The naive Python original and the three <code>.capa</code> stages, side by side in the repository.</p>
+        </a>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="footer-grid">
+        <div>
+            <h4>Pages</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="why.html">Why Capa</a></li>
+                <li><a href="learn/index.html">Learn</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="start.html">Getting started</a></li>
+                <li><a href="learn/index.html">Tutorial</a></li>
+                <li><a href="migrating.html">Migrating from Python</a></li>
+                <li><a href="reference.html">Reference</a></li>
+                <li><a href="stdlib.html">Standard library</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Specification</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/demo-event-stream.md">Event-stream demo</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Project</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+                <li><a href="community.html">Community</a></li>
+                <li><a href="brand.html">Brand assets</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
+            </ul>
+        </div>
+    </div>
+    <p class="colophon">Built by Nelson Duarte · v1.0.0 · MIT or Apache-2.0</p>
+</footer>
+
+</body>
+</html>
