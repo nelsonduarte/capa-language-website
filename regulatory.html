@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regulatory | Capa</title>
+    <meta name="description" content="How Capa's compiler-emitted artefacts map onto the EU Cyber Resilience Act (CRA), NIS2, DORA, NIST SSDF, and OWASP SCVS: SBOM, VEX, and provenance from one compile.">
+    <meta property="og:title" content="Regulatory | Capa across the supply-chain governance stack">
+    <meta property="og:description" content="SBOM, VEX, and provenance emitted by the compiler, mapped clause by clause onto CRA, NIS2, DORA, NIST SSDF, and OWASP SCVS.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://capa-language.com/regulatory.html">
+    <meta property="og:image" content="https://capa-language.com/capa_logo.png">
+    <meta property="og:site_name" content="Capa">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Regulatory | Capa">
+    <meta name="twitter:description" content="CRA, NIS2, DORA, NIST SSDF, and OWASP SCVS, mapped to compiler-emitted artefacts.">
+    <meta name="twitter:image" content="https://capa-language.com/capa_logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <script src="theme.js"></script>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="index.html" class="logo">
+            <img src="capa_logo.svg" alt="" aria-hidden="true">
+            Capa
+        </a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </label>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="why.html">Why Capa</a>
+            <a href="learn/index.html">Learn</a>
+            <a href="reference.html">Reference</a>
+            <a href="start.html">Get started</a>
+            <a href="migrating.html">Migrating</a>
+            <a href="regulatory.html" class="current">Regulatory</a>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
+            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        </div>
+    </nav>
+</header>
+
+<main>
+
+<div class="page-heading">
+    <h1>Capa across the supply-chain governance stack</h1>
+    <p>Five frameworks set the rules for how software-bearing organisations report, audit, and remediate their codebases: the EU Cyber Resilience Act, NIS2, DORA, NIST SSDF, and OWASP SCVS. This page maps which Capa artefacts answer which clauses. It is descriptive rather than legal: the mapping is one person's reading of each instrument, and any conformity decision belongs to an auditor or a supervisory authority, not to a compiler manual.</p>
+</div>
+
+<!-- =====================================================
+     The five frameworks
+===================================================== -->
+<section>
+    <h2>The five frameworks</h2>
+
+    <ul>
+        <li><strong>Cyber Resilience Act</strong> (Regulation (EU) 2024/2847): the EU's manufacturer-side rule for products with digital elements.</li>
+        <li><strong>NIS2</strong> (Directive (EU) 2022/2555): the operator-side counterpart, scoped to essential and important entities across eighteen sectors.</li>
+        <li><strong>DORA</strong> (Regulation (EU) 2022/2554): the financial-sector operational resilience regulation. Only the cybersecurity articles are in scope here.</li>
+        <li><strong>NIST SSDF</strong> (SP 800-218): the US federal baseline for secure software development cited by Executive Order 14028.</li>
+        <li><strong>OWASP SCVS</strong>: the vendor-neutral Software Component Verification Standard, with three levels.</li>
+    </ul>
+
+    <div class="callout">
+        <p><strong>Limits of the language's reach.</strong> Most of what these frameworks demand is organisational: vulnerability disclosure processes, incident notification timelines, supplier due diligence, conformity assessment. None of that is in Capa's reach. What Capa contributes is a narrow slice of the technical artefacts the organisational layer consumes. Each fit below is marked <strong>direct</strong> (the artefact satisfies the clause on its own), <strong>indirect</strong> (Capa enables it but the organisation still has work to do), or <strong>partial</strong> (Capa contributes without closing the requirement).</p>
+    </div>
+</section>
+
+<!-- =====================================================
+     What the compiler emits
+===================================================== -->
+<section>
+    <h2>What the compiler emits</h2>
+
+    <p>Every artefact below is generated from the same source the type checker reads, in one pass, with no external scanner. The capability discipline puts the authority graph in the type system; the emitters serialise it.</p>
+
+    <table class="ref-table">
+        <thead><tr><th>Capa artefact</th><th>Flag</th><th>What it carries</th></tr></thead>
+        <tbody>
+            <tr><td>Capability manifest</td><td><code>--manifest</code></td><td>Per-function declared capabilities, attributes, signatures, declassification sites, user-defined capability declarations</td></tr>
+            <tr><td>CycloneDX 1.5 SBOM</td><td><code>--cyclonedx</code></td><td>The manifest wrapped in CycloneDX with per-function <code>properties[]</code> and an optional <code>vulnerabilities[]</code> array</td></tr>
+            <tr><td>SPDX 2.3 SBOM</td><td><code>--spdx</code></td><td>Same metadata, SPDX <code>annotations[]</code> shape, Linux Foundation alignment</td></tr>
+            <tr><td>CycloneDX VEX</td><td><code>--vex</code></td><td>Per-function exploitability claims from <code>@vex(cve, status, justification, detail)</code> attributes</td></tr>
+            <tr><td>SLSA L1 provenance</td><td><code>--provenance</code></td><td>in-toto Statement v1 plus SLSA Provenance v1.0 predicate, source SHA-256</td></tr>
+            <tr><td>Audit pipeline</td><td><code>examples/sbom_capability_audit.capa</code></td><td>SBOM vs policy diff, structural</td></tr>
+            <tr><td>SBOM diff tool</td><td><code>examples/sbom_diff.capa</code></td><td>Two SBOMs in, per-function widening / narrowing / added / removed out</td></tr>
+            <tr><td>Machine-checked soundness</td><td><code>docs/semantics.md</code>, <code>proofs/</code></td><td>&lambda;<sub>cap</sub> calculus with four Agda-checked soundness theorems, plus a machine-checked noninterference proof for the IFC layer</td></tr>
+        </tbody>
+    </table>
+
+    <p>And how each maps across the five frameworks:</p>
+
+    <table class="ref-table">
+        <thead><tr><th>Capa output</th><th>CRA Annex I</th><th>NIS2 Art. 21</th><th>DORA</th><th>NIST SSDF</th><th>OWASP SCVS</th></tr></thead>
+        <tbody>
+            <tr><td>Manifest</td><td>I-II(1) direct</td><td>21(2)(d) indirect</td><td>Art. 8 indirect</td><td>PS.1, PS.2 indirect</td><td>Domain 1 partial</td></tr>
+            <tr><td>CycloneDX SBOM</td><td>I-II(1) <strong>direct</strong></td><td>21(2)(d) <strong>direct</strong></td><td>Art. 8 <strong>direct</strong></td><td>PS.3 <strong>direct</strong></td><td>Domain 2 <strong>direct</strong></td></tr>
+            <tr><td>SPDX SBOM</td><td>I-II(1) <strong>direct</strong></td><td>21(2)(d) <strong>direct</strong></td><td>Art. 8 <strong>direct</strong></td><td>PS.3 <strong>direct</strong></td><td>Domain 2 <strong>direct</strong></td></tr>
+            <tr><td>CycloneDX VEX</td><td>I-II(2) partial</td><td>Art. 23 indirect</td><td>Arts. 17-19 partial</td><td>RV.1, RV.2 <strong>direct</strong></td><td>Domain 5 <strong>direct</strong></td></tr>
+            <tr><td>SLSA L1 provenance</td><td>I-I(2)(f) indirect</td><td>21(2)(d) indirect</td><td>Arts. 28-30 partial</td><td>PS.3, PS.4 <strong>direct</strong></td><td>Domain 6 <strong>direct</strong></td></tr>
+            <tr><td>Audit pipeline</td><td>I-II(1) indirect</td><td>21(2)(d) <strong>direct</strong></td><td>Arts. 28-30 <strong>direct</strong></td><td>PO.5 indirect</td><td>Domain 1 partial</td></tr>
+            <tr><td>SBOM diff tool</td><td>I-II(2) indirect</td><td>21(2)(d) partial</td><td>Arts. 17-19 partial</td><td>RV.1 partial</td><td>Domain 2 partial</td></tr>
+            <tr><td>Machine-checked soundness</td><td>I-I(2)(b) indirect</td><td>n/a</td><td>n/a</td><td>PW.4 indirect</td><td>n/a</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- =====================================================
+     CRA
+===================================================== -->
+<section>
+    <h2>CRA: the Cyber Resilience Act</h2>
+
+    <p>The CRA entered into force on 10 December 2024 and applies most of its obligations from 11 December 2027. It binds manufacturers placing products with digital elements on the EU market. The clauses that matter most for a compiler are Annex I Part I (the essential cybersecurity requirements: secure by default, attack-surface minimisation, data minimisation, exploitation mitigation, integrity protection), Annex I Part II (1) (a machine-readable SBOM covering at least top-level dependencies), and Annex I Part II (2)-(7) (vulnerability handling processes).</p>
+
+    <p>The strongest fits:</p>
+
+    <ul>
+        <li><strong>Part II (1), SBOM</strong>: CycloneDX and SPDX cover the requirement twice over, with per-function granularity the clause does not even ask for.</li>
+        <li><strong>Part I (2)(b), secure by default</strong>: the capability discipline enforces it structurally. A function holds no authority it did not declare.</li>
+        <li><strong>Part I (2)(g), data minimisation</strong>: least authority is the language model, and the information-flow layer adds machine-checked disclosure records (<code>declassification_sites</code>).</li>
+        <li><strong>Part I (2)(j), attack-surface minimisation</strong>: the function's signature <em>is</em> the declared attack surface.</li>
+    </ul>
+
+    <p>What Capa does not address: vulnerability disclosure processes, the 24-hour incident notification window, security-update distribution, and the conformity assessment paperwork itself. The article-by-article CRA deep dive lives at <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/cra.md"><code>docs/cra.md</code></a>.</p>
+</section>
+
+<!-- =====================================================
+     NIS2 / DORA
+===================================================== -->
+<section>
+    <h2>NIS2 and DORA: the operator side</h2>
+
+    <p><strong>NIS2</strong> (transposition deadline 17 October 2024) is the operator-side counterpart to the CRA's manufacturer framing. Article 21(2)(d) is the heart of its supply-chain ask: an essential or important entity has to assess the security of its direct suppliers. The CycloneDX or SPDX SBOM a Capa-using supplier ships gives that operator a per-function authority surface; the SBOM diff tool detects supplier widening across releases; the audit pipeline verifies the supplier's declarations against an internal policy. Incident reporting under Article 23 and the board-level accountability under Article 20 sit outside what a compiler can affect.</p>
+
+    <p><strong>DORA</strong> (applies since 17 January 2025) binds financial entities plus critical ICT third-party providers. Article 8 (identification of ICT-supported business functions and assets) is served directly by the SBOMs; per-function metadata gives finer-grained inventory than the financial sector is used to. Articles 28-30 (ICT third-party risk) are served by the audit pipeline and the SBOM diff tool, and the provenance attestation supports the due-diligence-on-provider requirement. The business-continuity bulk of DORA, and resilience testing under Articles 24-27, are out of a language's reach.</p>
+</section>
+
+<!-- =====================================================
+     SSDF / SCVS
+===================================================== -->
+<section>
+    <h2>NIST SSDF and OWASP SCVS</h2>
+
+    <p><strong>NIST SP 800-218 (SSDF)</strong> is the US federal baseline cited by EO 14028; federal suppliers are pulled in through procurement. Where Capa lands, by practice:</p>
+
+    <table class="ref-table">
+        <thead><tr><th>Practice</th><th>What Capa provides</th></tr></thead>
+        <tbody>
+            <tr><td>PS.1 (Protect all forms of code)</td><td>Manifest declares the access boundary per function; widening is loud in diffs</td></tr>
+            <tr><td>PS.2 (Verify release integrity)</td><td>SLSA L1 provenance attestation, source SHA-256</td></tr>
+            <tr><td>PS.3 (Archive and protect each release)</td><td>CycloneDX, SPDX, and provenance bundled as a release-artefact set</td></tr>
+            <tr><td>PS.4 (Build artefacts from source)</td><td>Provenance names the builder, the source, and the parameters</td></tr>
+            <tr><td>PW.4 (Reuse well-secured software)</td><td>Capability discipline rules out ambient-authority abuse in third-party Capa code</td></tr>
+            <tr><td>RV.1 (Identify and confirm vulnerabilities)</td><td>VEX entries make per-function exploitability assertions; SBOM diff catches supplier widening</td></tr>
+            <tr><td>RV.2 (Assess, prioritise, remediate)</td><td>VEX <code>state</code> and <code>justification</code> shape feeds standard tooling</td></tr>
+        </tbody>
+    </table>
+
+    <p><strong>OWASP SCVS</strong> is the cleanest fit of the five: every Capa artefact maps directly to one of its six domains (inventory, SBOM, build environment, package management, component analysis, pedigree and provenance). An organisation using Capa can plausibly claim SCVS L1 across Domains 1, 2, 5, and 6 without additional work, and L2 on Domains 2 and 6 with the existing artefacts. Domain 3 (build environment) is a toolchain concern outside the language.</p>
+</section>
+
+<!-- =====================================================
+     The triangle
+===================================================== -->
+<section>
+    <h2>The triangle the frameworks all reference</h2>
+
+    <p>Supply-chain governance literature converges on three artefacts. The <strong>SBOM</strong> describes what is in the box. <strong>VEX</strong> describes how the box is affected by known vulnerabilities. <strong>Provenance</strong> describes where the box came from. The CRA names all three in Annex I Part II; NIS2 and DORA touch them through inventory and supplier-risk clauses; NIST SSDF allocates a practice to each; OWASP SCVS gives each its own domain.</p>
+
+    <p>Capa emits all three from one source, at per-function granularity for the first two. The alternative today is to combine a package-level SBOM generator, a hand-written VEX, and a separate signing and attestation step. Capa packages the three together at finer granularity, with each artefact's contents grounded in the type system rather than in a separate analyser's heuristics.</p>
+</section>
+
+<!-- =====================================================
+     See it in practice
+===================================================== -->
+<section>
+    <h2>See it in practice</h2>
+
+    <dl class="program-list">
+        <dt><a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a></dt>
+        <dd>A payment-security core (PCI DSS / PSD2 framing) that ships a generated conformity pack in <code>conformity/</code>: capability manifest, CycloneDX and SPDX SBOMs, VEX, SLSA provenance, and a <code>CONFORMITY.md</code> walking an auditor through them. The compiler proves a card number cannot reach a log or the network unless it is masked through an audited <code>declassify</code>, and the SBOM lists every disclosure point.</dd>
+
+        <dt><a href="https://github.com/nelsonduarte/capa_cra_template">capa_cra_template</a></dt>
+        <dd>A starting template for a CRA-oriented Capa project: a small program plus the policy file and generation steps that produce the same conformity-pack layout for your own code.</dd>
+    </dl>
+
+    <p>The hands-on walkthrough of generating each artefact from a small program is tutorial chapter <a href="learn/14-from-source-to-sbom.html">From source to SBOM</a>.</p>
+</section>
+
+<!-- =====================================================
+     Caveats
+===================================================== -->
+<section>
+    <h2>Caveats, honestly</h2>
+
+    <ul>
+        <li>Compliance with any of the five frameworks is an organisational outcome that combines technical artefacts with processes. <strong>Capa contributes evidence, not compliance.</strong></li>
+        <li>The mapping above is one reading of each instrument. An organisation's auditors or supervisory authority may classify the same artefact differently. Treat it as a starting point for an internal gap analysis, not as a legal opinion.</li>
+        <li>These frameworks evolve: CRA implementing acts are still being drafted in 2026, NIS2 transposition varies by Member State, and NIST SSDF will see further revisions. The mapping reflects the state of the five as of mid-2026.</li>
+        <li>Capa is a one-person project at 1.0. The artefact outputs are stable enough to integrate into compliance pipelines, but the project has not been through the independent assurance a production deployment in a regulated industry would expect.</li>
+    </ul>
+
+    <p>The full mapping document, with primary-source links for all five instruments, is <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/regulatory.md"><code>docs/regulatory.md</code></a> in the compiler repository.</p>
+</section>
+
+<section class="section-centered">
+    <h2>Generate the artefacts yourself</h2>
+    <div class="cta">
+        <a href="learn/14-from-source-to-sbom.html" class="btn primary">From source to SBOM</a>
+        <a href="manifest.html" class="btn">Manifest format</a>
+        <a href="start.html" class="btn">Install Capa</a>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="footer-grid">
+        <div>
+            <h4>Pages</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="why.html">Why Capa</a></li>
+                <li><a href="learn/index.html">Learn</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="start.html">Getting started</a></li>
+                <li><a href="reference.html">Reference</a></li>
+                <li><a href="stdlib.html">Standard library</a></li>
+                <li><a href="manifest.html">Manifest</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Specification</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/regulatory.md">Full regulatory mapping</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/cra.md">CRA deep dive</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Project</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+                <li><a href="community.html">Community</a></li>
+                <li><a href="brand.html">Brand assets</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
+            </ul>
+        </div>
+    </div>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.0.0 &middot; MIT or Apache-2.0</p>
+</footer>
+
+</body>
+</html>
