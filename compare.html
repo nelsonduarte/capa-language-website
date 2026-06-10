@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Capa compares | Capa</title>
+    <meta name="description" content="Where Capa sits among capability-typed languages (Pony, Koka, Roc, the Wasm Component Model, Zero) and among the existing sources of capability claims: author manifests, scanners, sandboxes.">
+    <meta property="og:title" content="How Capa compares | Capa">
+    <meta property="og:description" content="One-sentence, factual comparisons with the adjacent languages and with the three existing sources of capability claims. Including what Capa cannot claim.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://capa-language.com/compare.html">
+    <meta property="og:image" content="https://capa-language.com/capa_logo.png">
+    <meta property="og:site_name" content="Capa">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="How Capa compares | Capa">
+    <meta name="twitter:description" content="Capa vs adjacent languages and vs the existing sources of capability claims.">
+    <meta name="twitter:image" content="https://capa-language.com/capa_logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <script src="theme.js"></script>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="index.html" class="logo">
+            <img src="capa_logo.svg" alt="" aria-hidden="true">
+            Capa
+        </a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </label>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="why.html">Why Capa</a>
+            <a href="compare.html" class="current">Compare</a>
+            <a href="learn/index.html">Learn</a>
+            <a href="reference.html">Reference</a>
+            <a href="start.html">Get started</a>
+            <a href="migrating.html">Migrating</a>
+            <a href="regulatory.html">Regulatory</a>
+            <a href="agent-demo.html">Agent demo</a>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
+            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        </div>
+    </nav>
+</header>
+
+<main>
+
+<div class="page-heading">
+    <h1>How Capa compares</h1>
+    <p>Where Capa sits among the capability-typed languages and among the existing sources of capability claims. Everything on this page tracks <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md"><code>docs/positioning.md</code></a> in the compiler repository, which is the canonical version; this page was last reviewed against it in June 2026, and the statements about other projects reflect their public state at that date.</p>
+</div>
+
+<!-- =====================================================
+     The property being compared
+===================================================== -->
+<section>
+    <h2>The property being compared</h2>
+
+    <p>Comparing an SBOM's capability claims against a policy file is roughly thirty lines of code in any language. The pipeline downstream of the claims is not the interesting part. The interesting part is upstream: <strong>where do the claims come from, and why should an auditor believe them?</strong> Capa's answer is that the compiler refuses to ship a program whose actual code reaches an authority its declaration omits, so the declaration is a bound on behaviour rather than a report about it. Every row below is compared against that one property.</p>
+</section>
+
+<!-- =====================================================
+     Existing sources of capability claims
+===================================================== -->
+<section>
+    <h2>Where capability claims come from today</h2>
+
+    <p>In the ecosystems that have capability claims at all, the claims come from one of three places.</p>
+
+    <table class="cli-table">
+        <thead>
+            <tr><th>Source</th><th>What an auditor actually gets</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Author-declared manifests (npm <code>permissions</code>, Deno <code>--allow-*</code>, <code>AndroidManifest.xml</code>)</td>
+                <td>The runtime enforces the list, but the static picture depends on the author being honest and complete; in practice a previous release's manifest gets copy-pasted forward and the discrepancies accumulate.</td>
+            </tr>
+            <tr>
+                <td>Heuristic static analysis (CodeQL, Semgrep, Joern, Slither)</td>
+                <td>Output with both false negatives (unmodelled indirect calls; adversarial code can route around the analyser deliberately) and false positives, so "no Net usage detected" cannot be distinguished from "the analyser missed it".</td>
+            </tr>
+            <tr>
+                <td>Runtime observation (seccomp, the Linux audit subsystem, Deno's prompts, eBPF tracing)</td>
+                <td>A record of what the program did during the runs that were observed, which says nothing about what it could do on a path no test exercised.</td>
+            </tr>
+            <tr>
+                <td>Capa</td>
+                <td>A declaration that lists every authority the function could possibly use, with a compiler that rejects any program whose code reaches an authority the declaration omits; the auditor re-derives the SBOM from source with <code>capa --cyclonedx</code> and needs no second analyser.</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- =====================================================
+     Adjacent languages
+===================================================== -->
+<section>
+    <h2>Adjacent languages</h2>
+
+    <p>Capability typing predates Capa by decades, and several language families have explored it. One sentence on each, and on how it relates to Capa's use case.</p>
+
+    <table class="cli-table">
+        <thead>
+            <tr><th>Language / system</th><th>One-sentence comparison</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Pony</td>
+                <td>Reference capabilities (<code>iso</code>, <code>trn</code>, <code>ref</code>, <code>val</code>, <code>box</code>, <code>tag</code>) govern aliasing and data-race freedom in an actor model: the same intellectual family, aimed at concurrency safety rather than external-authority audit.</td>
+            </tr>
+            <tr>
+                <td>Koka, Eff, OCaml 5 effect handlers</td>
+                <td>An effect row that includes <code>&lt;net&gt;</code> is shape-equivalent to a function taking a <code>Net</code> parameter, but the ecosystems are research-grade and there is no SBOM tooling story today.</td>
+            </tr>
+            <tr>
+                <td>Haskell</td>
+                <td>Phantom types and the <code>ReaderT</code>-of-capability-record pattern get close to the same soundness property, but as a library convention rather than a language guarantee: any contributor who imports <code>IO</code> directly bypasses it.</td>
+            </tr>
+            <tr>
+                <td>Roc</td>
+                <td>Capabilities arrive through the platform (the platform provides effectful primitives, the program receives them as values), which makes Roc the closest in spirit among production-aimed new languages; it is still pre-1.0 and the SBOM angle has not been explored upstream.</td>
+            </tr>
+            <tr>
+                <td>WebAssembly Component Model + WIT</td>
+                <td>A component's WIT imports are a genuine, machine-readable capability surface, at module granularity rather than function granularity; Capa compiles to Wasm-CM, so the two are complementary rather than competing.</td>
+            </tr>
+            <tr>
+                <td>Zero (Vercel Labs, May 2026)</td>
+                <td>The only other language with capability-based I/O as its headline: a systems language in the C / Rust space whose toolchain emits stable error codes and typed repair categories for AI-agent repair loops, so it shares Capa's root and splits on audience (AI-agent toolchain vs supply-chain auditor).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="compare-note">The function-vs-module granularity point in the Wasm row is the one that matters most for audit work: most CVEs are caused by a small set of functions inside an otherwise-trusted module, and a module-level import list cannot isolate them.</p>
+</section>
+
+<!-- =====================================================
+     What Capa cannot claim
+===================================================== -->
+<section>
+    <h2>What Capa cannot claim</h2>
+
+    <p>A comparison page that only lists wins is marketing. The other column, from the same positioning document:</p>
+
+    <ul>
+        <li><strong>The mechanism is not new.</strong> Capability typing is decades old and well-understood; Capa's contribution is the combination (discipline by construction feeding machine-verifiable per-function audit artefacts), not the primitive.</li>
+        <li><strong>It is a one-person project.</strong> Capa is at 1.0 with a stability commitment, but there are no industrial adopters and no third-party libraries.</li>
+        <li><strong>The default runtime is CPython</strong>, with measured overhead between 1.00x and 1.45x against hand-written Python on the benchmark suite; the Wasm Component Model backend covers native-speed AOT execution, and a dedicated LLVM backend is deliberately deferred.</li>
+        <li><strong>The ecosystem is shallow.</strong> There is a CLI, an LSP server, a formatter, the SBOM emitters and diff tooling, a package manager with a signed registry index, and a small standard library; there is no debugger story beyond CPython's.</li>
+        <li><strong>The Wasm Component Model competes for the same role</strong> at module granularity, with a much larger ecosystem behind it.</li>
+    </ul>
+</section>
+
+<!-- =====================================================
+     Where to go next
+===================================================== -->
+<section>
+    <h2>Where to go next</h2>
+
+    <div class="doc-grid">
+        <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md" class="doc-card">
+            <h3>Read the full positioning document &rarr;</h3>
+            <p>The canonical, maintained version of everything on this page, including the thesis in one sentence.</p>
+        </a>
+        <a href="why.html" class="doc-card">
+            <h3>Why Capa exists &rarr;</h3>
+            <p>The case against ambient authority, with runnable code rather than comparisons.</p>
+        </a>
+        <a href="manifest.html" class="doc-card">
+            <h3>The audit artefacts &rarr;</h3>
+            <p>What <code>capa --manifest</code>, <code>--cyclonedx</code>, <code>--spdx</code>, <code>--vex</code>, and <code>--provenance</code> emit.</p>
+        </a>
+        <a href="agent-demo.html" class="doc-card">
+            <h3>See it on an LLM agent &rarr;</h3>
+            <p>A worked example where the per-function capability bound is the security argument.</p>
+        </a>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="footer-grid">
+        <div>
+            <h4>Pages</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="why.html">Why Capa</a></li>
+                <li><a href="learn/index.html">Learn</a></li>
+                <li><a href="start.html">Get started</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="start.html">Getting started</a></li>
+                <li><a href="learn/index.html">Tutorial</a></li>
+                <li><a href="reference.html">Reference</a></li>
+                <li><a href="stdlib.html">Standard library</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Specification</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/demo-event-stream.md">Event-stream demo</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Project</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+                <li><a href="community.html">Community</a></li>
+                <li><a href="brand.html">Brand assets</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
+            </ul>
+        </div>
+    </div>
+    <p class="colophon">Built by Nelson Duarte · v1.0.0 · MIT or Apache-2.0</p>
+</footer>
+
+</body>
+</html>
