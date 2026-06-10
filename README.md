@@ -9,14 +9,18 @@ GitHub Pages from the `main` branch root.
 ```
 index.html         landing page
 why.html           the pitch
+compare.html       positioning vs adjacent languages and claim sources
 start.html         install + first program
+migrating.html     gradual migration from Python
 manifest.html      capability manifest deep-dive
+regulatory.html    CRA / NIS2 / DORA / SSDF / SCVS mapping
+agent-demo.html    capability-bound LLM agent showcase
 reference.html     language reference (rendered)
 stdlib.html        standard library reference
 roadmap.html       project roadmap (rendered)
 brand.html         logo + brand guidelines
 community.html     where to ask + contribute
-learn/             10-page tutorial sequence
+learn/             14-chapter tutorial sequence
 style.css          single stylesheet, light + dark modes
 theme.js           light/dark toggle + persistence
 favicon.svg        site icon
