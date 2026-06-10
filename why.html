@@ -169,7 +169,7 @@ error: undefined name 'env'
 <!-- =====================================================
      Attenuation
 ===================================================== -->
-<section>
+<section id="attenuation">
     <h2>Capabilities can be attenuated</h2>
 
     <p>A capability is not all-or-nothing. <code>Net.restrict_to(host)</code> returns a fresh <code>Net</code> with authority narrowed to a single host. Restrictions only narrow, chaining two <code>restrict_to</code> calls intersects their allowed-host sets, never widens. The runtime check fires <em>before</em> any system call, so a blocked host never opens a socket.</p>

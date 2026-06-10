@@ -119,12 +119,7 @@
 
 <section>
     <h2>Capabilities can be narrowed</h2>
-    <p><code>Fs</code> is broad. A function that should only read one directory does not need broad <code>Fs</code>; the caller hands it a narrowed one. The narrowing is monotonic by construction: you can never widen.</p>
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(fs: <span class="cap">Fs</span>, stdio: <span class="cap">Stdio</span>)
-    <span class="comment">// Hand `summarise` an Fs that only sees ./data/</span>
-    <span class="kw-storage">let</span> data_fs = fs.<span class="fn-call">restrict_to</span>(<span class="str">"data/"</span>)
-    <span class="fn-call">summarise</span>(stdio, data_fs, <span class="str">"data/users.csv"</span>)</code></pre>
-    <p>At runtime the attenuated <code>Fs</code> canonicalises every path before the boundary check, so <code>data/../etc/passwd</code> is denied and a symlink pointing outside the prefix is denied.</p>
+    <p><code>fs.restrict_to("data/")</code> hands a callee an <code>Fs</code> that only sees one directory, and the narrowing is monotonic by construction: you can never widen. The full story, including runtime path canonicalisation, is in <a href="why.html#attenuation">Why Capa</a>.</p>
 </section>
 
 <section>
@@ -156,17 +151,7 @@
 
 <section>
     <h2>Install</h2>
-    <p>Self-contained binary, no Python install required. Approximately 8 MB per platform.</p>
-<pre><code><span class="comment"># Linux / macOS Apple Silicon</span>
-$ curl -fsSL https://raw.githubusercontent.com/nelsonduarte/capa-language/main/deploy/install.sh | bash
-
-<span class="comment"># Windows (PowerShell)</span>
-PS&gt; irm https://raw.githubusercontent.com/nelsonduarte/capa-language/main/deploy/install.ps1 | iex
-
-<span class="comment"># From source (any platform with Python 3.10+)</span>
-$ git clone https://github.com/nelsonduarte/capa-language
-$ cd capa-language &amp;&amp; pip install -e .</code></pre>
-    <p>Full instructions, manual binary download with <code>.sha256</code> verification, the language-server setup for Helix and Neovim, and the VSCode extension live on the <a href="start.html">Get started</a> page.</p>
+    <p>One-line installers for Linux, macOS, and Windows, a self-contained binary with <code>.sha256</code> verification, or a source install: everything lives on the <a href="start.html">Get started</a> page.</p>
 </section>
 
 <section>
