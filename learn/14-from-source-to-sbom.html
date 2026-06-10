@@ -54,6 +54,8 @@
 <pre><code>$ mkdir report &amp;&amp; cd report &amp;&amp; mkdir logs
 $ printf 'INFO boot\nERROR disk full\nINFO retry\nERROR disk full\nINFO ok\n' &gt; logs/app.log</code></pre>
 
+    <p>(PowerShell: <code>"INFO boot`nERROR disk full`nINFO retry`nERROR disk full`nINFO ok`n" | Set-Content -NoNewline logs/app.log</code>.)</p>
+
     <p>Then save this as <code>report.capa</code>. It deliberately exercises the distinctive machinery: a pure helper, a capability-holding function, an attenuated <code>Fs</code>, a secret from <code>Env</code> routed through <code>declassify</code>, and one <code>@vex</code> claim:</p>
 
 <pre><code><span class="comment">// report.capa: read a log file, count error lines, print a summary.</span>
@@ -99,6 +101,8 @@ $ printf 'INFO boot\nERROR disk full\nINFO retry\nERROR disk full\nINFO ok\n' &g
 <pre><code>$ REPORT_TOKEN=tk_9f3a77c2 capa --run report.capa
 report by token ending 77c2
 2 error lines in 6 total</code></pre>
+
+    <p>(PowerShell: <code>$env:REPORT_TOKEN = "tk_9f3a77c2"; capa --run report.capa</code>.)</p>
 
     <p>A working program. Now stop being its developer and become its auditor.</p>
 </section>
@@ -252,6 +256,8 @@ report by token ending 77c2
     }
   ]
 }</code></pre>
+
+    <p>(The <code>detail</code> string is wrapped across three lines here for readability; the compiler emits it as a single line.)</p>
 
     <p>Standard VEX is per-package: "our product bundles a vulnerable library, but we are not affected". Capa refines the claim to per-function, and gives it a machine-verifiable basis: the manifest's <code>provably_excluded_capabilities</code> for <code>summarise</code> includes <code>Net</code>, so the "code not reachable" justification is grounded in a type-system fact. If a later edit added <code>net: Net</code> to the signature, the claim's basis would visibly disappear from the next manifest diff.</p>
 </section>
