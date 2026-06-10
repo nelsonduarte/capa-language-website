@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capability-bound LLM agent | Capa</title>
+    <meta name="description" content="capa_agent_demo: an LLM agent harness where each tool's authority is narrowed by the type system and the capability manifest is the audit contract.">
+    <meta property="og:title" content="Capability-bound LLM agent | Capa">
+    <meta property="og:description" content="An LLM agent whose tools are sandboxed by capability types: read-only filesystem, GET-only HTTP, clock. The manifest is the audit contract; prompt injection cannot widen it.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://capa-language.com/agent-demo.html">
+    <meta property="og:image" content="https://capa-language.com/capa_logo.png">
+    <meta property="og:site_name" content="Capa">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Capability-bound LLM agent | Capa">
+    <meta name="twitter:description" content="LLM tools sandboxed by capability types; the manifest is the audit contract.">
+    <meta name="twitter:image" content="https://capa-language.com/capa_logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <script src="theme.js"></script>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="index.html" class="logo">
+            <img src="capa_logo.svg" alt="" aria-hidden="true">
+            Capa
+        </a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </label>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="why.html">Why Capa</a>
+            <a href="compare.html">Compare</a>
+            <a href="learn/index.html">Learn</a>
+            <a href="reference.html">Reference</a>
+            <a href="start.html">Get started</a>
+            <a href="migrating.html">Migrating</a>
+            <a href="regulatory.html">Regulatory</a>
+            <a href="agent-demo.html" class="current">Agent demo</a>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
+            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        </div>
+    </nav>
+</header>
+
+<main>
+
+<div class="page-heading">
+    <h1>A capability-bound LLM agent</h1>
+    <p><a href="https://github.com/nelsonduarte/capa_agent_demo"><code>capa_agent_demo</code></a> is an LLM agent harness in about 650 lines of Capa across four files. The model can call a small set of tools (read a file, list a directory, fetch a GET-only URL, read the clock); each tool's authority is statically narrowed by the type system; and the capability manifest is the audit contract. This page describes the real repository; every manifest shown here was regenerated from its source with <code>capa --manifest</code> in June 2026.</p>
+</div>
+
+<!-- =====================================================
+     The problem
+===================================================== -->
+<section>
+    <h2>The problem</h2>
+
+    <p>Mainstream agent harnesses (LangChain, OpenAI function calling, MCP servers) ship tools as arbitrary functions with no permission system. Whether a prompt injection that says <em>"now delete the home directory"</em> succeeds depends on whether some tool happens to reach <code>subprocess.run</code> or an unrestricted filesystem handle somewhere deep in its body. The blast radius is implicit, dynamic, and auditable only by reading every line of every tool.</p>
+
+    <p>Industry guidance on this (the "lethal trifecta" framing, model-vendor security guidelines) ultimately rests on convention: <em>this tool only reads, trust me</em>. The demo replaces the convention with a type-system guarantee: a tool's capability surface is its signature, the agent loop's surface is the union of its tools' signatures, and the compiler refuses to type-check a call to any authority a function did not name.</p>
+</section>
+
+<!-- =====================================================
+     What the demo is
+===================================================== -->
+<section>
+    <h2>What the demo is</h2>
+
+    <p>A four-tool agent loop against the Anthropic Messages API. The model runs for up to 5 turns: it can issue tool calls, read the results, and emit a final answer. Every tool call is forwarded through one function, <code>dispatch_tool</code>, which is the narrow waist: its signature holds the entire authority union the loop is allowed to exercise.</p>
+
+    <table class="cli-table">
+        <thead>
+            <tr><th>Tool</th><th>Capability</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>read_file</code></td>
+                <td><code>ReadOnlyFs</code></td>
+                <td>Read a file's contents.</td>
+            </tr>
+            <tr>
+                <td><code>list_dir</code></td>
+                <td><code>ReadOnlyFs</code></td>
+                <td>List a directory's entries.</td>
+            </tr>
+            <tr>
+                <td><code>get_url</code></td>
+                <td><code>GetOnlyHttp</code></td>
+                <td>HTTP GET against an allow-listed host (no POST, PUT, or DELETE).</td>
+            </tr>
+            <tr>
+                <td><code>current_time</code></td>
+                <td><code>Clock</code></td>
+                <td>Return Unix seconds.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><code>ReadOnlyFs</code> and <code>GetOnlyHttp</code> are not built-ins. They are user-defined capabilities in <code>attenuated.capa</code>, implemented as cap-bearing structs: <code>ReadOnlyFsImpl</code> holds the underlying <code>Fs</code> internally and exposes only <code>read_file</code> and <code>list_dir</code>; <code>GetOnlyHttpImpl</code> holds the raw HTTP client plus a host allow-list and exposes only <code>fetch</code>. A holder of <code>ReadOnlyFs</code> cannot call <code>Fs.write</code> because the wrapper never exposes it, and the analyzer catches any internal mistake in the wrapper itself.</p>
+</section>
+
+<!-- =====================================================
+     The audit moment
+===================================================== -->
+<section>
+    <h2>The audit moment</h2>
+
+    <p>One command answers the question every agent-security review starts with: <em>what is the worst this agent can do?</em></p>
+
+<pre><code>$ capa --manifest agent.capa
+
+tool_read_file    -&gt; [ReadOnlyFs]
+tool_list_dir     -&gt; [ReadOnlyFs]
+tool_get_url      -&gt; [GetOnlyHttp]
+tool_current_time -&gt; [Clock]
+dispatch_tool     -&gt; [ReadOnlyFs, GetOnlyHttp, Clock]
+run_agent_loop    -&gt; [Stdio, Logger, LlmClient, ReadOnlyFs, GetOnlyHttp, Clock]
+main              -&gt; [Stdio, Env, Clock, Fs, Unsafe]</code></pre>
+
+    <p>Read the <code>run_agent_loop</code> line and you are done. The model is in control of that function for up to 5 turns, and its blast radius is exactly those six capabilities: <strong>no write-capable <code>Fs</code>, no POST-capable HTTP, no <code>Net</code>, no <code>Db</code>, no <code>Unsafe</code></strong>. A prompt injection cannot widen the surface, because the compiler refuses to type-check a call to an authority the function did not declare; there is nothing for the injected text to reach.</p>
+
+    <p><code>main</code> is the wiring point. It legitimately holds <code>Unsafe</code> and the raw <code>Fs</code>, passes them through three factories (<code>make_readonly_fs</code>, <code>make_get_only_http</code>, <code>make_anthropic_client</code>), and hands the loop only the attenuated versions. Past <code>main</code>, the unattenuated authorities are unreachable. That split is visible in the manifest itself: the dangerous line is the one line a human has to review, and the function behind it is under twenty lines of wiring.</p>
+</section>
+
+<!-- =====================================================
+     The manifest as contract
+===================================================== -->
+<section>
+    <h2>The manifest as the audit contract</h2>
+
+    <p>The same source feeds <code>capa --cyclonedx</code>, so the per-function authority bound above ships inside a standard CycloneDX SBOM. A reviewer assessing an agent product built this way reads the agent's full authority boundary statically, from the artifact, without reading the agent's source and without trusting an attestation about its behaviour. The bound holds by construction: the compiler will not produce the artifact if the code exceeds it. The <a href="manifest.html">manifest page</a> covers the format; the <a href="regulatory.html">regulatory page</a> covers where such evidence fits in CRA-style frameworks.</p>
+</section>
+
+<!-- =====================================================
+     Supply chain
+===================================================== -->
+<section>
+    <h2>The demo's own supply chain</h2>
+
+    <p>The harness consumes two Capa seed libraries through <code>capa.toml</code>, both pinned and key-verified:</p>
+
+<pre><code>[dependencies.capa_http]
+git = "https://github.com/nelsonduarte/capa_http"
+tag = "v0.1.3"
+verify_key = "6C1D222D491FB88031E041A536CFB426101AA24B"
+
+[dependencies.capa_log]
+git = "https://github.com/nelsonduarte/capa_log"
+tag = "v0.1.2"
+verify_key = "6C1D222D491FB88031E041A536CFB426101AA24B"</code></pre>
+
+    <p><code>capa install</code> runs three independent checks on each dependency: the SHA in <code>capa.lock</code> must match the resolved commit (catches tag retags), <code>git verify-tag</code> must match the pinned GPG fingerprint (catches account compromise), and when the dependency declares a <code>verify_key</code> and lives on GitHub, the SLSA L2 build-provenance attestation is verified through Sigstore Rekor via <code>gh attestation verify</code>.</p>
+</section>
+
+<!-- =====================================================
+     Run it
+===================================================== -->
+<section>
+    <h2>Run it</h2>
+
+    <p>You need an Anthropic API key; the tool calls themselves run locally.</p>
+
+<pre><code>$ git clone https://github.com/nelsonduarte/capa_agent_demo
+$ cd capa_agent_demo
+$ capa install
+$ export ANTHROPIC_API_KEY=sk-ant-...
+$ capa --run agent.capa -- "What's the weather in Lisbon today? \
+    Use get_url with https://wttr.in/Lisbon?format=3"</code></pre>
+
+    <p>The <code>get_url</code> allow-list is hard-coded in <code>agent.capa</code> (<code>wttr.in</code> and <code>api.github.com</code>); the weather prompt works because <code>wttr.in</code> is on it. Point the model at any other host and the wrapper refuses before a request is made.</p>
+</section>
+
+<!-- =====================================================
+     Honest limits
+===================================================== -->
+<section>
+    <h2>Honest limits (v0.1)</h2>
+
+    <ul>
+        <li><strong>Single user prompt per run.</strong> Conversation history does not persist across <code>capa --run</code> invocations; the loop already supports multi-turn, the entry point does not expose it.</li>
+        <li><strong>Anthropic Messages API only.</strong> Adding another provider is one new <code>LlmClient</code> implementor; the loop and the dispatcher do not change.</li>
+        <li><strong>One string input per tool.</strong> Multi-argument tool schemas would extend <code>dispatch_tool</code>'s JSON extraction; the point of the demo is the capability claim, not a schema language.</li>
+        <li><strong>Hard-coded host allow-list.</strong> Production would source it from configuration or a <code>restrict_to</code> call.</li>
+        <li><strong>No streaming.</strong> v0.1 is request-response.</li>
+    </ul>
+</section>
+
+<!-- =====================================================
+     Where to go next
+===================================================== -->
+<section>
+    <h2>Where to go next</h2>
+
+    <div class="doc-grid">
+        <a href="https://github.com/nelsonduarte/capa_agent_demo" class="doc-card">
+            <h3>Read the repository &rarr;</h3>
+            <p>Four <code>.capa</code> files: the loop, the attenuated wrappers, the LLM client, the tools. Dual MIT or Apache-2.0.</p>
+        </a>
+        <a href="learn/10-defining-your-own-capability.html" class="doc-card">
+            <h3>Define your own capability &rarr;</h3>
+            <p>The tutorial chapter behind <code>ReadOnlyFs</code> and <code>GetOnlyHttp</code>: <code>capability</code> + <code>impl</code> + a cap-bearing struct.</p>
+        </a>
+        <a href="manifest.html" class="doc-card">
+            <h3>The manifest format &rarr;</h3>
+            <p>What <code>capa --manifest</code> emits, and how it maps onto CycloneDX, SPDX, VEX, and SLSA provenance.</p>
+        </a>
+        <a href="compare.html" class="doc-card">
+            <h3>How Capa compares &rarr;</h3>
+            <p>Why convention-based tool permissions cannot give an auditor this property, and which languages get close.</p>
+        </a>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="footer-grid">
+        <div>
+            <h4>Pages</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="why.html">Why Capa</a></li>
+                <li><a href="learn/index.html">Learn</a></li>
+                <li><a href="start.html">Get started</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="start.html">Getting started</a></li>
+                <li><a href="learn/index.html">Tutorial</a></li>
+                <li><a href="reference.html">Reference</a></li>
+                <li><a href="stdlib.html">Standard library</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Specification</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/demo-event-stream.md">Event-stream demo</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Project</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+                <li><a href="community.html">Community</a></li>
+                <li><a href="brand.html">Brand assets</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
+            </ul>
+        </div>
+    </div>
+    <p class="colophon">Built by Nelson Duarte · v1.0.0 · MIT or Apache-2.0</p>
+</footer>
+
+</body>
+</html>
