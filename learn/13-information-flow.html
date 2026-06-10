@@ -41,7 +41,7 @@
 <main>
 
 <div class="page-heading">
-    <p class="learn-breadcrumb"><a href="index.html">Learn</a> &middot; Chapter 13 of 13</p>
+    <p class="learn-breadcrumb"><a href="index.html">Learn</a> &middot; Chapter 13 of 14</p>
     <h1>Information-flow control</h1>
     <p>Capabilities decide which effects a function may use. Information-flow control decides where its data may go. This chapter is the second axis: mark a value <code>@secret</code> and the compiler proves it cannot reach a log line or a network call unless you let it through an audited bridge.</p>
 </div>
@@ -166,14 +166,14 @@ $ capa --manifest app.capa | jq '.functions[] | select(.declassifications | leng
 <section>
     <h2>Where you go next</h2>
 
-    <p>That is the whole tour. The <a href="../reference.html">language reference</a> has the full rules in section 6.4, and the <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a> showcase puts capabilities, information-flow control, and a generated EU Cyber Resilience Act conformity pack together on a payment-security core, the compiler proves a card number cannot reach a log or the network unmasked.</p>
+    <p>One chapter remains: <a href="14-from-source-to-sbom.html">chapter 14</a> turns everything you have learned into audit artefacts, generating the manifest, the SBOMs, the VEX, and the provenance attestation from one small program. The <a href="../reference.html">language reference</a> has the full IFC rules, and the <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a> showcase puts capabilities, information-flow control, and a generated EU Cyber Resilience Act conformity pack together on a payment-security core, the compiler proves a card number cannot reach a log or the network unmasked.</p>
 
     <p>If you build something with Capa, send it. Real use is the best feedback.</p>
 </section>
 
 <nav class="chapter-nav" aria-label="Tutorial navigation">
     <a class="prev" href="12-a-small-project.html">&larr; 12. A small project</a>
-    <a class="next" href="index.html">Table of contents &rarr;</a>
+    <a class="next" href="14-from-source-to-sbom.html">14. From source to SBOM &rarr;</a>
 </nav>
 
 </main>

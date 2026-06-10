@@ -91,6 +91,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://capa-language.com/learn/13-information-flow.html</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://capa-language.com/learn/14-from-source-to-sbom.html</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://capa-language.com/manifest.html</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
