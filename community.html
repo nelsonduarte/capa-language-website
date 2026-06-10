@@ -91,7 +91,7 @@
     <p>The full <a href="https://github.com/nelsonduarte/capa-language/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> is the canonical reference. The short version:</p>
 
     <ol>
-        <li><strong>Clone and install.</strong> <code>git clone https://github.com/nelsonduarte/capa-language &amp;&amp; cd capa &amp;&amp; pip install -e .</code></li>
+        <li><strong>Clone and install.</strong> <code>git clone https://github.com/nelsonduarte/capa-language &amp;&amp; cd capa-language &amp;&amp; pip install -e .</code></li>
         <li><strong>Run the tests.</strong> <code>python -m unittest discover tests</code> (2593 tests, a couple of minutes).</li>
         <li><strong>Open an issue first</strong> for anything more than a small fix. Avoids the worst kind of pull request: good work that cannot be accepted because the direction is wrong for the project.</li>
         <li><strong>One concern per PR.</strong> A PR that fixes a bug and adds a feature is two PRs.</li>
@@ -115,14 +115,15 @@
                 <li>Test coverage in <code>tests/test_analyzer.py</code>, especially around capabilities and <code>consume</code></li>
                 <li>Documentation fixes: positioning, semantics, EBNF, and tour should match the implementation</li>
                 <li>New <code>examples/</code>: realistic miniatures (a small parser, a small networking client) more than synthetic demonstrations</li>
-                <li>Polish on the shipped tooling: REPL v2 (incremental analyzer state), formatter v3 (AST round-trip with comment preservation), the empirical study at scale</li>
+                <li>Libraries written in Capa: the language is at 1.0 and the ecosystem is the gap; a small, well-tested library with an honest capability surface (a parser, a data format, a client) is worth more than any compiler patch</li>
+                <li>Reports from real use: where the Wasm backend, the LSP server, or the formatter diverges from the documented behaviour on your programs</li>
             </ul>
         </div>
         <div class="status-no">
             <h4>Not currently a fit</h4>
             <ul>
                 <li>Large refactors of analyzer or transpiler without a prior design discussion</li>
-                <li>New built-in capabilities (the seven are deliberate)</li>
+                <li>New built-in capabilities (the nine are deliberate)</li>
                 <li>Major runtime dependencies (the compiler has zero runtime deps outside stdlib)</li>
                 <li>Macros, custom syntax extensions, async/await machinery: explicitly out of scope for v1</li>
                 <li>LLVM backend or self-hosting: far-future, not for the 1.0 line</li>

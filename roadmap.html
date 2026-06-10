@@ -77,7 +77,7 @@
                 <li>Pattern matching (statement + expression form)</li>
                 <li>Closures and higher-order functions</li>
                 <li><code>?</code> operator and <code>Result</code>-based error handling</li>
-                <li>Built-in capabilities: <code>Stdio</code>, <code>Fs</code>, <code>Net</code>, <code>Env</code>, <code>Clock</code>, <code>Random</code>, <code>Unsafe</code></li>
+                <li>Built-in capabilities: <code>Stdio</code>, <code>Fs</code>, <code>Net</code>, <code>Env</code>, <code>Clock</code>, <code>Random</code>, <code>Db</code>, <code>Proc</code>, <code>Unsafe</code></li>
                 <li>User-defined capabilities (<code>capability X</code> + <code>impl X for Y</code>)</li>
                 <li>Capability attenuation: <code>restrict_to</code> on every built-in capability (monotonic, fail-closed)</li>
                 <li><code>consume</code> qualifier with fork/merge tracking</li>
@@ -101,7 +101,7 @@
             <ul>
                 <li>CLI: tokenize, <code>--parse</code>, <code>--check</code>, <code>--transpile</code>, <code>--run</code>, <code>--watch</code>, <code>--fmt</code>, <code>--fmt-check</code>, <code>--doc</code>, <code>--manifest</code>, <code>--cyclonedx</code>, <code>--spdx</code>, <code>--vex</code>, <code>--provenance</code>, <code>--wasm</code>, <code>--wasm --component</code>, <code>--prefer-wasm</code>, <code>init</code>, <code>lsp</code>, <code>repl</code></li>
                 <li>Project scaffolding via <code>capa init</code></li>
-                <li><strong>REPL</strong> (<code>capa repl</code>): every standard capability pre-bound, multi-line <code>if</code>/<code>for</code>/<code>while</code>/<code>match</code>, dot-commands (<code>.exit</code>, <code>.quit</code>, <code>.help</code>, <code>.show</code>, <code>.reset</code>, <code>.types &lt;expr&gt;</code>), stdout-diffing across turns. v2 slices A + B landed in rc.4 (readline-style line editing + persistent <code>~/.capa_repl_history</code>; in-process <code>exec()</code> replacing subprocess for ~100x faster turns on Windows). Slice C (true incremental analyzer state across turns) remains the architectural piece, still open.</li>
+                <li><strong>REPL</strong> (<code>capa repl</code>): every standard capability pre-bound, multi-line <code>if</code>/<code>for</code>/<code>while</code>/<code>match</code>, dot-commands (<code>.exit</code>, <code>.quit</code>, <code>.help</code>, <code>.show</code>, <code>.reset</code>, <code>.types &lt;expr&gt;</code>), stdout-diffing across turns. v2 landed in full: slice A (readline-style line editing + persistent <code>~/.capa_repl_history</code>), slice B (in-process <code>exec()</code> replacing subprocess, ~100x faster turns on Windows), and slice C (persistent namespace + incremental execution, so bindings persist and side effects fire exactly once). Full re-analysis is retained on each turn deliberately: it costs microseconds and enforces the capability discipline.</li>
                 <li><strong>Watch mode</strong> (<code>capa --watch</code>): re-runs on file or imported-module change</li>
                 <li>AST round-trip formatter with comment preservation (v3, default in <code>--fmt</code>), with a v1+v2 line-level fallback for syntactically broken sources. Design doc at <code>docs/formatter-v3-comment-map-design.md</code>.</li>
                 <li>Doc-comment HTML generator (<code>capa --doc</code>) with paragraphs, inline code, fenced code blocks, lists, and a trait section</li>
