@@ -460,12 +460,39 @@ fun dump(stdio: Stdio, env: Env)
 
 <section id="imports">
 <h2>8. Imports</h2>
+
+<h3>8.1. Import forms</h3>
 <pre><code>import util                     // sibling: ./util.capa
 import sinks.csv_sink           // nested: ./sinks/csv_sink.capa
 import capa_log.log             // package dep: &lt;vendor or path&gt;/capa_log/log.capa
 import util as U                // alias the module name</code></pre>
-<p>Only items marked <code>pub</code> in the target module are visible to the importer. After <code>import util</code>, every <code>pub</code> name from <code>util.capa</code> is reachable unqualified (<code>greet(...)</code>) or by qualified call (<code>util.greet(...)</code>). With <code>import util as U</code>, qualified calls take the alias.</p>
-<p>The loader resolves <code>import x.y</code> in this order: importing-file directory, <code>CAPA_PATH</code> entries, <code>./vendor/</code> (when <code>capa.toml</code> declares a git dep), the parent of every <code>path = "..."</code> entry in <code>capa.toml</code>, <code>./libraries/</code>, and finally the directory of the root file. See the <a href="packages.html">packages page</a> for the package manager's role.</p>
+<p>After <code>import util</code>, every <code>pub</code> name from <code>util.capa</code> is reachable unqualified (<code>greet(...)</code>) or by qualified call (<code>util.greet(...)</code>). With <code>import util as U</code>, qualified calls take the alias.</p>
+
+<h3 id="visibility">8.2. Visibility</h3>
+<p>Top-level items are private by default. Mark a function, constant, type, trait, or capability with <code>pub</code> to expose it to importers; anything without <code>pub</code> stays callable only from inside the same file.</p>
+<pre><code><span class="comment">// util.capa</span>
+<span class="kw-decl">fun</span> <span class="fn-name">helper</span>(x: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span>          <span class="comment">// private to util</span>
+    <span class="kw-ctrl">return</span> x + 1
+<span class="kw-decl">pub fun</span> <span class="fn-name">outer</span>(x: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span>       <span class="comment">// visible to importers</span>
+    <span class="kw-ctrl">return</span> <span class="fn-call">helper</span>(x)
+
+<span class="comment">// main.capa</span>
+<span class="kw-decl">import</span> util
+<span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
+    stdio.<span class="fn-call">println</span>(<span class="str">"${outer(3)}"</span>)   <span class="comment">// works: 4</span>
+    stdio.<span class="fn-call">println</span>(<span class="str">"${helper(3)}"</span>)  <span class="comment">// error: undefined name 'helper'</span></code></pre>
+<p>The same rule applies to qualified access: <code>util.outer(...)</code> works because <code>outer</code> is public; <code>util.helper(...)</code> does not. <code>pub</code> on root-file items is accepted but has no effect (root callers see one another regardless).</p>
+
+<h3 id="module-search-paths">8.3. Module search paths</h3>
+<p>The loader resolves <code>import x.y</code> in this order: importing-file directory, <code>CAPA_PATH</code> entries, <code>./vendor/</code> (when <code>capa.toml</code> declares a git dep), the parent of every <code>path = "..."</code> entry in <code>capa.toml</code>, <code>./libraries/</code>, and finally the directory of the root file. See <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md"><code>docs/packages.md</code></a> for the package manager's role.</p>
+<p>To pull in modules that live elsewhere on disk (stdlib-style libraries, shared internal modules), set <code>CAPA_PATH</code> to one or more additional roots separated by your platform's path separator (<code>;</code> on Windows, <code>:</code> elsewhere). The importer-relative path always wins when the same module name exists in both places, so the env var never silently shadows a project-local file.</p>
+<pre><code>$ export CAPA_PATH=/usr/local/share/capa:./libs
+$ capa --run app.capa
+# 'import greeter' first tries ./greeter.capa, then
+# ./libs/greeter.capa, then /usr/local/share/capa/greeter.capa.</code></pre>
+<p>If no candidate exists, the diagnostic lists every path that was tried so the right next step (install the dependency, fix the import, adjust <code>CAPA_PATH</code>) is obvious.</p>
+
+<h3>8.4. Python interop</h3>
 <p>For Python interop, use the typed builtins <code>py_import(unsafe, name)</code> and <code>py_invoke(unsafe, callable, args)</code>; both require the <code>Unsafe</code> capability. See the <a href="stdlib.html">standard library</a> page.</p>
 </section>
 
