@@ -289,6 +289,8 @@ report by token ending 77c2
   }
 }</code></pre>
 
+    <p>(The <code>digest</code>, <code>externalParameters</code>, and <code>internalParameters</code> objects are compacted here for readability; the compiler emits each across multiple lines.)</p>
+
     <p>Anyone holding the source can recompute the digest and confirm this attestation describes exactly this file, no more, no less. L1 is the unsigned tier of the SLSA ladder; signing and a hardened builder are deliberately left to CI infrastructure, where they belong.</p>
 </section>
 
