@@ -784,6 +784,24 @@ footer {
 
 .callout strong { color: var(--fg-bright); }
 
+/* Pull-quote: the positioning thesis, set apart from body prose. */
+.pull-quote {
+    margin: 2.5rem 0;
+    padding: 1.5rem 1.75rem;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.pull-quote p {
+    margin: 0;
+    font-size: var(--fs-lg);
+    line-height: 1.65;
+    color: var(--fg-bright);
+    font-weight: 500;
+    text-wrap: pretty;
+}
+
 /* ============================================================
    Tag pills for roadmap milestones
    ============================================================ */

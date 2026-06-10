@@ -55,6 +55,10 @@
     <p>The case for moving authority into the type system, in three steps: the problem (ambient authority), a concrete attack it enabled (event-stream), and the discipline Capa proposes in response. Then a second axis, information-flow control, that governs not just which effects a function may exercise but where its data is allowed to go.</p>
 </div>
 
+<blockquote class="pull-quote">
+    <p>Capa is a capability-typed language whose discipline holds by construction, and whose type system therefore backs machine-verifiable per-function audit artefacts with one specific property: the compiler rejects any program whose SBOM would be smaller than its actual capability footprint.</p>
+</blockquote>
+
 <!-- =====================================================
      The problem: ambient authority
 ===================================================== -->
