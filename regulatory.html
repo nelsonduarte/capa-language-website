@@ -101,11 +101,11 @@
     <table class="ref-table">
         <thead><tr><th>Capa output</th><th>CRA Annex I</th><th>NIS2 Art. 21</th><th>DORA</th><th>NIST SSDF</th><th>OWASP SCVS</th></tr></thead>
         <tbody>
-            <tr><td>Manifest</td><td>I-II(1) direct</td><td>21(2)(d) indirect</td><td>Art. 8 indirect</td><td>PS.1, PS.2 indirect</td><td>Domain 1 partial</td></tr>
+            <tr><td>Manifest</td><td>I-II(1) direct</td><td>21(2)(d) indirect</td><td>Art. 8 indirect</td><td>PS.1 indirect</td><td>Domain 1 partial</td></tr>
             <tr><td>CycloneDX SBOM</td><td>I-II(1) <strong>direct</strong></td><td>21(2)(d) <strong>direct</strong></td><td>Art. 8 <strong>direct</strong></td><td>PS.3 <strong>direct</strong></td><td>Domain 2 <strong>direct</strong></td></tr>
             <tr><td>SPDX SBOM</td><td>I-II(1) <strong>direct</strong></td><td>21(2)(d) <strong>direct</strong></td><td>Art. 8 <strong>direct</strong></td><td>PS.3 <strong>direct</strong></td><td>Domain 2 <strong>direct</strong></td></tr>
             <tr><td>CycloneDX VEX</td><td>I-II(2) partial</td><td>Art. 23 indirect</td><td>Arts. 17-19 partial</td><td>RV.1, RV.2 <strong>direct</strong></td><td>Domain 5 <strong>direct</strong></td></tr>
-            <tr><td>SLSA L1 provenance</td><td>I-I(2)(f) indirect</td><td>21(2)(d) indirect</td><td>Arts. 28-30 partial</td><td>PS.3, PS.4 <strong>direct</strong></td><td>Domain 6 <strong>direct</strong></td></tr>
+            <tr><td>SLSA L1 provenance</td><td>I-I(2)(f) indirect</td><td>21(2)(d) indirect</td><td>Arts. 28-30 partial</td><td>PS.2, PS.3 partial</td><td>Domain 6 <strong>direct</strong></td></tr>
             <tr><td>Audit pipeline</td><td>I-II(1) indirect</td><td>21(2)(d) <strong>direct</strong></td><td>Arts. 28-30 <strong>direct</strong></td><td>PO.5 indirect</td><td>Domain 1 partial</td></tr>
             <tr><td>SBOM diff tool</td><td>I-II(2) indirect</td><td>21(2)(d) partial</td><td>Arts. 17-19 partial</td><td>RV.1 partial</td><td>Domain 2 partial</td></tr>
             <tr><td>Machine-checked soundness</td><td>I-I(2)(b) indirect</td><td>n/a</td><td>n/a</td><td>PW.4 indirect</td><td>n/a</td></tr>
@@ -155,10 +155,9 @@
     <table class="ref-table">
         <thead><tr><th>Practice</th><th>What Capa provides</th></tr></thead>
         <tbody>
-            <tr><td>PS.1 (Protect all forms of code)</td><td>Manifest declares the access boundary per function; widening is loud in diffs</td></tr>
-            <tr><td>PS.2 (Verify release integrity)</td><td>SLSA L1 provenance attestation, source SHA-256</td></tr>
-            <tr><td>PS.3 (Archive and protect each release)</td><td>CycloneDX, SPDX, and provenance bundled as a release-artefact set</td></tr>
-            <tr><td>PS.4 (Build artefacts from source)</td><td>Provenance names the builder, the source, and the parameters</td></tr>
+            <tr><td>PS.1 (Protect all forms of code)</td><td>Manifest declares the access boundary per function; widening is loud in diffs. Repository access control stays organisational</td></tr>
+            <tr><td>PS.2 (Verify release integrity)</td><td>SLSA L1 provenance names the builder, the source, and the parameters, with the source SHA-256. Signing is external at L1</td></tr>
+            <tr><td>PS.3 (Archive and protect each release)</td><td>CycloneDX, SPDX, and provenance bundled as a release-artefact set; PS.3.2 names provenance data and SBOMs explicitly. Archival itself stays organisational</td></tr>
             <tr><td>PW.4 (Reuse well-secured software)</td><td>Capability discipline rules out ambient-authority abuse in third-party Capa code</td></tr>
             <tr><td>RV.1 (Identify and confirm vulnerabilities)</td><td>VEX entries make per-function exploitability assertions; SBOM diff catches supplier widening</td></tr>
             <tr><td>RV.2 (Assess, prioritise, remediate)</td><td>VEX <code>state</code> and <code>justification</code> shape feeds standard tooling</td></tr>
