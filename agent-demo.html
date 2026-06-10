@@ -104,7 +104,7 @@
         </tbody>
     </table>
 
-    <p><code>ReadOnlyFs</code> and <code>GetOnlyHttp</code> are not built-ins. They are user-defined capabilities in <code>attenuated.capa</code>, implemented as cap-bearing structs: <code>ReadOnlyFsImpl</code> holds the underlying <code>Fs</code> internally and exposes only <code>read_file</code> and <code>list_dir</code>; <code>GetOnlyHttpImpl</code> holds the raw HTTP client plus a host allow-list and exposes only <code>fetch</code>. A holder of <code>ReadOnlyFs</code> cannot call <code>Fs.write</code> because the wrapper never exposes it, and the analyzer catches any internal mistake in the wrapper itself.</p>
+    <p><code>ReadOnlyFs</code> and <code>GetOnlyHttp</code> are not built-ins. They are user-defined capabilities in <code>attenuated.capa</code>, implemented as cap-bearing structs: <code>ReadOnlyFsImpl</code> holds the underlying <code>Fs</code> internally and exposes only <code>read_file</code> and <code>list_dir</code>; <code>GetOnlyHttpImpl</code> holds the raw HTTP client plus a host allow-list and exposes only <code>fetch</code>. A holder of <code>ReadOnlyFs</code> cannot call <code>Fs.write</code> because the wrapper never exposes it. The wrapper legitimately holds the raw <code>Fs</code> inside; what the analyzer guarantees is that the implementation stays within the capability surface it declares, and that consumers can never reach past that surface to the authority underneath.</p>
 </section>
 
 <!-- =====================================================
@@ -124,6 +124,8 @@ tool_current_time -&gt; [Clock]
 dispatch_tool     -&gt; [ReadOnlyFs, GetOnlyHttp, Clock]
 run_agent_loop    -&gt; [Stdio, Logger, LlmClient, ReadOnlyFs, GetOnlyHttp, Clock]
 main              -&gt; [Stdio, Env, Clock, Fs, Unsafe]</code></pre>
+
+    <p class="compare-note">The real command emits a JSON manifest; the listing above is a condensed function-to-capabilities view of it. The function names and capability sets are taken verbatim from the actual output.</p>
 
     <p>Read the <code>run_agent_loop</code> line and you are done. The model is in control of that function for up to 5 turns, and its blast radius is exactly those six capabilities: <strong>no write-capable <code>Fs</code>, no POST-capable HTTP, no <code>Net</code>, no <code>Db</code>, no <code>Unsafe</code></strong>. A prompt injection cannot widen the surface, because the compiler refuses to type-check a call to an authority the function did not declare; there is nothing for the injected text to reach.</p>
 
