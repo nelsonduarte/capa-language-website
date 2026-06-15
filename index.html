@@ -102,7 +102,10 @@
 
 <pre><code><span class="kw-decl">fun</span> <span class="fn-name">summarise</span>(stdio: <span class="cap">Stdio</span>, fs: <span class="cap">Fs</span>, path: <span class="ty-primitive">String</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">Unit</span>, <span class="ty-builtin">IoError</span>&gt;
     <span class="kw-storage">let</span> body = fs.<span class="fn-call">read</span>(path)?
-    stdio.<span class="fn-call">println</span>(<span class="str">"first line: ${body.split(</span><span class="str">"\n"</span><span class="str">).get(0)}"</span>)
+    <span class="kw-storage">let</span> first = <span class="kw-ctrl">match</span> body.<span class="fn-call">split</span>(<span class="str">"\n"</span>).<span class="fn-call">get</span>(0)
+        <span class="variant">Some</span>(line) -&gt; line
+        <span class="variant">None</span> -&gt; <span class="str">"(empty)"</span>
+    stdio.<span class="fn-call">println</span>(<span class="str">"first line: ${first}"</span>)
     <span class="kw-ctrl">return</span> <span class="variant">Ok</span>(())</code></pre>
 
     <p><code>capa --manifest</code> reads the same source and emits JSON listing every function with the capabilities it declared and the ones it can <em>provably never reach</em> (because they are not in scope). A compliance reviewer gets a machine-checkable answer to "which functions can touch the network?".</p>

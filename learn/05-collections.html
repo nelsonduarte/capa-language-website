@@ -107,10 +107,14 @@
     ages.<span class="fn-call">set</span>(<span class="str">"Ana"</span>, 30)
     ages.<span class="fn-call">set</span>(<span class="str">"Bruno"</span>, 25)
     stdio.<span class="fn-call">println</span>(<span class="str">"length: ${ages.length()}"</span>)
-    stdio.<span class="fn-call">println</span>(<span class="str">"Ana's age: ${ages.get(\"Ana\")}"</span>)     <span class="comment">// Some(30)</span>
-    stdio.<span class="fn-call">println</span>(<span class="str">"Carla's age: ${ages.get(\"Carla\")}"</span>)  <span class="comment">// None</span></code></pre>
+    <span class="kw-ctrl">match</span> ages.<span class="fn-call">get</span>(<span class="str">"Ana"</span>)
+        <span class="variant">Some</span>(age) -&gt; stdio.<span class="fn-call">println</span>(<span class="str">"Ana's age: ${age}"</span>)   <span class="comment">// Ana's age: 30</span>
+        <span class="variant">None</span> -&gt; stdio.<span class="fn-call">println</span>(<span class="str">"Ana is unknown"</span>)
+    <span class="kw-ctrl">match</span> ages.<span class="fn-call">get</span>(<span class="str">"Carla"</span>)
+        <span class="variant">Some</span>(age) -&gt; stdio.<span class="fn-call">println</span>(<span class="str">"Carla's age: ${age}"</span>)
+        <span class="variant">None</span> -&gt; stdio.<span class="fn-call">println</span>(<span class="str">"Carla is unknown"</span>)  <span class="comment">// printed: Carla absent</span></code></pre>
 
-    <p>Same shape as <code>List.get</code>: keys that are not present yield <code>None</code>, not a runtime error. Other methods worth knowing: <code>contains_key</code>, <code>keys</code>, <code>values</code>, <code>pairs</code>.</p>
+    <p>Same shape as <code>List.get</code>: keys that are not present yield <code>None</code>, not a runtime error, and you have to handle both cases. (Interpolating an <code>Option</code> directly into a string is a compile error; <code>match</code> on it, or call <code>to_string</code>.) Other methods worth knowing: <code>contains_key</code>, <code>keys</code>, <code>values</code>, <code>pairs</code>.</p>
 </section>
 
 <section>
