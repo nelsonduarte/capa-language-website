@@ -248,6 +248,10 @@
     </ul>
 
     <p>The <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples"><code>examples/</code></a> directory has runnable demos for each: <code>examples/manifest_demo.capa</code>, <code>examples/vex_demo.capa</code>, and the case studies that exercise the full chain.</p>
+
+    <div class="callout">
+        <p><strong>Byte-reproducible.</strong> The <code>--cyclonedx</code>, <code>--spdx</code>, <code>--vex</code>, and <code>--provenance</code> artefacts are byte-for-byte identical for the same source on any machine and OS once <code>SOURCE_DATE_EPOCH</code> is set: their identifiers (CycloneDX <code>serialNumber</code>, SPDX <code>documentNamespace</code>, provenance <code>invocationId</code>) derive from the source SHA-256, and that one variable pins the only otherwise-varying field, the build timestamp. An auditor can recompile and <code>diff</code> the output to confirm an artefact came from the source it names. With the variable unset, timestamps record real wall-clock time, so determinism is opt-in.</p>
+    </div>
 </section>
 
 <!-- =====================================================
