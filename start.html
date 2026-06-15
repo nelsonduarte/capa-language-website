@@ -286,6 +286,21 @@ $ capa install        <span class="comment"># idempotent: rerun to refresh again
 </section>
 
 <!-- =====================================================
+     Testing
+===================================================== -->
+<section>
+    <h2>Testing your project</h2>
+
+    <p>The <code>capa test</code> subcommand discovers and runs the test programs under <code>tests/test_*.capa</code> in your project. A test passes when it exits 0 (a <code>panic</code> fails it); on failure the captured stdout is printed inline.</p>
+
+<pre><code>$ capa test            <span class="comment"># Python backend (same pipeline as capa --run)</span>
+$ capa test --wasm     <span class="comment"># Wasm backend</span>
+$ capa test --both     <span class="comment"># both backends, plus a cross-backend stdout diff</span></code></pre>
+
+    <p><code>capa test --both</code> runs every test on the Python <em>and</em> the Wasm backend and reports any output divergence as its own failure kind, which is the cheapest cross-backend parity check a library can run. Test-only dependencies belong in the <code>[dev-dependencies]</code> table; <code>capa test</code> refuses up front, with a pointer at <code>capa install</code>, if a dep is not vendored yet.</p>
+</section>
+
+<!-- =====================================================
      First program
 ===================================================== -->
 <section>

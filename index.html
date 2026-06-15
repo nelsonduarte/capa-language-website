@@ -137,6 +137,9 @@
     <h2>Real programs written in Capa</h2>
     <p>Each lives in its own repository, declares its dependencies in <code>capa.toml</code>, and runs through <code>capa install &amp;&amp; capa --run ...</code>.</p>
     <dl class="program-list">
+        <dt><a href="https://github.com/nelsonduarte/capa_claimdesk">capa_claimdesk</a></dt>
+        <dd>An enterprise expense-reimbursement engine that exercises nearly the whole language at once: the claim lifecycle is a typestate, the payment authorization is a linear use-once token, the IBAN is held under information-flow control and reaches the audit ledger only through an audited <code>declassify</code>, the HMAC chain is re-verified in constant time, and the policy engine dispatches over a <code>List&lt;Rule&gt;</code> via traits and generics. It pulls in seven of the seed libraries (with selective import to resolve a <code>parse</code> collision between <code>capa_cli</code> and <code>capa_csv</code>), runs byte-identically on both backends, and ships its guarantees as proofs in the SBOM with negative cases that must not compile. The widest-coverage showcase.</dd>
+
         <dt><a href="https://github.com/nelsonduarte/audit-trail-reporter">audit-trail-reporter</a></dt>
         <dd>AML compliance toolkit. Four detection rules (threshold, watchlist, structuring, velocity), four report sinks, attenuated read+write <code>Fs</code> split. Around 1100 lines across 9 files.</dd>
 

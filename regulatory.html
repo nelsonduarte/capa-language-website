@@ -187,6 +187,9 @@
     <h2>See it in practice</h2>
 
     <dl class="program-list">
+        <dt><a href="https://github.com/nelsonduarte/capa_claimdesk">capa_claimdesk</a></dt>
+        <dd>An enterprise expense-reimbursement engine that puts the regulated parts beyond reach: the employee IBAN is information-flow-controlled and reaches the tamper-evident, HMAC-chained audit ledger only through an audited <code>declassify</code> (the chain re-verified in constant time), the payment authorization is a linear use-once token, and the claim lifecycle is a typestate. Every guarantee is proved by construction in the emitted SBOM, with negative cases that must not compile.</dd>
+
         <dt><a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a></dt>
         <dd>A payment-security core (PCI DSS / PSD2 framing) that ships a generated conformity pack in <code>conformity/</code>: capability manifest, CycloneDX and SPDX SBOMs, VEX, SLSA provenance, and a <code>CONFORMITY.md</code> walking an auditor through them. The compiler proves a card number cannot reach a log or the network unless it is masked through an audited <code>declassify</code>, and the SBOM lists every disclosure point.</dd>
 

@@ -104,6 +104,7 @@
 <tr><td><code>char_at(i: Int)</code></td><td><code>Option&lt;String&gt;</code></td><td>Character at index i; <code>None</code> if out of range</td></tr>
 <tr><td><code>substring(start: Int, end: Int)</code></td><td><code>String</code></td><td>Slice; out-of-range indices clamp to the string length</td></tr>
 <tr><td><code>index_of(needle: String)</code></td><td><code>Option&lt;Int&gt;</code></td><td>Position of first occurrence of <code>needle</code>; <code>None</code> if not found</td></tr>
+<tr><td><code>bytes()</code></td><td><code>List&lt;Int&gt;</code></td><td>The string's UTF-8 bytes, each in <code>0..255</code>. <code>length()</code> counts code points, <code>bytes().length()</code> counts bytes</td></tr>
 </tbody>
 </table>
 </section>
@@ -262,6 +263,15 @@ match m.get("a")
 <tr><td><code>to_json(j: JsonValue)</code></td><td><code>String</code></td></tr>
 </tbody>
 </table>
+</section>
+
+<section id="panic">
+<h2>Aborting: <code>panic</code></h2>
+<p><code>panic(message: String)</code> terminates the program immediately. It is not an exception: there is no stack unwinding and no catch. The contract is identical on every backend: <code>panic: &lt;message&gt;</code> is written to stderr (one line), nothing is written to stdout, and the process exits non-zero (the Wasm and Component Model backends trap, which the CLI and <code>capa test</code> translate to exit 1).</p>
+<pre><code>fun withdraw(balance: Int, amount: Int) -&gt; Int
+    if amount &gt; balance
+        panic("withdraw of ${amount} exceeds balance ${balance}")
+    return balance - amount</code></pre>
 </section>
 
 <section id="conversions">

@@ -228,6 +228,13 @@
             </div>
         </li>
         <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong>Selective import with renaming</strong>
+                <p><code>import foo (a, b as c)</code> brings only the listed <code>pub</code> symbols into scope, with an optional <code>as</code> rename, and hides the rest. This resolves a <code>pub</code> name collision between two dependencies that export the same symbol (for example <code>capa_csv</code> and <code>capa_cli</code> both shipping a <code>parse</code>). Strictly additive: whole-module <code>import foo</code> and <code>import foo as bar</code> are unchanged. Shipped in 1.2.0.</p>
+            </div>
+        </li>
+        <li>
             <span class="tag future">P3</span>
             <div class="item-body">
                 <strong>Refinement types</strong>
@@ -282,6 +289,13 @@
             <div class="item-body">
                 <strong><code>capa init</code> project scaffolding</strong>
                 <p><code>capa init [name]</code> creates a runnable starter with <code>main.capa</code> (Stdio-using), <code>README.md</code>, <code>.gitignore</code>, and <code>.capa-version</code>. The starter passes <code>--check</code> and <code>--fmt-check</code> out of the box.</p>
+            </div>
+        </li>
+        <li>
+            <span class="tag done">DONE</span>
+            <div class="item-body">
+                <strong><code>capa test</code> runner</strong>
+                <p>Discovers and runs <code>tests/test_*.capa</code>; a test passes on exit 0 and a <code>panic</code> fails it. <code>--wasm</code> runs on the Wasm backend, and <code>--both</code> runs both backends and diffs their stdout, the cheapest cross-backend parity check a library can run. Test-only dependencies live in <code>[dev-dependencies]</code>. Shipped in 1.1.0.</p>
             </div>
         </li>
         <li>

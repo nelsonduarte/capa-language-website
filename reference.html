@@ -467,8 +467,19 @@ fun dump(stdio: Stdio, env: Env)
 <pre><code>import util                     // sibling: ./util.capa
 import sinks.csv_sink           // nested: ./sinks/csv_sink.capa
 import capa_log.log             // package dep: &lt;vendor or path&gt;/capa_log/log.capa
-import util as U                // alias the module name</code></pre>
+import util as U                // alias the module name
+import util (greet as hi, Color) // selective import with optional rename</code></pre>
 <p>After <code>import util</code>, every <code>pub</code> name from <code>util.capa</code> is reachable unqualified (<code>greet(...)</code>) or by qualified call (<code>util.greet(...)</code>). With <code>import util as U</code>, qualified calls take the alias.</p>
+
+<h3 id="selective-import">8.1.1. Selective import (and renaming)</h3>
+<p><code>import foo (a, b as c)</code> brings <strong>only</strong> the listed <code>pub</code> symbols into scope: <code>a</code> under its own name, <code>b</code> under the alias <code>c</code>. Every other <code>pub</code> item of <code>foo</code> stays hidden. This is the hygienic form, and the way to resolve a symbol collision between two dependencies that export the same <code>pub</code> name:</p>
+<pre><code><span class="kw-decl">import</span> capa_csv (parse <span class="kw-decl">as</span> csv_parse)
+<span class="kw-decl">import</span> capa_cli (parse <span class="kw-decl">as</span> cli_parse)
+
+<span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
+    stdio.<span class="fn-call">println</span>(<span class="fn-call">csv_parse</span>(<span class="str">"a,b"</span>))
+    stdio.<span class="fn-call">println</span>(<span class="fn-call">cli_parse</span>(<span class="str">"--flag"</span>))</code></pre>
+<p>Only one side needs a rename; the other may keep the bare name. Selectors work for functions, types, consts, and capabilities; selecting an unrenamed <code>pub</code> sum type carries its variants along. A selector that names a symbol the target does not declare, or declares without <code>pub</code>, is a load-time error (<code>module 'foo' has no public symbol 'X'</code>). Renaming a sum type via <code>as</code> in a selective import is rejected (its variants would be orphaned); import it without <code>as</code> to bring its constructors. Selective import is strictly additive: <code>import foo</code> and <code>import foo as bar</code> are unchanged.</p>
 
 <h3 id="visibility">8.2. Visibility</h3>
 <p>Top-level items are private by default. Mark a function, constant, type, trait, or capability with <code>pub</code> to expose it to importers; anything without <code>pub</code> stays callable only from inside the same file.</p>
@@ -529,6 +540,7 @@ $ capa --run app.capa
 <thead><tr><th>Flag</th><th>Output</th></tr></thead>
 <tbody>
 <tr><td><code>repl</code></td><td>Start the Capa REPL with every standard capability pre-bound (subcommand, not a flag).</td></tr>
+<tr><td><code>test</code></td><td>Discover and run <code>tests/test_*.capa</code> (subcommand). <code>--wasm</code> runs them on the Wasm backend; <code>--both</code> runs both backends and diffs their stdout for cross-backend parity. A test passes on exit 0; a <code>panic</code> fails it.</td></tr>
 <tr><td><code>--run</code></td><td>Transpile to Python and execute in-process.</td></tr>
 <tr><td><code>--transpile</code></td><td>Transpile to Python and print the generated code to stdout.</td></tr>
 <tr><td><code>--watch</code></td><td>Re-run the program every time it (or any of its imported modules) changes on disk. Implies <code>--run</code>.</td></tr>
