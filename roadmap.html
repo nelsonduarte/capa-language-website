@@ -112,7 +112,7 @@
             <p><strong>Supply-chain artefacts</strong></p>
             <ul>
                 <li><strong>Audit artefacts</strong>: <code>--manifest</code>, <code>--cyclonedx</code> 1.5 SBOM, <code>--spdx</code> 2.3 SBOM, <code>--vex</code> per-function exploitability claims, <code>--provenance</code> SLSA L1 attestation, per-function ineligibility proofs (<code>provably_excluded_capabilities</code>)</li>
-                <li><strong>Three-layer supply-chain hardening on the seed libraries</strong> (<code>capa_cli</code>, <code>capa_datetime</code>, <code>capa_log</code>, <code>capa_http</code>): lockfile SHA pin (catches tag retags) + GPG tag signatures with <code>verify_key</code> pinning (catches account compromise) + SLSA L2 build provenance via Sigstore Rekor (each release fires <code>actions/attest-build-provenance@v1</code>). Consumer side: <code>capa install</code> runs <code>gh attestation verify</code> when a dep declares a <code>verify_key</code>.</li>
+                <li><strong>Eight seed libraries in the signed registry</strong> (<code>capa_cli</code>, <code>capa_csv</code>, <code>capa_datetime</code>, <code>capa_hash</code>, <code>capa_http</code>, <code>capa_log</code>, <code>capa_sbom</code>, <code>capa_test</code>), each pinned to a <code>verify_key</code> in the index, with three-layer supply-chain hardening: lockfile SHA pin (catches tag retags) + GPG tag signatures with <code>verify_key</code> pinning (catches account compromise) + SLSA L2 build provenance via Sigstore Rekor (each release fires <code>actions/attest-build-provenance@v1</code>). Consumer side: <code>capa install</code> runs <code>gh attestation verify</code> when a dep declares a <code>verify_key</code>.</li>
                 <li>SBOM and capability audit tooling written in Capa: <code>examples/sbom_diff.capa</code>, <code>examples/sbom_capability_audit.capa</code>, <code>examples/spdx_parser.capa</code> (JSON + tag-value), <code>examples/cyclonedx_parser.capa</code> (incl. services / vulnerabilities + VEX analysis)</li>
             </ul>
 
@@ -224,7 +224,7 @@
             <span class="tag done">DONE</span>
             <div class="item-body">
                 <strong>Package manager</strong>
-                <p><code>capa.toml</code> declares dependencies (git URL + tag/rev pin or a local path); <code>capa install</code> resolves and fetches them into <code>./vendor/</code> and writes a <code>capa.lock</code> for reproducible builds. See <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md">docs/packages.md</a>. MVP shipped; <code>capa add</code> / <code>--frozen</code> / transitive resolution remain for future iterations.</p>
+                <p><code>capa.toml</code> declares dependencies (git URL + tag/rev pin or a local path); <code>capa install</code> resolves and fetches them into <code>./vendor/</code> and writes a <code>capa.lock</code> for reproducible builds. <code>capa add &lt;name&gt;</code> (and <code>capa add --dev</code> for test-only deps) declares a dependency from the command line, resolving short names through the signed registry index. Test-only dependencies live in a <code>[dev-dependencies]</code> table. See <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md">docs/packages.md</a>. <code>--frozen</code> and transitive resolution remain for future iterations.</p>
             </div>
         </li>
         <li>
@@ -285,10 +285,10 @@
             </div>
         </li>
         <li>
-            <span class="tag future">P3</span>
+            <span class="tag done">DONE</span>
             <div class="item-body">
-                <strong>Central package registry</strong>
-                <p>The package manager itself shipped (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>; git-URL and path deps). A hosted registry with name resolution, search, and a publish flow is parked: meaningful only once there is a plausible audience, and not on the critical path.</p>
+                <strong>Signed package registry index</strong>
+                <p>A <a href="https://github.com/nelsonduarte/capa-registry">signed registry index</a> ships: <code>index.json</code> maps a short package name to its git source and pinned <code>verify_key</code>, so <code>capa add &lt;name&gt;</code> resolves a name through the index rather than requiring a hand-typed git URL. The index is the root of trust for that flow and is itself GPG-verified against a key fingerprint embedded in the toolchain, fail-closed on a missing or invalid signature. It currently carries 8 seed libraries. A full hosted registry with search and a web publish flow remains future; the signed index covers name resolution and supply-chain anchoring today.</p>
             </div>
         </li>
     </ul>
@@ -396,7 +396,7 @@
             <span class="tag done">DONE</span>
             <div class="item-body">
                 <strong>Three-layer supply-chain hardening (seed libraries)</strong>
-                <p><code>capa_cli</code>, <code>capa_datetime</code>, <code>capa_log</code>, <code>capa_http</code> all ship with three stacked layers of attestation: lockfile SHA pin (catches tag retags), GPG tag signatures with a <code>verify_key</code> in each consumer's <code>capa.toml</code> (catches account compromise that moves a tag to an attacker commit), and SLSA L2 build provenance via Sigstore Rekor (<code>actions/attest-build-provenance@v1</code> fires on every <code>v*</code> tag push). Consumer side: <code>capa install</code> runs <code>gh attestation verify</code> implicitly when a dep declares <code>verify_key</code> and is GitHub-hosted, refuses on mismatch, and graceful-skips on missing tarball / missing <code>gh</code> / non-GitHub host.</p>
+                <p>The eight registry seed libraries ship with three stacked layers of attestation: lockfile SHA pin (catches tag retags), GPG tag signatures with a <code>verify_key</code> in each consumer's <code>capa.toml</code> (catches account compromise that moves a tag to an attacker commit), and SLSA L2 build provenance via Sigstore Rekor (<code>actions/attest-build-provenance@v1</code> fires on every <code>v*</code> tag push). Consumer side: <code>capa install</code> runs <code>gh attestation verify</code> implicitly when a dep declares <code>verify_key</code> and is GitHub-hosted, refuses on mismatch, and graceful-skips on missing tarball / missing <code>gh</code> / non-GitHub host.</p>
             </div>
         </li>
         <li>

@@ -240,7 +240,7 @@ $ pip install -e .</code></pre>
 <section>
     <h2>Packages</h2>
 
-    <p>Capa projects declare their dependencies in a <code>capa.toml</code> file at the project root. The same file that says "this project depends on <code>capa_log v0.1</code>" also pins the source: a git URL with an exact tag, or a relative path on disk. There is no central registry; deps resolve directly against the source repository.</p>
+    <p>Capa projects declare their dependencies in a <code>capa.toml</code> file at the project root. The same file that says "this project depends on <code>capa_log v0.1</code>" pins the source: a git URL with an exact tag, or a relative path on disk. A signed <a href="https://github.com/nelsonduarte/capa-registry">registry index</a> maps short package names to those git sources, so <code>capa add capa_log</code> resolves the name through the index and writes the dependency for you; the index is itself GPG-verified against a pinned key before any name is trusted. A direct git URL still works without the registry for anything the index does not list.</p>
 
 <pre><code><span class="comment"># capa.toml</span>
 [package]
@@ -249,7 +249,12 @@ version = <span class="str">"0.1.0"</span>
 capa = <span class="str">"&gt;=0.8.4"</span>
 
 [dependencies]
-capa_log = { git = <span class="str">"https://github.com/nelsonduarte/capa_log"</span>, tag = <span class="str">"v0.1"</span> }</code></pre>
+capa_log = { git = <span class="str">"https://github.com/nelsonduarte/capa_log"</span>, tag = <span class="str">"v0.1.2"</span> }
+
+[dev-dependencies]
+capa_test = { git = <span class="str">"https://github.com/nelsonduarte/capa_test"</span>, tag = <span class="str">"v0.1.1"</span> }</code></pre>
+
+    <p>A <code>[dev-dependencies]</code> table holds test- and tooling-only deps (the same schema as <code>[dependencies]</code>); they vendor in when you build the project itself but are never pulled in when the package is consumed as someone else's dependency. <code>capa add &lt;name&gt;</code> and <code>capa add --dev &lt;name&gt;</code> declare a dependency from the command line, resolving a short name through the signed registry index.</p>
 
     <p>Three commands cover the day-to-day:</p>
 
@@ -260,6 +265,24 @@ $ capa install        <span class="comment"># idempotent: rerun to refresh again
     <p>When a <code>capa.toml</code> is present, the loader picks up <code>./vendor/</code> and the parent of every <code>path =</code> entry automatically; no <code>CAPA_PATH</code> needed. The <code>capa.lock</code> file pins the resolved git SHA plus a SHA-256 of the fetched tarball so subsequent installs are bit-reproducible. When a dependency carries a <code>verify_key</code> (a GPG public key for tag-signature verification or a Sigstore identity for SLSA L2 attestations), <code>capa install</code> runs the corresponding verification before unpacking and refuses on mismatch.</p>
 
     <p>Full guide at <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md"><code>docs/packages.md</code></a>: declaration syntax, lockfile format, path vs git deps, attenuated capability re-export across package boundaries, and the three-layer supply-chain stack (lockfile SHA + GPG tag signing + SLSA L2 via Sigstore Rekor).</p>
+
+    <h3>Seed libraries</h3>
+
+    <p>The <a href="https://github.com/nelsonduarte/capa-registry">signed registry index</a> currently lists eight libraries. Each declares its own capability surface, so its authority is visible in the SBOM before you ever read its code. The capability column is the genuine honest claim: a library marked "none" is provably pure.</p>
+
+    <table class="ref-table">
+        <thead><tr><th>Package</th><th>What it does</th><th>Capability</th></tr></thead>
+        <tbody>
+            <tr><td><code>capa_cli</code></td><td>Command-line argument parsing: flags, positionals, subcommands</td><td>none</td></tr>
+            <tr><td><code>capa_csv</code></td><td>RFC 4180 CSV parser, header view, and writer</td><td>none</td></tr>
+            <tr><td><code>capa_datetime</code></td><td>Date and time values plus formatting</td><td>none (no <code>Clock</code> needed to format)</td></tr>
+            <tr><td><code>capa_hash</code></td><td>SHA-256, SHA-224, and HMAC-SHA256, with constant-time tag comparison</td><td>none</td></tr>
+            <tr><td><code>capa_http</code></td><td>HTTP client: request and response handling</td><td><code>Net</code></td></tr>
+            <tr><td><code>capa_log</code></td><td>Structured logging with levels and formatters</td><td><code>Stdio</code></td></tr>
+            <tr><td><code>capa_sbom</code></td><td>SBOM parsing for CycloneDX and SPDX JSON with <code>capa:*</code> capability queries</td><td>none</td></tr>
+            <tr><td><code>capa_test</code></td><td>A tiny assertion library for the <code>capa test</code> runner</td><td><code>Stdio</code></td></tr>
+        </tbody>
+    </table>
 </section>
 
 <!-- =====================================================
