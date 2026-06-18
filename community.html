@@ -92,7 +92,7 @@
 
     <ol>
         <li><strong>Clone and install.</strong> <code>git clone https://github.com/nelsonduarte/capa-language &amp;&amp; cd capa-language &amp;&amp; pip install -e .</code></li>
-        <li><strong>Run the tests.</strong> <code>python -m unittest discover tests</code> (2900 tests, a couple of minutes).</li>
+        <li><strong>Run the tests.</strong> <code>python -m unittest discover tests</code> (3000+ tests, a couple of minutes).</li>
         <li><strong>Open an issue first</strong> for anything more than a small fix. Avoids the worst kind of pull request: good work that cannot be accepted because the direction is wrong for the project.</li>
         <li><strong>One concern per PR.</strong> A PR that fixes a bug and adds a feature is two PRs.</li>
         <li><strong>Commit messages</strong>: imperative, short title (≤ 70 chars), optional wrapped body. Look at <code>git log</code> for examples.</li>
@@ -115,7 +115,7 @@
                 <li>Test coverage in <code>tests/test_analyzer.py</code>, especially around capabilities and <code>consume</code></li>
                 <li>Documentation fixes: positioning, semantics, EBNF, and tour should match the implementation</li>
                 <li>New <code>examples/</code>: realistic miniatures (a small parser, a small networking client) more than synthetic demonstrations</li>
-                <li>Libraries written in Capa: the language is at 1.2 and the ecosystem is the gap; a small, well-tested library with an honest capability surface (a parser, a data format, a client) is worth more than any compiler patch</li>
+                <li>Libraries written in Capa: the language is at 1.5 and the ecosystem is the gap; a small, well-tested library with an honest capability surface (a parser, a data format, a client) is worth more than any compiler patch</li>
                 <li>Reports from real use: where the Wasm backend, the LSP server, or the formatter diverges from the documented behaviour on your programs</li>
             </ul>
         </div>
@@ -191,7 +191,7 @@
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte · v1.2.0 · MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte · v1.5.1 · MIT or Apache-2.0</p>
 </footer>
 
 </body>
