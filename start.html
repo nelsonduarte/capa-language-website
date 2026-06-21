@@ -75,7 +75,18 @@
     <p>The installer downloads the latest pre-built binary and drops it in <code>~/.local/bin/capa</code> (Linux / macOS) or <code>%LOCALAPPDATA%\capa\capa.exe</code> (Windows). Open a new shell afterwards and <code>capa --version</code> should answer.</p>
 
 <pre><code><span class="comment"># Linux / macOS Apple Silicon</span>
-$ curl -fsSL https://raw.githubusercontent.com/nelsonduarte/capa-language/main/deploy/install.sh | bash</code></pre>
+$ curl -fsSL https://github.com/nelsonduarte/capa-language/releases/latest/download/install.sh | bash</code></pre>
+
+    <div class="callout">
+        <p><strong>Optional: verify before you run.</strong> The one-liner serves the script from the release channel (<code>releases/latest/download/</code>), so it tracks the last tagged release rather than every commit on <code>main</code>. If you would rather read the script before piping it to a shell, download it alongside its checksum from the same release, verify, inspect, then run:</p>
+<pre><code>$ curl -LO https://github.com/nelsonduarte/capa-language/releases/latest/download/install.sh
+$ curl -LO https://github.com/nelsonduarte/capa-language/releases/latest/download/install.sh.sha256
+$ sha256sum -c install.sh.sha256
+install.sh: OK
+$ less install.sh        <span class="comment"># read it, then:</span>
+$ bash install.sh</code></pre>
+        <p>The script and its <code>.sha256</code> come from the same release origin, so this catches accidental corruption or a tampered-blob-only attacker, not one who fully controls the release. For the strongest guarantee, install a specific tagged binary and check its GitHub build attestation with <code>gh attestation verify</code> out of band.</p>
+    </div>
 
 <pre><code><span class="comment"># Windows (PowerShell)</span>
 PS&gt; irm https://raw.githubusercontent.com/nelsonduarte/capa-language/main/deploy/install.ps1 | iex</code></pre>
