@@ -824,7 +824,7 @@ footer {
    ============================================================ */
 
 .page-heading {
-    text-align: center;
+    text-align: left;
     padding: 3.5rem 0 2.25rem;
     border-bottom: 1px solid var(--border-soft);
     margin-bottom: 2rem;
@@ -841,16 +841,16 @@ footer {
 
 .page-heading p {
     color: var(--fg-dim);
-    max-width: 60ch;
-    margin: 0 auto;
+    margin: 0;
     font-size: 1.075rem;
     line-height: 1.55;
 }
 
-/* The intro paragraph under the h1 reads as justified body text; the
-   breadcrumb (also a .page-heading p) keeps the heading's centring. */
+/* The intro paragraph under the h1 is left-aligned to match the body
+   paragraphs; the breadcrumb (also a .page-heading p) follows the same
+   left edge. */
 .page-heading p:not(.learn-breadcrumb) {
-    text-align: justify;
+    text-align: left;
     text-wrap: pretty;
 }
 
@@ -861,12 +861,36 @@ footer {
 .cli-table,
 .cra-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     margin: 1.25rem 0;
     font-size: 0.95rem;
     border: 1px solid var(--border-soft);
     border-radius: var(--radius);
     overflow: hidden;
+}
+
+/* Two-column .cli-table: keep both columns at a steady split so tables
+   on different pages line up and a long first cell cannot squeeze the
+   second column. */
+.cli-table th:first-child,
+.cli-table td:first-child {
+    width: 38%;
+}
+
+/* Three-column variant (agent-demo): Tool / Capability / What it does.
+   These widths override the generic 38% first-column rule above. */
+.cli-table-3col th:first-child,
+.cli-table-3col td:first-child {
+    width: 26%;
+}
+.cli-table-3col th:nth-child(2),
+.cli-table-3col td:nth-child(2) {
+    width: 18%;
+}
+.cli-table-3col th:nth-child(3),
+.cli-table-3col td:nth-child(3) {
+    width: 56%;
 }
 
 .cli-table th,
@@ -894,10 +918,11 @@ footer {
 }
 
 .cli-table td:first-child {
-    white-space: nowrap;
     color: var(--accent);
     font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
     font-size: 0.88rem;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .cli-table td:first-child code {
