@@ -209,10 +209,10 @@
     <h3>Design promises still open</h3>
     <ul class="milestone-list">
         <li>
-            <span class="tag current">P1</span>
+            <span class="tag done">DONE</span>
             <div class="item-body">
                 <strong>Generic attenuation</strong>
-                <p>Extend the <code>Net.restrict_to</code> pattern to the other built-in capabilities: <code>Fs.restrict_to(path_prefix)</code>, <code>Env.restrict_to_keys([...])</code>, <code>Clock.restrict_to_after(t)</code>, and similar. The runtime infrastructure for narrowing is already in place; this is mostly per-capability API design and tests.</p>
+                <p>The <code>Net.restrict_to</code> pattern now extends across every built-in capability: <code>Fs.restrict_to(path_prefix)</code>, <code>Db.restrict_to(path_prefix)</code>, and <code>Proc.restrict_to(basename)</code> narrow by prefix; <code>Env.restrict_to_keys([...])</code> narrows by allowed key set; <code>Clock.restrict_to_after(t)</code> narrows to "active only after time <code>t</code>". Each narrows monotonically (chaining only ever intersects, never widens), gates every action method fail-closed, and is type-checked with return-type narrowing in <code>capa/builtins.py</code>. v1.6.0 closed the last gap by routing the <code>.allows()</code> query through the authoritative host function on Wasm, so dynamic-argument attenuation is now byte-identical across the Python and Wasm backends.</p>
             </div>
         </li>
         <li>
