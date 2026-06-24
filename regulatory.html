@@ -211,6 +211,9 @@ $ diff a.json b.json   <span class="comment"># empty: byte-for-byte identical</s
 
         <dt><a href="https://github.com/nelsonduarte/capa_cra_template">capa_cra_template</a></dt>
         <dd>A starting template for a CRA-oriented Capa project: a small program plus the policy file and generation steps that produce the same conformity-pack layout for your own code.</dd>
+
+        <dt><a href="https://github.com/nelsonduarte/capa_governance_pack">capa_governance_pack</a></dt>
+        <dd>An evidence-pack generator, itself written in Capa. It takes a CycloneDX SBOM, a governance policy, and a VEX exclusions list, then turns the compiler's machine-readable artefacts into a regulator-readable Markdown audit pack plus a JSON attestation that a GRC platform can ingest. It diffs each function's emitted capabilities against the policy allow-list, tracks documented exceptions as VEX entries, and reports a compliance score, complementing the CRA template by carrying the same evidence into a GRC workflow.</dd>
     </dl>
 
     <p>The hands-on walkthrough of generating each artefact from a small program is tutorial chapter <a href="learn/14-from-source-to-sbom.html">From source to SBOM</a>.</p>
