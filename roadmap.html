@@ -55,7 +55,7 @@
 
 <div class="page-heading">
     <h1>Roadmap</h1>
-    <p>An honest inventory of what works, what is coming, and what is explicitly out of scope. Capa is released at <strong>v1.5.1</strong>: the surface is stable under SemVer, the 3000+-test suite is green on three operating systems, the discipline is implemented end-to-end, information-flow control (a two-point security lattice with declassification recorded in the SBOM) is enforced end-to-end, the module system is feature-complete, the package manager ships (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>), the capability manifest, CycloneDX SBOM, SPDX SBOM, CycloneDX VEX, and SLSA L1 provenance are all emitted directly by the compiler, and the Wasm Component Model backend is fully functional for real programs. <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> describes the compatibility commitment that starts the moment 1.0.0 ships.</p>
+    <p>An honest inventory of what works, what is coming, and what is explicitly out of scope. Capa is released at <strong>v1.10.0</strong>: the surface is stable under SemVer, the 3127-test suite is green on three operating systems, the discipline is implemented end-to-end, information-flow control (a two-point security lattice with declassification recorded in the SBOM) is enforced end-to-end, the module system is feature-complete, the package manager ships (<code>capa.toml</code> + <code>capa install</code> + <code>capa.lock</code>), the capability manifest, CycloneDX SBOM, SPDX SBOM, CycloneDX VEX, and SLSA L1 provenance are all emitted directly by the compiler, and the Wasm Component Model backend is fully functional for real programs. <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> describes the compatibility commitment that starts the moment 1.0.0 ships.</p>
 </div>
 
 <!-- =====================================================
@@ -64,7 +64,7 @@
 <section>
     <h2>Where we are today</h2>
 
-    <p>Capa is at v1.5.1. It compiles, type-checks, transpiles to Python, lowers to WebAssembly (core and Component Model), and runs. Every example in this site and in <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples">the examples directory</a> is executable. The boundary between what is real and what is roadmap is sharp:</p>
+    <p>Capa is at v1.10.0. It compiles, type-checks, transpiles to Python, lowers to WebAssembly (core and Component Model), and runs. Every example in this site and in <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples">the examples directory</a> is executable. The boundary between what is real and what is roadmap is sharp:</p>
 
     <div class="status-grid">
         <div class="status-yes">
@@ -132,7 +132,7 @@
                 <li><strong>Agda mechanisation</strong> of all four soundness theorems for the &lambda;<sub>cap</sub> calculus, lives in <a href="https://github.com/nelsonduarte/capa-language/tree/main/proofs"><code>proofs/</code></a>. Capability soundness, attenuation monotonicity, the structural / flow / linear layers each checked by the type-checker in addition to the prose proof in <code>docs/semantics.md</code>.</li>
                 <li><strong>Property-based testing through Phase 4</strong>: 50k+ generated programs stress-tested across plain / attenuated / via_helper / consumed call shapes; the Phase 4 strategy lifts the invariant <code>wasm_runtime_classes ⊆ manifest_classes</code> all the way through the Wasm backend.</li>
                 <li><strong>Compile-time benchmarks</strong> (<code>benchmarks/compile_bench.py</code>): lex / parse / analyse wallclock measured across three synthetic programs. Baseline on Windows 11 + CPython 3.14: small 10-fn ~3.5 ms, medium 100-fn ~55 ms, large 1000-fn ~450 ms.</li>
-                <li>3000+ unit + end-to-end tests run, green on Ubuntu / macOS / Windows &times; Python 3.10 / 3.12 / 3.14</li>
+                <li>3127 unit + end-to-end tests run, green on Ubuntu / macOS / Windows &times; Python 3.10 / 3.12 / 3.14</li>
                 <li><strong>Soundness-hardening pass (1.2.0)</strong>: six fixes published as a <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-06-15-soundness.md">security advisory</a>, four in the linear / typestate use-once discipline (use-after-consume, anonymous drop, <code>var</code> / re-assignment, partial consume in a <code>match</code>) and two in information-flow control (a declared-<code>@secret</code> field preserves its label on read and on destructure). Every change only rejects more; no previously-rejected program is now accepted.</li>
             </ul>
         </div>
@@ -145,7 +145,7 @@
 <section>
     <h2>Public-readiness milestones</h2>
 
-    <p>The bridge from "working alpha" to "shareable" closed long ago. The repository is public, governance documents are in place, the site is live, and the project has tagged its way from v0.2.0-alpha through v0.8.4-beta to v1.0.0 (the first stable release, 2026-06-03), then on under SemVer to v1.1.0 (2026-06-14), v1.2.0 (2026-06-15), and a security-hardening line through to v1.5.1 (2026-06-18).</p>
+    <p>The bridge from "working alpha" to "shareable" closed long ago. The repository is public, governance documents are in place, the site is live, and the project has tagged its way from v0.2.0-alpha through v0.8.4-beta to v1.0.0 (the first stable release, 2026-06-03), then on under SemVer to v1.1.0 (2026-06-14), v1.2.0 (2026-06-15), a security-hardening line through to v1.5.1 (2026-06-18), and a further line through to v1.10.0 (2026-06-22) covering full Python/Wasm parity for capability attenuation, per-dependency SLSA provenance verification, and the linearisation of the Wasm backend's String, JSON-serialisation, and JSON-parsing paths.</p>
 
     <ul class="milestone-list">
         <li>
@@ -482,7 +482,7 @@
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte · v1.5.1 · MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte · v1.10.0 · MIT or Apache-2.0</p>
 </footer>
 
 </body>

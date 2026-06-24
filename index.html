@@ -65,7 +65,7 @@
         <a href="why.html" class="btn">Why Capa</a>
         <a href="https://github.com/nelsonduarte/capa-language" class="btn">GitHub</a>
     </div>
-    <p class="status">v1.5.1 &middot; MIT or Apache-2.0 &middot; 3000+ tests &middot; hand-written compiler in Python</p>
+    <p class="status">v1.10.0 &middot; MIT or Apache-2.0 &middot; 3127 tests &middot; hand-written compiler in Python</p>
 </section>
 
 <section>
@@ -164,8 +164,8 @@
 </section>
 
 <section>
-    <h2>Capa is at 1.5.1</h2>
-    <p>The first stable release shipped on <strong>2026-06-03</strong> as 1.0.0. Several minor releases have followed under SemVer: <strong>1.1.0</strong> (2026-06-14) added byte-reproducible SBOMs and attestations via <code>SOURCE_DATE_EPOCH</code>, the <code>capa test</code> runner, and test-only dependencies; <strong>1.2.0</strong> (2026-06-15) hardened the soundness core (six linear-affinity and information-flow fixes, published as a <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-06-15-soundness.md">security advisory</a>) and added selective import; a security-hardening line through <strong>1.5.1</strong> (2026-06-18) closed further soundness and supply-chain findings (including build-time vendor re-verification against <code>capa.lock</code>). From the 1.0.0 release on, the surfaces listed in <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> follow SemVer: breaking changes require a major version bump, and deprecations get one minor release of warning first. The surface in one sentence: the capability discipline with monotonic attenuation, information-flow control with audited <code>declassify</code>, constant-time markers, typestates, linear handles, two backends (Python and the Wasm Component Model) with output byte-identical across the parity harness, and the supply-chain artefacts (manifest, CycloneDX, SPDX, VEX, SLSA provenance) emitted by the compiler itself. The full inventory is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> and on the <a href="roadmap.html">roadmap</a>.</p>
+    <h2>Capa is at 1.10.0</h2>
+    <p>The first stable release shipped on <strong>2026-06-03</strong> as 1.0.0. Several minor releases have followed under SemVer: <strong>1.1.0</strong> (2026-06-14) added byte-reproducible SBOMs and attestations via <code>SOURCE_DATE_EPOCH</code>, the <code>capa test</code> runner, and test-only dependencies; <strong>1.2.0</strong> (2026-06-15) hardened the soundness core (six linear-affinity and information-flow fixes, published as a <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-06-15-soundness.md">security advisory</a>) and added selective import; a security-hardening line through <strong>1.5.1</strong> (2026-06-18) closed further soundness and supply-chain findings (including build-time vendor re-verification against <code>capa.lock</code>). Since then <strong>1.6.0</strong> (2026-06-21) brought the <code>.allows()</code> capability-attenuation query to full Python/Wasm parity, <strong>1.7.0</strong> (2026-06-21) added per-dependency <code>verify_provenance</code> modes for SLSA verification in the package manager, and <strong>1.8.0</strong> through <strong>1.10.0</strong> (2026-06-22) linearised the Wasm backend's String concatenation, JSON serialisation, and JSON parsing. From the 1.0.0 release on, the surfaces listed in <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> follow SemVer: breaking changes require a major version bump, and deprecations get one minor release of warning first. The surface in one sentence: the capability discipline with monotonic attenuation, information-flow control with audited <code>declassify</code>, constant-time markers, typestates, linear handles, two backends (Python and the Wasm Component Model) with output byte-identical across the parity harness, and the supply-chain artefacts (manifest, CycloneDX, SPDX, VEX, SLSA provenance) emitted by the compiler itself. The full inventory is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> and on the <a href="roadmap.html">roadmap</a>.</p>
 </section>
 
 <section>
@@ -222,7 +222,7 @@
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.5.1 &middot; MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.10.0 &middot; MIT or Apache-2.0</p>
 </footer>
 
 </body>
