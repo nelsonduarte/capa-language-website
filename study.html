@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The capability-recall study | Capa</title>
+    <meta name="description" content="A head-to-head empirical study of Capa against a dependency SBOM, Semgrep, and CodeQL on 25 Python / Capa pairs: 48 per-function facts, two questions. Capa commits 0 false-clearances against CodeQL's 10.">
+    <meta property="og:title" content="The capability-recall study | Capa">
+    <meta property="og:description" content="Capa measured head-to-head against a dependency SBOM, Semgrep, and CodeQL 2.25.6. On attribution Capa ties CodeQL (38/48); on closed-world false-clearance Capa scores 0/48 against CodeQL's 10.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://capa-language.com/study.html">
+    <meta property="og:image" content="https://capa-language.com/capa_logo.png">
+    <meta property="og:site_name" content="Capa">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="The capability-recall study | Capa">
+    <meta name="twitter:description" content="Capa vs a dependency SBOM, Semgrep, and CodeQL on a 25-pair corpus. Two questions, one metric each, fully reproducible.">
+    <meta name="twitter:image" content="https://capa-language.com/capa_logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <script src="theme.js"></script>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="index.html" class="logo">
+            <img src="capa_logo.svg" alt="" aria-hidden="true">
+            Capa
+        </a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </label>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="why.html">Why Capa</a>
+            <a href="compare.html">Compare</a>
+            <a href="study.html" class="current">Study</a>
+            <a href="learn/index.html">Learn</a>
+            <a href="reference.html">Reference</a>
+            <a href="start.html">Get started</a>
+            <a href="migrating.html">Migrating</a>
+            <a href="regulatory.html">Regulatory</a>
+            <a href="agent-demo.html">Agent demo</a>
+            <a href="roadmap.html">Roadmap</a>
+            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
+            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        </div>
+    </nav>
+</header>
+
+<main>
+
+<div class="page-heading">
+    <h1>The capability-recall study</h1>
+    <p>This is the strongest quantitative result in the project, measured head-to-head against the tools auditors actually run. The question it answers: does a per-function SBOM give guarantees that scanners and dependency SBOMs cannot? Capa is run against three real treatments on a corpus of 25 hand-built Python / Capa pairs, scoring 48 per-function facts on two distinct questions. The decisive finding: under closed-world SBOM semantics, Capa never clears a function incorrectly, where the best dataflow tool clears ten. Everything on this page is anchored to the committed study in the compiler repository and is reproducible end to end; the canonical source is <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/empirical_study/summary.md"><code>evaluation/empirical_study/summary.md</code></a>.</p>
+</div>
+
+<!-- =====================================================
+     The question
+===================================================== -->
+<section>
+    <h2>The question</h2>
+
+    <p>A Capa program ships a manifest of capability claims: for every function, which authorities (filesystem, network, environment, and the rest) it could possibly reach. An auditor verifies those claims by re-deriving the SBOM from source with the compiler itself, not a second analyser. But a claim is only as useful as what its absence means.</p>
+
+    <p>An SBOM is a <strong>closed list</strong>. What is not listed for a function is implicitly <strong>excluded</strong>. A consumer reading "this function reaches nothing sensitive" treats that silence as a clearance. That makes the dangerous failure mode not a missing detection in the abstract, but a function the record silently clears while the code can in fact exercise the authority. The study measures exactly that, against the tools that produce such records today.</p>
+</section>
+
+<!-- =====================================================
+     Method
+===================================================== -->
+<section>
+    <h2>Method</h2>
+
+    <p>The corpus is 25 hand-built Python / Capa pairs: 20 covering direct and via-helper authority, plus 5 covering via-dispatch and via-data indirection, where the sink is selected at runtime through a callable or a data table. The unit of measurement is one <code>(python_function, capability)</code> fact, 48 facts in total. Four treatments are scored, each by the same criterion within each question:</p>
+
+    <table class="cli-table">
+        <thead>
+            <tr><th>Treatment</th><th>What it is</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>T1</strong> dependency / PURL SBOM</td>
+                <td>Package-granularity SBOM, the Syft / cdxgen style. No per-function granularity at all.</td>
+            </tr>
+            <tr>
+                <td><strong>T2</strong> Semgrep</td>
+                <td>A good-faith pattern heuristic.</td>
+            </tr>
+            <tr>
+                <td><strong>T2b</strong> CodeQL 2.25.6</td>
+                <td>Good-faith dataflow analysis (<code>python-all</code> 7.1.2), the strongest real tool on the corpus. Direct-fact recall is 36/36 with zero over-attribution, so every dispatcher miss is the tool's limit, not a weak query.</td>
+            </tr>
+            <tr>
+                <td><strong>T3</strong> Capa by construction</td>
+                <td>The capability record the Capa compiler emits, with a sound <em>provably-excluded</em> channel proved in Agda.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>The study asks <strong>two distinct questions</strong> and reports them in separate tables, never collapsed into one number, because a treatment can do well on one and badly on the other. <strong>Q1</strong> is positive attribution: does the treatment credit capability <code>C</code> to the named function <code>F</code>? <strong>Q2</strong> is false-clearance under closed-world semantics: does the treatment leave a true fact silently cleared? The two are kept apart deliberately, and this is where the honesty of the result lives.</p>
+</section>
+
+<!-- =====================================================
+     The decisive result: false-clearance (Q2)
+===================================================== -->
+<section>
+    <h2>The decisive result: false-clearance (Q2)</h2>
+
+    <p>A treatment commits a <strong>false-clearance</strong> for a true fact <code>(F, C)</code> when it gives the consumer no way to know <code>F</code> can exercise <code>C</code>. Under closed-world SBOM semantics, absence equals exclusion, so a silently blank function reads as cleared. <strong>Lower is better.</strong></p>
+
+    <table class="cli-table">
+        <thead>
+            <tr><th>Treatment</th><th>False-clearances</th><th>of 48</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>T1 dependency / PURL SBOM</td>
+                <td><strong>48 / 48</strong></td>
+                <td>clears every function (no per-function granularity at all)</td>
+            </tr>
+            <tr>
+                <td>T2 Semgrep (pattern heuristic)</td>
+                <td><strong>12 / 48</strong></td>
+                <td>clears every fact it cannot see (absence = exclusion)</td>
+            </tr>
+            <tr>
+                <td>T2b CodeQL 2.25.6 (dataflow)</td>
+                <td><strong>10 / 48</strong></td>
+                <td>clears the ten dispatcher facts it cannot resolve</td>
+            </tr>
+            <tr>
+                <td><strong>T3 Capa by construction</strong></td>
+                <td><strong>0 / 48</strong></td>
+                <td>clears nothing it has not soundly proved absent</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>This is the real argument for Capa, and adding the best real dataflow tool sharpens it rather than dulling it. CodeQL false-clears 10/48: the ten via-dispatch / via-data dispatcher facts. It beats Semgrep by exactly the two via-helper facts (it follows the local call edge Semgrep cannot), but on the dispatchers it leaves the function silently blank, and closed-world that reads as cleared. CodeQL's native output has no explicit-exclusion field, so absence is the only signal it can give, exactly as for Semgrep.</p>
+
+    <p>Capa's manifest gives each <code>(F, C)</code> <strong>three</strong> states: <em>reachable</em>, <em>provably-excluded</em> (sound, proved in Agda), or <em>not-determined</em>. A false-clearance can only arise from the provably-excluded state, and because that state is sound (used &sube; declared; used &cap; provably-excluded = &empty;), it never contains an axis the function actually exercises. The ten dispatcher facts land in <em>not-determined</em>, not <em>excluded</em>, so Capa clears nothing: <strong>0 false-clearances by construction</strong>. The dispatcher functions report an empty <code>provably_excluded</code> list, the honest record that their authority depends on what was registered into the table they receive.</p>
+
+    <p class="compare-note">The separation is not a softer scoring rule applied to Capa. A consumer who ignored Capa's exclusion field and read its <code>reachable = []</code> closed-world, exactly the only reading available for Semgrep and CodeQL, would also false-clear all ten dispatchers. What separates Capa is that it <em>offers</em> a sound exclusion channel a consumer can rely on, while both real tools carry only positive detections and no sound way to answer the exclusion question.</p>
+</section>
+
+<!-- =====================================================
+     The honest result: attribution (Q1)
+===================================================== -->
+<section>
+    <h2>The honest result: attribution (Q1)</h2>
+
+    <p>Does the treatment attribute <code>C</code> to the named function <code>F</code>? Identical criterion for all: <code>C</code> appears in the treatment's output for <code>F</code>, not merely somewhere in the pair.</p>
+
+    <table class="cli-table">
+        <thead>
+            <tr><th>Treatment</th><th>Positive attribution</th><th>Recall</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>T1 dependency / PURL SBOM</td>
+                <td>0 / 48</td>
+                <td>0.0 %</td>
+            </tr>
+            <tr>
+                <td>T2 Semgrep (pattern heuristic)</td>
+                <td>36 / 48</td>
+                <td>75.0 %</td>
+            </tr>
+            <tr>
+                <td>T2b CodeQL 2.25.6 (dataflow)</td>
+                <td><strong>38 / 48</strong></td>
+                <td><strong>79.2 %</strong></td>
+            </tr>
+            <tr>
+                <td>T3 Capa by construction</td>
+                <td><strong>38 / 48</strong></td>
+                <td><strong>79.2 %</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>On positive attribution Capa does not beat the best dataflow tool. It ties it, exactly.</strong> CodeQL and Capa both attribute 38/48: the 36 direct facts plus the 2 via-helper facts, and neither attributes any of the 10 dispatcher facts. CodeQL follows the via-helper call edges Semgrep misses (hence 38 versus Semgrep's 36), and Capa carries the same two facts on the caller's type, so the two land on the identical 38.</p>
+
+    <p>The crucial honesty point: <strong>Capa does not see more than CodeQL on Q1.</strong> It does not vouch which handler a dispatcher runs, so it does not credit the dispatcher with the handler's authority, and neither does CodeQL. The Q1 story is a clean parity at the top between the best dataflow tool and Capa. Capa's advantage is <strong>not</strong> attributing more, it is <strong>never clearing a function incorrectly</strong>, which is Q2.</p>
+</section>
+
+<!-- =====================================================
+     The three regimes
+===================================================== -->
+<section>
+    <h2>The three regimes</h2>
+
+    <p>The corpus separates three regimes by how the authority is reached. The columns show <strong>Q1 (attributes?)</strong> and <strong>Q2 (false-clears?)</strong> for Semgrep, CodeQL, and Capa.</p>
+
+    <table class="cli-table">
+        <thead>
+            <tr><th>Regime</th><th>T2 Semgrep</th><th>T2b CodeQL</th><th>T3 Capa</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>direct</strong></td>
+                <td>attributes / does not false-clear</td>
+                <td>attributes / does not false-clear</td>
+                <td>attributes / does not false-clear</td>
+            </tr>
+            <tr>
+                <td><strong>via-helper</strong></td>
+                <td>misses / <strong>false-clears</strong></td>
+                <td><strong>attributes</strong> / does not false-clear</td>
+                <td><strong>attributes</strong> / does not false-clear</td>
+            </tr>
+            <tr>
+                <td><strong>via-dispatch / via-data</strong></td>
+                <td>misses / <strong>false-clears</strong></td>
+                <td>misses / <strong>false-clears</strong></td>
+                <td>misses / <strong>does not false-clear</strong> (sound)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li>On <strong>direct</strong> facts all three attribute and none false-clears.</li>
+        <li>On <strong>via-helper</strong> facts Semgrep misses and false-clears; CodeQL attributes the fact (it follows the local call edge) and so does Capa (the helper's authority is on the caller's type). Neither CodeQL nor Capa false-clears. This is the band where dataflow earns its two-fact lead over the pattern heuristic, and it ties Capa exactly.</li>
+        <li>On <strong>via-dispatch / via-data</strong> facts neither real tool nor Capa positively attributes the dispatcher, but both real tools false-clear it under closed-world semantics, while Capa reports <em>not-determined</em> and false-clears nothing. This is the crux: the separation is in Q2, not Q1, and it holds against the best dataflow tool, not only the pattern heuristic.</li>
+    </ul>
+</section>
+
+<!-- =====================================================
+     Depth
+===================================================== -->
+<section>
+    <h2>Depth: the same record on two real enterprise programs</h2>
+
+    <p>The breadth corpus above settles the tool comparison. The depth half reads the real SBOM the Capa build emits (<code>capa --manifest main.capa</code>) on two real enterprise programs that exist only in Capa, to show the richness and scale of the per-function record on real code.</p>
+
+    <table class="cli-table">
+        <thead>
+            <tr><th>Program</th><th>Functions</th><th>Provably pure</th><th>Provably-excluded facts</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a> (PCI / payment core)</td>
+                <td>70</td>
+                <td><strong>66 / 70 (94.3 %)</strong></td>
+                <td><strong>625</strong></td>
+            </tr>
+            <tr>
+                <td><a href="https://github.com/nelsonduarte/capa_claimdesk">capa_claimdesk</a> (claims engine)</td>
+                <td>213</td>
+                <td><strong>187 / 213 (87.8 %)</strong></td>
+                <td><strong>2,295</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Between 88 % and 94 % of functions are provably pure, and no sensitive axis in either program is held by more than ~4 % of functions (paymentguard's <code>Fs</code> at 4.3 %, three of seventy, is the worst case). The 625 and 2,295 provably-excluded <code>(function, capability)</code> facts are sound (proved in Agda) and have no counterpart in any dependency SBOM, which names packages and carries zero per-function facts. A dependency SBOM for <code>capa_claimdesk</code> lists six packages; it cannot tell a consumer that exactly two functions reach the network or that 187 functions are provably side-effect-free.</p>
+</section>
+
+<!-- =====================================================
+     Reproducibility
+===================================================== -->
+<section>
+    <h2>Reproducibility</h2>
+
+    <p>Every number on this page is committed to the compiler repository with a versioned ground truth and a deterministic harness. The CodeQL treatment reads pre-computed facts (CodeQL 2.25.6, <code>python-all</code> 7.1.2) so the harness never invokes the CLI and stays deterministic.</p>
+
+    <div class="doc-grid">
+        <a href="https://github.com/nelsonduarte/capa-language/tree/main/evaluation/empirical_study" class="doc-card">
+            <h3>The study, in the repository &rarr;</h3>
+            <p>The full corpus, ground truth, and both halves (breadth and depth) under <code>evaluation/empirical_study/</code>.</p>
+        </a>
+        <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/empirical_study/summary.md" class="doc-card">
+            <h3>The breadth summary &rarr;</h3>
+            <p>The Q1 / Q2 tables, the three regimes, the per-pair results, and the honesty notes, the canonical source for this page.</p>
+        </a>
+        <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/empirical_study/run_study.py" class="doc-card">
+            <h3><code>run_study.py</code> &rarr;</h3>
+            <p>Regenerate the breadth tables end to end from the corpus and the committed CodeQL facts.</p>
+        </a>
+        <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/empirical_study/scratch_codeql/REPRODUCE.md" class="doc-card">
+            <h3><code>scratch_codeql/REPRODUCE.md</code> &rarr;</h3>
+            <p>How the CodeQL 2.25.6 facts were produced with the good-faith reachability query.</p>
+        </a>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="footer-grid">
+        <div>
+            <h4>Pages</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="why.html">Why Capa</a></li>
+                <li><a href="learn/index.html">Learn</a></li>
+                <li><a href="start.html">Get started</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="start.html">Getting started</a></li>
+                <li><a href="learn/index.html">Tutorial</a></li>
+                <li><a href="reference.html">Reference</a></li>
+                <li><a href="stdlib.html">Standard library</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Specification</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/demo-event-stream.md">Event-stream demo</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Project</h4>
+            <ul>
+                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+                <li><a href="community.html">Community</a></li>
+                <li><a href="brand.html">Brand assets</a></li>
+                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
+            </ul>
+        </div>
+    </div>
+    <p class="colophon">Built by Nelson Duarte &middot; v1.5.1 &middot; MIT or Apache-2.0</p>
+</footer>
+
+</body>
+</html>

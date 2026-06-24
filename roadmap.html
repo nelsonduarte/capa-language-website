@@ -37,6 +37,7 @@
             <a href="index.html">Home</a>
             <a href="why.html">Why Capa</a>
             <a href="compare.html">Compare</a>
+            <a href="study.html">Study</a>
             <a href="learn/index.html">Learn</a>
             <a href="reference.html">Reference</a>
             <a href="start.html">Get started</a>
@@ -417,8 +418,8 @@
         <li>
             <span class="tag done">DONE</span>
             <div class="item-body">
-                <strong>Empirical SBOM-diff study: 20-library quantitative corpus</strong>
-                <p>Twenty library pairs at <a href="https://github.com/nelsonduarte/capa-language/tree/main/evaluation/sbom_diff"><code>evaluation/sbom_diff/&lt;lib&gt;/</code></a>, each carrying <code>naive.py</code>, <code>capa.capa</code>, and <code>README.md</code>. Headline aggregates: 122 transliterated functions (73 pure / 49 with declared caps), 6 distinct capability axes (Clock, Env, Fs, Net, Random, Stdio), and 61 per-function (function, capability) attribution facts that have no counterpart in a PURL-only SBOM. Pair-combination coverage matrix spans Fs+Env, Fs+Clock, Fs+Net, Net+Clock, Env+Clock, Random+Clock, plus the Fs+Env+Net triple. Reproducible end-to-end via <code>python -m evaluation.sbom_diff.harness</code> + <code>python -m evaluation.sbom_diff.summary</code>. Closes the "quantitative validation" item from paper &sect;5. The single-pair worked example (<code>empirical_config</code>) is kept as the intuition pump; the quantitative corpus is now the headline reference. Primary entry points: <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/sbom_diff/README.md"><code>evaluation/sbom_diff/README.md</code></a> and <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/sbom_diff/summary.md"><code>evaluation/sbom_diff/summary.md</code></a>; the single-pair writeup at <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/empirical_micro.md"><code>docs/empirical_micro.md</code></a> stays in place.</p>
+                <strong>Empirical capability-recall study: head-to-head against Semgrep and CodeQL</strong>
+                <p>A 25-pair Python / Capa corpus at <a href="https://github.com/nelsonduarte/capa-language/tree/main/evaluation/empirical_study"><code>evaluation/empirical_study/</code></a>, scoring 48 per-function <code>(function, capability)</code> facts across four treatments: a dependency / PURL SBOM, Semgrep, CodeQL 2.25.6, and Capa by construction. Two distinct questions. On positive attribution (Q1) Capa ties the best dataflow tool exactly, 38/48 each against Semgrep's 36/48; on closed-world false-clearance (Q2, lower is better) Capa commits 0/48 against CodeQL's 10/48, Semgrep's 12/48, and the dependency SBOM's 48/48, because Capa distinguishes sound provably-excluded facts (proved in Agda) from not-determined. The depth half reads the real manifest of two enterprise programs (<code>capa_paymentguard</code>, <code>capa_claimdesk</code>): 88-94 % of functions provably pure, 625 and 2,295 provably-excluded facts no dependency SBOM expresses. Reproducible end to end via <code>python evaluation/empirical_study/run_study.py</code> against a versioned ground truth. Walkthrough on the <a href="study.html">study page</a>; canonical source at <a href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/empirical_study/summary.md"><code>evaluation/empirical_study/summary.md</code></a>.</p>
             </div>
         </li>
         <li>
