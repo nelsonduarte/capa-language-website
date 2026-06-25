@@ -129,7 +129,7 @@ $ source ~/.zshrc</code></pre>
 <section>
     <h2>Option B: manual binary download</h2>
 
-    <p>Each tagged release publishes a standalone binary built with PyInstaller that bundles the Capa compiler and a Python interpreter into one file. Download, run. No <code>pip install</code>, no Python required, no toolchain on the host.</p>
+    <p>Each tagged release publishes a standalone binary built with PyInstaller that bundles the Capa compiler and a Python interpreter into one file. Download, run. No <code>pip install</code>, no Python required, no toolchain on the host. The language server is bundled too, so <code>capa lsp</code> works straight from the binary with no extra dependency.</p>
 
     <div class="callout">
         <p><strong>Linux: the binary is a CLI tool, not a desktop app.</strong> If you download <code>capa-linux-x86_64</code> through a browser and double-click it in GNOME Files / Nautilus, you will see <em>"No application installed for Executable files"</em>. That is normal: graphical file managers on Linux do not launch unknown executables for security reasons, and <code>capa</code> is a terminal program anyway. Open a terminal in the download folder, <code>chmod +x capa-linux-x86_64</code>, and run it as shown below.</p>
@@ -404,7 +404,7 @@ Hello, Capa!</code></pre>
             </tr>
             <tr>
                 <td><code>lsp</code></td>
-                <td>Start the language server on stdio (subcommand, requires <code>pip install -e '.[lsp]'</code>). See the next section for editor configuration.</td>
+                <td>Start the language server on stdio (subcommand). Works out of the box from the standalone binary (the language server is bundled); a <code>pip</code> install needs the <code>[lsp]</code> extra. See the next section for editor configuration.</td>
             </tr>
         </tbody>
     </table>
@@ -437,7 +437,11 @@ $ capa --transpile examples/hello.capa | head -20</code></pre>
 
     <p>Capa ships a language server, so any LSP-capable editor (Helix, Neovim, Zed, VSCode with an LSP client, JetBrains, Emacs, ...) gets diagnostics, hover, go-to-definition, find-references, the outline view, and Quick Fixes for &quot;did you mean?&quot; hints without round-tripping to the terminal.</p>
 
-    <p>Install the optional dependency and launch:</p>
+    <p>If you installed the standalone binary (Option A or B above), the language server is already bundled, so just launch it:</p>
+
+<pre><code>$ capa lsp                         # speaks LSP over stdio</code></pre>
+
+    <p>If you installed from source with <code>pip</code> instead, add the optional <code>[lsp]</code> extra first:</p>
 
 <pre><code>$ pip install -e '.[lsp]'          # adds pygls&gt;=2.0
 $ capa lsp                         # speaks LSP over stdio</code></pre>
@@ -558,7 +562,13 @@ result = analyze(module, source=source, filename=<span class="str">"program.capa
 <section>
     <h2>Editor support</h2>
 
-    <p>A VSCode extension lives in the <code>vscode/</code> directory of the repository. It provides syntax highlighting (TextMate grammar), keywords by category, distinct colour for built-in capabilities, string interpolation, operator highlighting including <code>..</code>, <code>..=</code>, <code>=&gt;</code>, and <code>?</code>. It is not on the VSCode Marketplace yet; install manually:</p>
+    <p>The Capa VSCode extension is published on the <a href="https://marketplace.visualstudio.com/items?itemName=nelsonduarte.capa-language">Visual Studio Marketplace</a>. Search for "Capa" in the Extensions view, or install it from the command line:</p>
+
+    <pre><code>$ code --install-extension nelsonduarte.capa-language</code></pre>
+
+    <p>It provides syntax highlighting (TextMate grammar), keywords by category, distinct colour for built-in capabilities, string interpolation, and operator highlighting including <code>..</code>, <code>..=</code>, <code>=&gt;</code>, and <code>?</code>. It also bundles an LSP client, so it auto-connects to <code>capa lsp</code> on your <code>PATH</code> and brings the full language server (diagnostics, hover, go-to-definition, references, symbols, code actions, rename, completion, semantic tokens) into VSCode with no manual configuration. Code snippets are included too.</p>
+
+    <p>To work from the repository source instead (for example to hack on the grammar), the extension also lives in the <code>vscode/</code> directory; symlink or junction it into your extensions folder:</p>
 
     <div class="code-compare">
         <div class="code-block">
@@ -573,7 +583,7 @@ result = analyze(module, source=source, filename=<span class="str">"program.capa
         </div>
     </div>
 
-    <p>Reload VSCode and any <code>.capa</code> file will be highlighted. The full language server (diagnostics, hover, go-to-definition, references, symbols, code actions, rename, completion, semantic tokens) ships under <code>capa lsp</code>; see <em>Editor integration</em> above.</p>
+    <p>Reload VSCode and any <code>.capa</code> file will be highlighted. The bundled LSP client connects to <code>capa lsp</code> automatically; the full language server feature set is described under <em>Editor integration</em> above.</p>
 </section>
 
 <!-- =====================================================
@@ -647,7 +657,7 @@ result = analyze(module, source=source, filename=<span class="str">"program.capa
             </ul>
         </div>
     </div>
-    <p class="colophon">Built by Nelson Duarte · v1.11.2 · MIT or Apache-2.0</p>
+    <p class="colophon">Built by Nelson Duarte · v1.12.0 · MIT or Apache-2.0</p>
 </footer>
 
 </body>
