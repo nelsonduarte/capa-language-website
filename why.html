@@ -200,7 +200,7 @@ error: undefined name 'env'
 <section>
     <h2>Libraries declare their own capabilities</h2>
 
-    <p>Capa is not limited to the built-in capabilities <code>Stdio</code>, <code>Fs</code>, <code>Net</code>, <code>Env</code>, <code>Clock</code>, <code>Random</code>, and <code>Unsafe</code>. A library can declare its own, <code>SendEmail</code>, <code>QueryDB</code>, <code>PublishMessage</code>, and the discipline applies uniformly.</p>
+    <p>Capa is not limited to the built-in capabilities <code>Stdio</code>, <code>Fs</code>, <code>Net</code>, <code>Env</code>, <code>Proc</code>, <code>Clock</code>, <code>Random</code>, <code>Db</code>, and <code>Unsafe</code>. A library can declare its own, <code>SendEmail</code>, <code>QueryDB</code>, <code>PublishMessage</code>, and the discipline applies uniformly.</p>
 
 <pre><code><span class="kw-decl">capability</span> <span class="ty-user">SendEmail</span>
     <span class="kw-decl">fun</span> <span class="fn-name">send</span>(self, to: <span class="ty-primitive">String</span>, subject: <span class="ty-primitive">String</span>, body: <span class="ty-primitive">String</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">Unit</span>, <span class="ty-builtin">IoError</span>&gt;

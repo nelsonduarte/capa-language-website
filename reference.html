@@ -352,7 +352,7 @@ match c
 <h2>6. Capabilities</h2>
 
 <h3>6.1. What they are</h3>
-<p>Capabilities are primitive types representing access to system resources (<code>Stdio</code>, <code>Fs</code>, <code>Env</code>, <code>Net</code>, <code>Clock</code>, <code>Random</code>, <code>Unsafe</code>). They are only accessible via function parameters; there are no global instances.</p>
+<p>Capabilities are primitive types representing access to system resources (<code>Stdio</code>, <code>Fs</code>, <code>Env</code>, <code>Net</code>, <code>Proc</code>, <code>Clock</code>, <code>Random</code>, <code>Db</code>, <code>Unsafe</code>). They are only accessible via function parameters; there are no global instances.</p>
 
 <h3>6.2. The capability discipline (3 layers)</h3>
 <p><strong>Structural (v1):</strong> capabilities cannot appear in struct fields, variant payloads, function return types, constants, <code>let</code>/<code>var</code> bindings, generic args, or tuples. They only flow through parameters. One relaxation: cap-bearing structs that implement a user-defined capability may hold built-in caps as fields.</p>

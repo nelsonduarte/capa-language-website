@@ -73,15 +73,17 @@
 <section>
     <h2>The full set of built-in capabilities</h2>
 
-    <p>Seven capability types are baked into the language:</p>
+    <p>Nine capability types are baked into the language:</p>
 
     <ul>
         <li><code>Stdio</code> &middot; standard output and input. <code>println</code>, <code>print</code>, <code>eprintln</code>, <code>read_line</code>.</li>
         <li><code>Fs</code> &middot; the filesystem. <code>read</code>, <code>write</code>, <code>exists</code>, <code>list_dir</code>.</li>
         <li><code>Net</code> &middot; the network. <code>get</code> (HTTP).</li>
         <li><code>Env</code> &middot; environment variables. <code>get</code>, <code>args</code>.</li>
+        <li><code>Proc</code> &middot; launching external programs and subprocesses.</li>
         <li><code>Clock</code> &middot; wall-clock time. <code>now_secs</code>, <code>sleep</code>.</li>
         <li><code>Random</code> &middot; non-deterministic randomness. <code>float_unit</code>, <code>int_range</code>, <code>with_seed</code>.</li>
+        <li><code>Db</code> &middot; database access and queries.</li>
         <li><code>Unsafe</code> &middot; the escape hatch. Anything that crosses into Python interop.</li>
     </ul>
 
