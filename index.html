@@ -1,231 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capa | a capability-typed programming language</title>
-    <meta name="description" content="Capa is a programming language where every function declares the authorities it holds. The compiler checks the discipline statically. Pythonic syntax.">
-    <meta property="og:title" content="Capa | a capability-typed programming language">
-    <meta property="og:description" content="Every function declares the authorities it holds. The compiler checks the discipline statically.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://capa-language.com/">
-    <meta property="og:image" content="https://capa-language.com/capa_logo.png">
-    <meta property="og:site_name" content="Capa">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Capa | a capability-typed programming language">
-    <meta name="twitter:description" content="Every function declares the authorities it holds. The compiler checks statically.">
-    <meta name="twitter:image" content="https://capa-language.com/capa_logo.png">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <script src="theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Capa | a capability-typed programming language</title>
+<meta name="description" content="Capa is a programming language where every function declares the authorities it holds. The compiler checks the discipline statically. Pythonic syntax.">
+<link rel="canonical" href="https://capa-language.com/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Capa">
+<meta property="og:title" content="Capa | a capability-typed programming language">
+<meta property="og:description" content="Capa is a programming language where every function declares the authorities it holds. The compiler checks the discipline statically. Pythonic syntax.">
+<meta property="og:url" content="https://capa-language.com/index.html">
+<meta property="og:image" content="https://capa-language.com/capa_logo.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Capa | a capability-typed programming language">
+<meta name="twitter:description" content="Capa is a programming language where every function declares the authorities it holds. The compiler checks the discipline statically. Pythonic syntax.">
+<meta name="twitter:image" content="https://capa-language.com/capa_logo.svg">
+<link rel="icon" href="capa_logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<header>
-    <nav>
-        <a href="index.html" class="logo">
-            <img src="capa_logo.svg" alt="" aria-hidden="true">
-            Capa
-        </a>
-        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
-        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
-            <span></span><span></span><span></span>
-        </label>
-        <div class="nav-links">
-            <a href="index.html" class="current">Home</a>
-            <a href="why.html">Why Capa</a>
-            <a href="compare.html">Compare</a>
-            <a href="study.html">Study</a>
-            <a href="learn/index.html">Learn</a>
-            <a href="reference.html">Reference</a>
-            <a href="start.html">Get started</a>
-            <a href="migrating.html">Migrating</a>
-            <a href="regulatory.html">Regulatory</a>
-            <a href="agent-demo.html">Agent demo</a>
-            <a href="roadmap.html">Roadmap</a>
-            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
-            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
-        </div>
+<a class="skip-link" href="#main">Skip to content</a>
+<svg width="0" height="0" class="svg-defs" aria-hidden="true">
+ <symbol id="capa-mark" viewBox="0 0 577.22 782.7">
+  <path fill="#a885fa" d="M515.82,258.55c1.6,9.06-14.34-4.03-22.58-5.07-128.33-58.01-269.07,69.8-197.88,196.88,54.82,97.82,196.29,106.26,275.81,34.39,7.59-3.13,6.02,11.39,5.7,16.08,3.09,87.71-138.58,190.41-66.46,248.48,2.83,2.37,15.3,9.63,16,11.02,3.47,6.87-14.56,10.48-19.31,11.72-233.4,62-442.98-157.08-369.29-387.95-47,68.7-43.12,183.85-3.79,263.59.91,1.87,6.52,11.33,9.7,17.43.74,1.42-.95,2.87-2.23,1.91-20.32-15.17-40.98-28.25-64.64-38.16-21.07-8.82-65.58-18.79-76.15-39.85-11.95-141.41,132.91-331.75,245.19-408.17,27.89-10.82,56.49.72,81.86,13.37,9.26-.26-16.46-16.32-18.85-17.4-42.73-25.62-91.55,3.89-75.56-28.52,3.84-7.75,13.77-16.2,22-19,10.08-3.44,28.13-.72,16.54-16.46-5.41-7.34-16.48-14.32-24.64-18.36-6.77-3.35-33.51-10.83-32.19-19.41,61.39-110.77,222.44-79.82,314.35-28.77,26.38,17.14-27.13,108.94-38.71,131.34-46.28,52.42-2.25,17.23,25.13,80.91ZM530.68,69.52c.89,1.01,2.6.26,2.61-1.08.07-14.22-18.12-14.02-29.89-13.09-37.48,2.97-62.22,29.45-84.49,56.51-28.27,33.92-75.86,88.32-2.74,100.66,1.67.24,2.41-2.03.92-2.83l-8.44-4.52c-14.22-9.07-21.16-18.6-12.57-35.14,25.37-41.11,80.49-112.17,134.61-100.51Z"/>
+  <path fill="#fdfdfe" d="M533.29,68.44c0,1.34-1.72,2.08-2.61,1.08-.07-.08-.15-.16-.24-.24-10.04-8.31-43.94,6.95-54.23,12.88-25.39,14.64-66.61,61.78-80.14,87.86-8.56,16.51-1.72,25.98,12.45,35.08.04.02.07.05.11.07l8.44,4.52c1.49.8.75,3.08-.92,2.83-19.72-2.89-41.34-12.65-39.32-35.73,1.36-15.52,31.22-51.76,42.07-64.93,22.27-27.06,47.01-53.54,84.49-56.51,11.77-.93,29.97-1.13,29.89,13.09Z"/>
+ </symbol>
+</svg>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html"><svg class="mark"><use href="#capa-mark"/></svg> Capa</a>
+    <nav class="nav-links" id="navlinks">
+      <a href="why.html">Why Capa</a>
+      <a href="compare.html">Compare</a>
+      <a href="learn/index.html">Learn</a>
+      <a href="reference.html">Reference</a>
+      <div class="has-drop">
+        <button class="drop-btn" id="docsbtn" aria-haspopup="true" aria-expanded="false">Docs
+          <svg class="car" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l4 4 4-4"/></svg>
+        </button>
+        <div class="drop"><a href="study.html">Study</a><a href="migrating.html">Migrating</a><a href="regulatory.html">Regulatory</a><a href="agent-demo.html">Agent demo</a><a href="stdlib.html">Standard library</a><a href="community.html">Community</a></div>
+      </div>
+      <a href="roadmap.html">Roadmap</a>
     </nav>
+    <div class="nav-cta">
+      <a class="nav-ico" href="https://github.com/nelsonduarte/capa-language" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      <a class="btn btn-primary" href="start.html">Get started</a>
+      <button class="nav-toggle" id="navtoggle" aria-label="Menu"><span></span></button>
+    </div>
+  </div>
 </header>
-
-<main>
-
+<main id="main">
+<!-- ===================== HERO ===================== -->
 <section class="hero">
-    <div class="hero-brand">
-        <img class="hero-logo" src="capa_logo.svg" alt="" aria-hidden="true">
-        <h1>Capa</h1>
+  <div class="hero-glow"></div>
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Every function declares <span class="accent">what it is allowed to do</span>.</h1>
+      <p class="hero-sub">Pythonic syntax, with the discipline checked statically: a function that does not list <span class="ic">Fs</span> or <span class="ic">Net</span> in its signature cannot touch the filesystem or the network. From those same signatures the compiler emits a machine-verifiable supply-chain SBOM by construction: a manifest that matches the code, not a scanner's approximation of it.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="start.html">Get started</a>
+        <a class="btn btn-ghost" href="why.html">Why Capa</a>
+      </div>
+      <div class="hero-meta">
+        <span>v1.13.0</span><span class="d">·</span>
+        <span>MIT or Apache-2.0</span><span class="d">·</span>
+        <span>over 3,200 tests</span><span class="d">·</span>
+        <span>hand-written compiler in Python</span>
+      </div>
     </div>
-    <p class="tagline">A programming language where every function declares <strong>what it is allowed to do</strong>.</p>
-    <p class="subtitle">Pythonic syntax, with the discipline checked statically: a function that does not list <code>Fs</code> or <code>Net</code> in its signature cannot touch the filesystem or the network. From those same capability signatures the compiler emits a machine-verifiable supply-chain SBOM by construction, a manifest that matches the code, not a scanner's approximation of it.</p>
-    <div class="cta">
-        <a href="start.html" class="btn primary">Get started</a>
-        <a href="why.html" class="btn">Why Capa</a>
-        <a href="https://github.com/nelsonduarte/capa-language" class="btn">GitHub</a>
+    <div class="code">
+      <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">summarise.capa</span></div>
+<pre><code><span class="cm"># the signature IS the contract</span>
+<span class="k">fun</span> <span class="fn">summarise</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">fs:</span> <span class="cp">Fs</span>, <span class="pu">path:</span> <span class="ty">String</span>)
+    <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
+    <span class="k">let</span> body = fs.<span class="fn">read</span>(path)?
+    <span class="k">let</span> first = <span class="k">match</span> body.<span class="fn">split</span>(<span class="st">"\n"</span>).<span class="fn">get</span>(<span class="nu">0</span>)
+        <span class="ty">Some</span>(line) <span class="pu">-&gt;</span> line
+        <span class="ty">None</span> <span class="pu">-&gt;</span> <span class="st">"(empty)"</span>
+    stdio.<span class="fn">println</span>(<span class="st">"first line: ${first}"</span>)
+    <span class="k">return</span> <span class="ty">Ok</span>(())</code></pre>
     </div>
-    <p class="status">v1.10.0 &middot; MIT or Apache-2.0 &middot; 3127 tests &middot; hand-written compiler in Python</p>
+  </div>
 </section>
 
+<!-- ===================== CAPABILITY STRIP ===================== -->
+<div class="capstrip">
+  <div class="wrap">
+    <div class="cap-label">the authorities a function can hold</div>
+    <div class="cap-chips">
+      <span class="chip"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 7V5a3 3 0 0 0-6 0v2H4v8h8V7h-1zM7 5a1 1 0 0 1 2 0v2H7V5z"/></svg>Fs</span>
+      <span class="chip">Net</span><span class="chip">Stdio</span><span class="chip">Env</span>
+      <span class="chip">Clock</span><span class="chip">Db</span><span class="chip">Proc</span>
+      <span class="chip">Random</span><span class="chip">Unsafe</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== WHAT CAPA IS FOR ===================== -->
 <section>
+  <div class="wrap">
+    <span class="eyebrow">The problem</span>
     <h2>What Capa is for</h2>
-    <p>
-        Every dependency you install today runs with the full
-        authority of the program that pulled it in. A logging
-        library can read your environment. A date parser can
-        open a socket. Nothing in the language stops it; you
-        read the README and you trust.
-    </p>
-    <p>
-        Capa puts the authority surface in the type system.
-        A function that needs the filesystem says so in its
-        signature; one that does not cannot reach for it, no
-        matter what its body tries to do. The compiler reads
-        the source and emits a manifest of which functions
-        hold which authorities, automatically.
-    </p>
+    <div class="split split-a u0">
+      <p class="lead">Every dependency you install today runs with the full authority of the program that pulled it in. A logging library can read your environment. A date parser can open a socket. Nothing in the language stops it: you read the README and you trust.</p>
+      <p class="lead">Capa puts the authority surface in the type system. A function that needs the filesystem says so in its signature; one that does not cannot reach for it, no matter what its body tries to do. The compiler reads the source and emits a manifest of which functions hold which authorities, automatically.</p>
+    </div>
+  </div>
 </section>
 
-<section>
-    <h2>The 30-second story</h2>
+<!-- ===================== 30-SECOND STORY (sequence) ===================== -->
+<section class="band">
+  <div class="wrap">
+    <div class="shead">
+      <span class="eyebrow">In 30 seconds</span>
+      <h2>From a signature to an audit artefact</h2>
+      <p class="lead">There is no global <span class="ic">Stdio</span> or ambient filesystem: you cannot reference what is not in the signature. The compiler reads the same source three ways.</p>
+    </div>
 
-    <p>A pure helper declares no capabilities; the compiler enforces it. There is no global <code>Stdio</code> or ambient filesystem: you cannot reference what is not in the signature.</p>
+    <div class="seq">
+      <div class="seq-i">
+        <div class="seq-head">
+          <div class="seq-n"><b>01</b> Declare nothing</div>
+          <h3>A pure helper holds no authority</h3>
+          <p>No capability in the signature means the compiler forbids any effect in the body. It is provably pure.</p>
+        </div>
+        <div class="code">
+          <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">classify.capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">classify</span>(<span class="pu">score:</span> <span class="ty">Float</span>) <span class="pu">-&gt;</span> <span class="ty">String</span>
+    <span class="k">if</span> score &gt;= <span class="nu">9.5</span>
+        <span class="k">return</span> <span class="st">"Excellent"</span>
+    <span class="k">if</span> score &gt;= <span class="nu">6.5</span>
+        <span class="k">return</span> <span class="st">"Pass"</span>
+    <span class="k">return</span> <span class="st">"Fail"</span></code></pre>
+        </div>
+      </div>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">classify</span>(score: <span class="ty-primitive">Float</span>) -&gt; <span class="ty-primitive">String</span>
-    <span class="kw-ctrl">if</span> score &gt;= 9.5
-        <span class="kw-ctrl">return</span> <span class="str">"Excellent"</span>
-    <span class="kw-ctrl">if</span> score &gt;= 6.5
-        <span class="kw-ctrl">return</span> <span class="str">"Pass"</span>
-    <span class="kw-ctrl">return</span> <span class="str">"Fail"</span></code></pre>
+      <div class="seq-i">
+        <div class="seq-head">
+          <div class="seq-n"><b>02</b> Ask for what you need</div>
+          <h3>Reading files requires <span class="u1">Fs</span></h3>
+          <p>To open a file the function must name <span class="ic">Fs</span> in its signature. The capability is the contract, and it is passed in, never ambient.</p>
+        </div>
+        <div class="code">
+          <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">summarise.capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">summarise</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">fs:</span> <span class="cp">Fs</span>, <span class="pu">path:</span> <span class="ty">String</span>)
+    <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
+    <span class="k">let</span> body = fs.<span class="fn">read</span>(path)?
+    stdio.<span class="fn">println</span>(<span class="st">"read ${body.len()} bytes"</span>)
+    <span class="k">return</span> <span class="ty">Ok</span>(())</code></pre>
+        </div>
+      </div>
 
-    <p>A function that reads files needs <code>Fs</code>. The signature <em>is</em> the contract.</p>
-
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">summarise</span>(stdio: <span class="cap">Stdio</span>, fs: <span class="cap">Fs</span>, path: <span class="ty-primitive">String</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">Unit</span>, <span class="ty-builtin">IoError</span>&gt;
-    <span class="kw-storage">let</span> body = fs.<span class="fn-call">read</span>(path)?
-    <span class="kw-storage">let</span> first = <span class="kw-ctrl">match</span> body.<span class="fn-call">split</span>(<span class="str">"\n"</span>).<span class="fn-call">get</span>(0)
-        <span class="variant">Some</span>(line) -&gt; line
-        <span class="variant">None</span> -&gt; <span class="str">"(empty)"</span>
-    stdio.<span class="fn-call">println</span>(<span class="str">"first line: ${first}"</span>)
-    <span class="kw-ctrl">return</span> <span class="variant">Ok</span>(())</code></pre>
-
-    <p><code>capa --manifest</code> reads the same source and emits JSON listing every function with the capabilities it declared and the ones it can <em>provably never reach</em> (because they are not in scope). A compliance reviewer gets a machine-checkable answer to "which functions can touch the network?".</p>
-
-<pre><code>{
-  <span class="str">"name"</span>: <span class="str">"summarise"</span>,
-  <span class="str">"declared_capabilities"</span>: [<span class="str">"Stdio"</span>, <span class="str">"Fs"</span>],
-  <span class="str">"provably_excluded_capabilities"</span>: [
-    <span class="str">"Clock"</span>, <span class="str">"Db"</span>, <span class="str">"Env"</span>, <span class="str">"Net"</span>,
-    <span class="str">"Proc"</span>, <span class="str">"Random"</span>, <span class="str">"Unsafe"</span>
-  ]
-}</code></pre>
-
-    <p>Same input feeds <code>capa --cyclonedx</code> / <code>--spdx</code> / <code>--vex</code> / <code>--provenance</code>: standard supply-chain artefacts emitted by the compiler itself, not by a separate scanner approximating them.</p>
+      <div class="seq-i">
+        <div class="seq-head">
+          <div class="seq-n"><b>03</b> Get the manifest free</div>
+          <h3>The compiler emits the proof</h3>
+          <p><span class="ic">capa --manifest</span> lists every function with the capabilities it declared and the ones it can <strong>provably never reach</strong>. Same input feeds <span class="ic">--cyclonedx</span>, <span class="ic">--spdx</span>, <span class="ic">--vex</span> and <span class="ic">--provenance</span>.</p>
+        </div>
+        <div class="code">
+          <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">manifest.json</span></div>
+<pre><code><span class="pu">{</span>
+  <span class="st">"name"</span><span class="pu">:</span> <span class="st">"summarise"</span><span class="pu">,</span>
+  <span class="st">"declared_capabilities"</span><span class="pu">:</span> <span class="pu">[</span><span class="st">"Stdio"</span><span class="pu">,</span> <span class="st">"Fs"</span><span class="pu">],</span>
+  <span class="st">"provably_excluded_capabilities"</span><span class="pu">:</span> <span class="pu">[</span>
+    <span class="st">"Clock"</span><span class="pu">,</span> <span class="st">"Db"</span><span class="pu">,</span> <span class="st">"Env"</span><span class="pu">,</span> <span class="st">"Net"</span><span class="pu">,</span>
+    <span class="st">"Proc"</span><span class="pu">,</span> <span class="st">"Random"</span><span class="pu">,</span> <span class="st">"Unsafe"</span>
+  <span class="pu">]</span>
+<span class="pu">}</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
+<!-- ===================== ATTENUATION + IFC ===================== -->
 <section>
-    <h2>Capabilities can be narrowed</h2>
-    <p><code>fs.restrict_to("data/")</code> hands a callee an <code>Fs</code> that only sees one directory, and the narrowing is monotonic by construction: you can never widen. The full story, including runtime path canonicalisation, is in <a href="why.html#attenuation">Why Capa</a>.</p>
+  <div class="wrap">
+    <div class="shead">
+      <span class="eyebrow">Two more guarantees</span>
+      <h2>Narrow what a function holds, and prove where its data goes</h2>
+      <p class="lead">Capabilities say which effects a function may use. Attenuation shrinks them on the way down; information-flow control tracks where labelled data is allowed to travel.</p>
+    </div>
+    <div class="seq">
+      <div class="seq-i">
+        <div class="seq-head">
+          <span class="eyebrow">Attenuation</span>
+          <h3>Capabilities can only be narrowed</h3>
+          <p><span class="ic">fs.restrict_to("data/")</span> hands a callee an <span class="ic">Fs</span> that only sees one directory, and the narrowing is monotonic by construction: you can never widen. The full story, including runtime path canonicalisation, is in <a href="why.html#attenuation">Why Capa</a>.</p>
+        </div>
+        <div class="code">
+          <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">attenuate.capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">handler</span>(<span class="pu">fs:</span> <span class="cp">Fs</span>)
+    <span class="k">let</span> scoped = fs.<span class="fn">restrict_to</span>(<span class="st">"data/"</span>)
+    <span class="fn">load_records</span>(scoped)
+    <span class="cm"># scoped.restrict_to(".."): cannot widen</span></code></pre>
+        </div>
+      </div>
+      <div class="seq-i">
+        <div class="seq-head">
+          <span class="eyebrow">Information-flow control</span>
+          <h3>Where your data can go</h3>
+          <p>Annotate a value <span class="ic">@secret</span> and the compiler propagates the label, then rejects any secret that reaches a public sink. <span class="ic">env.get</span> is secret by default. The one auditable bridge is <span class="ic">declassify(value, reason: "…")</span>; every use is recorded in the SBOM as <strong>declassification_sites</strong>, so the proof ships with the manifest, not in a code-review thread.</p>
+        </div>
+        <div class="code">
+          <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">leak.capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">env:</span> <span class="cp">Env</span>)
+    <span class="k">let</span> key = env.<span class="fn">get</span>(<span class="st">"API_KEY"</span>)  <span class="cm"># @secret</span>
+    stdio.<span class="fn">println</span>(key)  <span class="cm"># rejected: secret → public sink</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<section>
-    <h2>Where your data can go</h2>
-    <p>Capabilities control which effects a function can use; information-flow control proves where its data can go. Annotate a value <code>@secret</code> and the compiler propagates the label through the program, then rejects any secret that reaches a public sink (<code>Stdio</code>, <code>Net</code>, <code>Fs</code>, <code>Db</code>). Under <code>@strict_ifc</code> that rejection is a compile error rather than a warning. <code>env.get</code> is secret by default, so an API key never lands in a log line by accident.</p>
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>, env: <span class="cap">Env</span>)
-    <span class="kw-storage">let</span> key = env.<span class="fn-call">get</span>(<span class="str">"API_KEY"</span>)  <span class="comment">// @secret by default</span>
-    stdio.<span class="fn-call">println</span>(key)            <span class="comment">// rejected: secret reaches a public sink</span></code></pre>
-    <p>The one auditable bridge is <code>declassify(value, reason: "...")</code>, and every use is recorded in the SBOM as <code>declassification_sites</code>: a machine-checkable disclosure record, by construction. The proof of where a secret can flow ships with the manifest, not in a code review thread.</p>
+<!-- ===================== REAL PROGRAMS ===================== -->
+<section class="band">
+  <div class="wrap">
+    <div class="shead">
+      <span class="eyebrow">Showcase</span>
+      <h2>Real programs written in Capa</h2>
+      <p class="lead">Each lives in its own repository, declares its dependencies in <span class="ic">capa.toml</span>, and runs through <span class="ic">capa install &amp;&amp; capa --run …</span></p>
+    </div>
+
+    <div class="grid g2 u0">
+      <a class="card repo u2" href="https://github.com/nelsonduarte/capa_claimdesk">
+        <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_claimdesk</h3>
+        <p>An enterprise expense-reimbursement engine that exercises nearly the whole language at once: the claim lifecycle is a typestate, the payment authorization is a linear use-once token, the IBAN is held under information-flow control and reaches the audit ledger only through an audited <span class="ic">declassify</span>, and the policy engine dispatches over a <span class="ic">List&lt;Rule&gt;</span> via traits and generics. Runs byte-identically on both backends and ships its guarantees as proofs in the SBOM.</p>
+        <span class="badge">widest-coverage showcase</span>
+      </a>
+      <a class="card repo" href="https://github.com/nelsonduarte/audit-trail-reporter">
+        <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>audit-trail-reporter</h3>
+        <p>AML compliance toolkit. Four detection rules (threshold, watchlist, structuring, velocity), four report sinks, attenuated read+write <span class="ic">Fs</span> split.</p>
+        <span class="badge">~1100 lines · 9 files</span>
+      </a>
+      <a class="card repo" href="https://github.com/nelsonduarte/capa_paymentguard">
+        <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_paymentguard</h3>
+        <p>Payment-security core. Information-flow control proves card data cannot leave unmasked: the only path to a sink is an audited <span class="ic">declassify</span>, recorded in the SBOM.</p>
+        <span class="badge">IFC core</span>
+      </a>
+      <a class="card repo" href="https://github.com/nelsonduarte/sbom-watch">
+        <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>sbom-watch</h3>
+        <p>SBOM operationaliser. Cross-references a CycloneDX SBOM against a CVE database and a policy file. CI-friendly exit code.</p>
+        <span class="badge">~700 lines · 5 files</span>
+      </a>
+      <a class="card repo" href="https://github.com/nelsonduarte/policy-eval">
+        <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>policy-eval</h3>
+        <p>JSON-encoded policy-as-code engine. Tree-walk interpreter over a recursive <span class="ic">Condition</span> AST.</p>
+        <span class="badge">~700 lines · 5 files</span>
+      </a>
+    </div>
+  </div>
 </section>
 
+<!-- ===================== INSTALL + RELEASE ===================== -->
 <section>
-    <h2>Real programs written in Capa</h2>
-    <p>Each lives in its own repository, declares its dependencies in <code>capa.toml</code>, and runs through <code>capa install &amp;&amp; capa --run ...</code>.</p>
-    <dl class="program-list">
-        <dt><a href="https://github.com/nelsonduarte/capa_claimdesk">capa_claimdesk</a></dt>
-        <dd>An enterprise expense-reimbursement engine that exercises nearly the whole language at once: the claim lifecycle is a typestate, the payment authorization is a linear use-once token, the IBAN is held under information-flow control and reaches the audit ledger only through an audited <code>declassify</code>, the HMAC chain is re-verified in constant time, and the policy engine dispatches over a <code>List&lt;Rule&gt;</code> via traits and generics. It pulls in seven of the seed libraries (with selective import to resolve a <code>parse</code> collision between <code>capa_cli</code> and <code>capa_csv</code>), runs byte-identically on both backends, and ships its guarantees as proofs in the SBOM with negative cases that must not compile. The widest-coverage showcase.</dd>
-
-        <dt><a href="https://github.com/nelsonduarte/audit-trail-reporter">audit-trail-reporter</a></dt>
-        <dd>AML compliance toolkit. Four detection rules (threshold, watchlist, structuring, velocity), four report sinks, attenuated read+write <code>Fs</code> split. Around 1100 lines across 9 files.</dd>
-
-        <dt><a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a></dt>
-        <dd>Payment-security core. Information-flow control proves card data cannot leave unmasked: the only path to a sink is an audited <code>declassify</code>, recorded in the SBOM.</dd>
-
-        <dt><a href="https://github.com/nelsonduarte/sbom-watch">sbom-watch</a></dt>
-        <dd>SBOM operationaliser. Cross-references a CycloneDX SBOM against a CVE database and a policy file. CI-friendly exit code. Around 700 lines, 5 files.</dd>
-
-        <dt><a href="https://github.com/nelsonduarte/policy-eval">policy-eval</a></dt>
-        <dd>JSON-encoded policy-as-code engine. Tree-walk interpreter over a recursive <code>Condition</code> AST. Around 700 lines, 5 files.</dd>
-    </dl>
+  <div class="wrap split split-a">
+    <div>
+      <span class="eyebrow">Install</span>
+      <h2 class="u3">Up and running in one line</h2>
+      <p class="lead">One-line installers for Linux, macOS and Windows, a self-contained binary with <span class="ic">.sha256</span> verification, or a source install: everything lives on the Get started page.</p>
+      <a class="btn btn-primary u4" href="start.html">Get started</a>
+    </div>
+    <div>
+      <span class="eyebrow">Release · 1.13.0</span>
+      <h2 class="u3">Stable and on SemVer</h2>
+      <p>The first stable release shipped on <strong>2026-06-03</strong> as 1.0.0. Minor releases since added byte-reproducible SBOMs and attestations via <span class="ic">SOURCE_DATE_EPOCH</span>, the <span class="ic">capa test</span> runner, selective import, and a security-hardening line that closed further soundness and supply-chain findings.</p>
+      <p class="muted">Surfaces listed in <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> follow SemVer. The full inventory is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> and on the <a href="roadmap.html">roadmap</a>.</p>
+    </div>
+  </div>
 </section>
 
-<section>
-    <h2>Install</h2>
-    <p>One-line installers for Linux, macOS, and Windows, a self-contained binary with <code>.sha256</code> verification, or a source install: everything lives on the <a href="start.html">Get started</a> page.</p>
-</section>
-
-<section>
-    <h2>Capa is at 1.10.0</h2>
-    <p>The first stable release shipped on <strong>2026-06-03</strong> as 1.0.0. Several minor releases have followed under SemVer: <strong>1.1.0</strong> (2026-06-14) added byte-reproducible SBOMs and attestations via <code>SOURCE_DATE_EPOCH</code>, the <code>capa test</code> runner, and test-only dependencies; <strong>1.2.0</strong> (2026-06-15) hardened the soundness core (six linear-affinity and information-flow fixes, published as a <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-06-15-soundness.md">security advisory</a>) and added selective import; a security-hardening line through <strong>1.5.1</strong> (2026-06-18) closed further soundness and supply-chain findings (including build-time vendor re-verification against <code>capa.lock</code>). Since then <strong>1.6.0</strong> (2026-06-21) brought the <code>.allows()</code> capability-attenuation query to full Python/Wasm parity, <strong>1.7.0</strong> (2026-06-21) added per-dependency <code>verify_provenance</code> modes for SLSA verification in the package manager, and <strong>1.8.0</strong> through <strong>1.10.0</strong> (2026-06-22) linearised the Wasm backend's String concatenation, JSON serialisation, and JSON parsing. From the 1.0.0 release on, the surfaces listed in <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> follow SemVer: breaking changes require a major version bump, and deprecations get one minor release of warning first. The surface in one sentence: the capability discipline with monotonic attenuation, information-flow control with audited <code>declassify</code>, constant-time markers, typestates, linear handles, two backends (Python and the Wasm Component Model) with output byte-identical across the parity harness, and the supply-chain artefacts (manifest, CycloneDX, SPDX, VEX, SLSA provenance) emitted by the compiler itself. The full inventory is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> and on the <a href="roadmap.html">roadmap</a>.</p>
-</section>
-
-<section>
+<!-- ===================== NEXT ===================== -->
+<section class="band">
+  <div class="wrap">
+    <span class="eyebrow">Next</span>
     <h2>Where to go next</h2>
-    <ul class="next-list">
-        <li><a href="why.html"><strong>Why Capa exists</strong></a> : the case for capability typing, against ambient authority, against the supply-chain status quo.</li>
-        <li><a href="study.html"><strong>The capability-recall study</strong></a> : Capa measured head-to-head against a dependency SBOM, Semgrep, and CodeQL on 25 pairs; 0 false-clearances against CodeQL's 10.</li>
-        <li><a href="learn/index.html"><strong>Learn (14 chapters)</strong></a> : a guided tour from hello world to the audit artefacts.</li>
-        <li><a href="https://github.com/nelsonduarte/capa-book"><strong>The book</strong></a> : <em>Capa: The Capability-Typed Programming Language</em>, a free beginner-friendly PDF (around 278 pages) with exercises, three projects, and solutions.</li>
-        <li><a href="reference.html"><strong>Language reference</strong></a> : full syntax and semantics.</li>
-        <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md"><strong>Packages</strong></a> : <code>capa.toml</code>, <code>capa install</code>, and the lockfile.</li>
-        <li><a href="roadmap.html"><strong>Roadmap</strong></a> : what is done, what is next, what is explicitly out of scope.</li>
+    <ul class="linklist">
+      <li><a href="why.html">Why Capa exists</a> <span class="desc">: the case for capability typing, against ambient authority, against the supply-chain status quo.</span></li>
+      <li><a href="study.html">The capability-recall study</a> <span class="desc">: Capa measured head-to-head against a dependency SBOM, Semgrep and CodeQL on 25 pairs; 0 false-clearances against CodeQL's 10.</span></li>
+      <li><a href="learn/index.html">Learn (14 chapters)</a> <span class="desc">: a guided tour from hello world to the audit artefacts.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-book">The book</a> <span class="desc">: <em>Capa: The Capability-Typed Programming Language</em>, a free PDF (~278 pages) with exercises and three projects.</span></li>
+      <li><a href="reference.html">Language reference</a> <span class="desc">: full syntax and semantics.</span></li>
+      <li><a href="roadmap.html">Roadmap</a> <span class="desc">: what is done, what is next, what is explicitly out of scope.</span></li>
     </ul>
+  </div>
 </section>
+
+<!-- ===================== FOOTER ===================== -->
 
 </main>
-
-<footer>
-    <div class="footer-grid">
-        <div>
-            <h4>Pages</h4>
-            <ul>
-                <li><a href="why.html">Why Capa</a></li>
-                <li><a href="learn/index.html">Learn</a></li>
-                <li><a href="start.html">Get started</a></li>
-                <li><a href="roadmap.html">Roadmap</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Documentation</h4>
-            <ul>
-                <li><a href="reference.html">Reference</a></li>
-                <li><a href="stdlib.html">Standard library</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md">Packages</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">Stability</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Specification</h4>
-            <ul>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning vs related work</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/semantics.md">&lambda;<sub>cap</sub> calculus &amp; soundness</a></li>
-                <li><a href="regulatory.html">CRA / NIS2 / DORA / SSDF / SCVS</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Project</h4>
-            <ul>
-                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/releases">Releases</a></li>
-                <li><a href="community.html">Community</a></li>
-                <li><a href="brand.html">Brand assets</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
-                <li><a href="privacy.html">Privacy</a></li>
-            </ul>
-        </div>
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a class="brand" href="index.html"><svg class="mark mark-26"><use href="#capa-mark"/></svg> Capa</a>
+      <p>A capability-typed programming language. Every function declares the authorities it holds; the compiler checks the discipline statically.</p>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.12.0 &middot; MIT or Apache-2.0</p>
+    <div><h5>Pages</h5><ul>
+      <li><a href="index.html">Home</a></li><li><a href="why.html">Why Capa</a></li>
+      <li><a href="learn/index.html">Learn</a></li><li><a href="roadmap.html">Roadmap</a></li>
+    </ul></div>
+    <div><h5>Documentation</h5><ul>
+      <li><a href="start.html">Getting started</a></li><li><a href="reference.html">Reference</a></li>
+      <li><a href="stdlib.html">Standard library</a></li><li><a href="migrating.html">Migrating</a></li>
+    </ul></div>
+    <div><h5>Specification</h5><ul>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/semantics.md">&#955;cap &amp; soundness</a></li>
+      <li><a href="regulatory.html">CRA / NIS2 / DORA</a></li>
+    </ul></div>
+    <div><h5>Project</h5><ul>
+      <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+      <li><a href="community.html">Community</a></li><li><a href="brand.html">Brand assets</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-base">
+    <span>Built by Nelson Duarte &middot; v1.13.0 &middot; MIT or Apache-2.0</span>
+    <span>&copy; 2026 Capa</span>
+  </div>
 </footer>
-
+<script src="menu.js"></script>
 </body>
 </html>

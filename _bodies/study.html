@@ -1,0 +1,222 @@
+<!-- HERO -->
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Empirical study</span>
+    <h1>The capability-recall study</h1>
+    <p class="lead">The strongest quantitative result in the project, measured head-to-head against the tools auditors actually run. Capa runs against three real treatments on 25 hand-built Python / Capa pairs, scoring 48 per-function facts on two distinct questions. The decisive finding: under closed-world SBOM semantics, Capa never clears a function incorrectly, where the best dataflow tool clears ten.</p>
+  </div>
+</section>
+
+<!-- HEADLINE CONTRAST -->
+<section style="padding-top:18px">
+  <div class="article">
+    <div class="headline">
+      <div class="hl-cell win">
+        <div class="hl-num">0</div>
+        <div class="hl-who">Capa, by construction</div>
+        <div class="hl-tag">false-clearances / 48</div>
+      </div>
+      <div class="hl-cell lose">
+        <div class="hl-num">10</div>
+        <div class="hl-who">CodeQL 2.25.6 (dataflow)</div>
+        <div class="hl-tag">the strongest real tool</div>
+      </div>
+      <div class="hl-cell lose">
+        <div class="hl-num">48</div>
+        <div class="hl-who">Dependency / PURL SBOM</div>
+        <div class="hl-tag">clears every function</div>
+      </div>
+    </div>
+    <p class="hl-foot">Lower is better: a false-clearance silently tells a consumer a function is safe when its code can reach the authority.</p>
+  </div>
+</section>
+
+<!-- THE QUESTION -->
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">The question</span>
+    <h2>A claim is only as useful as what its absence means</h2>
+    <p class="section-intro">A Capa program ships a manifest of capability claims: for every function, which authorities it could possibly reach. An auditor verifies them by re-deriving the SBOM from source with the compiler itself, not a second analyser.</p>
+    <p>An SBOM is a <strong>closed list</strong>. What is not listed for a function is implicitly <strong>excluded</strong>. A consumer reading "this function reaches nothing sensitive" treats that silence as a clearance. So the dangerous failure mode is not a missing detection in the abstract; it is a function the record silently clears while the code can in fact exercise the authority. The study measures exactly that, against the tools that produce such records today.</p>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section>
+  <div class="article">
+    <span class="eyebrow">Method</span>
+    <h2>Four treatments, 48 facts, two questions</h2>
+    <p class="section-intro">The corpus is 25 hand-built Python / Capa pairs: 20 covering direct and via-helper authority, plus 5 covering via-dispatch and via-data indirection. The unit is one <span class="ic">(python_function, capability)</span> fact, 48 in total.</p>
+    <div class="cmp">
+      <div class="cmp-row">
+        <div class="cmp-term"><span class="tag">T1</span>Dependency / PURL SBOM</div>
+        <p class="cmp-desc">Package-granularity SBOM, the Syft / cdxgen style. No per-function granularity at all.</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term"><span class="tag">T2</span>Semgrep</div>
+        <p class="cmp-desc">A good-faith pattern heuristic.</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term"><span class="tag">T2b</span>CodeQL 2.25.6</div>
+        <p class="cmp-desc">Good-faith dataflow analysis (<span class="ic">python-all</span> 7.1.2), the strongest real tool on the corpus. Direct-fact recall is 36/36 with zero over-attribution, so every dispatcher miss is the tool's limit, not a weak query.</p>
+      </div>
+      <div class="cmp-row is-capa">
+        <div class="cmp-term"><span class="tag">T3</span>Capa by construction</div>
+        <p class="cmp-desc">The capability record the Capa compiler emits, with a sound <em>provably-excluded</em> channel proved in Agda.</p>
+      </div>
+    </div>
+    <div class="note"><p><strong>Two distinct questions, reported separately, never collapsed into one number.</strong> <strong>Q1</strong> is positive attribution: does the treatment credit capability <span class="ic">C</span> to function <span class="ic">F</span>? <strong>Q2</strong> is false-clearance under closed-world semantics: does the treatment leave a true fact silently cleared?</p></div>
+  </div>
+</section>
+
+<!-- Q2 CHART -->
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">The decisive result · Q2</span>
+    <h2>False-clearance under closed-world semantics</h2>
+    <p class="section-intro">A treatment commits a false-clearance for a true fact <span class="ic">(F, C)</span> when it gives the consumer no way to know <span class="ic">F</span> can exercise <span class="ic">C</span>. Absence equals exclusion, so a silently blank function reads as cleared.</p>
+    <div class="chartcard">
+      <div class="chart-cap"><span>False-clearances (of 48)</span><span>← lower is better</span></div>
+      <div class="bars">
+        <div class="bar-row">
+          <div class="bar-label"><b>T1</b> dependency / PURL SBOM</div>
+          <div class="bar-wrap"><div class="bar-track"><div class="bar-fill b-bad" style="width:100%"></div></div><div class="bar-val">48 / 48</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><b>T2</b> Semgrep (pattern)</div>
+          <div class="bar-wrap"><div class="bar-track"><div class="bar-fill b-mid" style="width:25%"></div></div><div class="bar-val">12 / 48</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><b>T2b</b> CodeQL (dataflow)</div>
+          <div class="bar-wrap"><div class="bar-track"><div class="bar-fill b-mid" style="width:20.8%"></div></div><div class="bar-val">10 / 48</div></div>
+        </div>
+        <div class="bar-row is-win">
+          <div class="bar-label"><b>T3</b> Capa by construction</div>
+          <div class="bar-wrap"><div class="bar-zero"><span class="pz"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 10.5l4 4 8-9"/></svg>0 / 48</span> clears nothing it has not soundly proved absent</div></div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:22px">CodeQL false-clears the ten via-dispatch / via-data dispatcher facts it cannot resolve. Capa's manifest gives each <span class="ic">(F, C)</span> three states: <em>reachable</em>, <em>provably-excluded</em> (sound, proved in Agda), or <em>not-determined</em>. The ten dispatcher facts land in <em>not-determined</em>, not <em>excluded</em>, so Capa clears nothing: <strong>0 false-clearances by construction</strong>.</p>
+    <div class="note">The separation is not a softer scoring rule for Capa. A consumer who read Capa's <span class="ic">reachable = []</span> closed-world (the only reading available for Semgrep and CodeQL) would also false-clear all ten dispatchers. What separates Capa is that it <em>offers</em> a sound exclusion channel a consumer can rely on.</div>
+  </div>
+</section>
+
+<!-- Q1 CHART -->
+<section>
+  <div class="article">
+    <span class="eyebrow">The honest result · Q1</span>
+    <h2>On attribution, Capa ties the best dataflow tool, exactly</h2>
+    <p class="section-intro">Does the treatment attribute <span class="ic">C</span> to function <span class="ic">F</span>? Identical criterion for all: <span class="ic">C</span> appears in the treatment's output for <span class="ic">F</span>.</p>
+    <div class="chartcard">
+      <div class="chart-cap"><span>Positive attribution: recall (of 48)</span><span>higher is better →</span></div>
+      <div class="bars">
+        <div class="bar-row">
+          <div class="bar-label"><b>T1</b> dependency / PURL SBOM</div>
+          <div class="bar-wrap"><div class="bar-track"><div class="bar-fill b-bad" style="width:1%"></div></div><div class="bar-val">0.0 %</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><b>T2</b> Semgrep (pattern)</div>
+          <div class="bar-wrap"><div class="bar-track"><div class="bar-fill b-mid" style="width:75%"></div></div><div class="bar-val">75.0 %</div></div>
+        </div>
+        <div class="bar-row is-win">
+          <div class="bar-label"><b>T2b</b> CodeQL (dataflow)</div>
+          <div class="bar-wrap"><div class="bar-track"><div class="bar-fill b-acc" style="width:79.2%"></div></div><div class="bar-val">79.2 %</div></div>
+        </div>
+        <div class="bar-row is-win">
+          <div class="bar-label"><b>T3</b> Capa by construction</div>
+          <div class="bar-wrap"><div class="bar-track"><div class="bar-fill b-acc" style="width:79.2%"></div></div><div class="bar-val">79.2 %</div></div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:22px">CodeQL and Capa both attribute <strong>38/48</strong>: the 36 direct facts plus the 2 via-helper facts; neither attributes any of the 10 dispatcher facts. <strong>Capa does not see more than CodeQL on Q1.</strong> Its advantage is not attributing more: it is never clearing a function incorrectly, which is Q2.</p>
+  </div>
+</section>
+
+<!-- THREE REGIMES -->
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">Breakdown</span>
+    <h2>The three regimes</h2>
+    <p class="section-intro">The corpus separates three regimes by how the authority is reached. Each cell shows <strong>Q1 (attributes?)</strong> and <strong>Q2 (false-clears?)</strong>.</p>
+    <div class="matrix">
+      <div class="mh">Regime</div>
+      <div class="mh">T2 Semgrep</div>
+      <div class="mh">T2b CodeQL</div>
+      <div class="mh">T3 Capa</div>
+
+      <div class="rl">direct</div>
+      <div class="cell ok"><span class="q attr"><span class="dot g"></span>attributes</span><span class="q safe">safe</span></div>
+      <div class="cell ok"><span class="q attr"><span class="dot g"></span>attributes</span><span class="q safe">safe</span></div>
+      <div class="cell ok"><span class="q attr"><span class="dot g"></span>attributes</span><span class="q safe">safe</span></div>
+
+      <div class="rl">via-helper</div>
+      <div class="cell bad"><span class="q attr"><span class="dot r"></span>misses</span><span class="q fc">false-clears</span></div>
+      <div class="cell ok"><span class="q attr"><span class="dot g"></span>attributes</span><span class="q safe">safe</span></div>
+      <div class="cell ok"><span class="q attr"><span class="dot g"></span>attributes</span><span class="q safe">safe</span></div>
+
+      <div class="rl">via-dispatch / via-data</div>
+      <div class="cell bad"><span class="q attr"><span class="dot r"></span>misses</span><span class="q fc">false-clears</span></div>
+      <div class="cell bad"><span class="q attr"><span class="dot r"></span>misses</span><span class="q fc">false-clears</span></div>
+      <div class="cell ok"><span class="q attr"><span class="dot n"></span>misses</span><span class="q safe">safe (sound)</span></div>
+    </div>
+    <div class="note"><strong>The crux is in Q2, not Q1.</strong> On via-dispatch facts neither real tool nor Capa positively attributes the dispatcher; but both real tools false-clear it under closed-world semantics, while Capa reports <em>not-determined</em> and false-clears nothing. It holds against the best dataflow tool, not only the pattern heuristic.</div>
+  </div>
+</section>
+
+<!-- DEPTH -->
+<section>
+  <div class="article">
+    <span class="eyebrow">Depth</span>
+    <h2>The same record on two real enterprise programs</h2>
+    <p class="section-intro">Reading the real SBOM the Capa build emits (<span class="ic">capa --manifest main.capa</span>) on two enterprise programs that exist only in Capa, to show the scale of the per-function record on real code.</p>
+    <div class="depth">
+      <div class="statcard">
+        <div class="ring" style="--p:94.3"><span class="rv">94.3%</span><span class="rl2">pure</span></div>
+        <div class="info">
+          <h4><a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a></h4>
+          <div class="meta">PCI / payment core · 70 functions<br>66 / 70 provably side-effect-free</div>
+          <span class="big">625 <small>provably-excluded facts</small></span>
+        </div>
+      </div>
+      <div class="statcard">
+        <div class="ring" style="--p:87.8"><span class="rv">87.8%</span><span class="rl2">pure</span></div>
+        <div class="info">
+          <h4><a href="https://github.com/nelsonduarte/capa_claimdesk">capa_claimdesk</a></h4>
+          <div class="meta">claims engine · 213 functions<br>187 / 213 provably side-effect-free</div>
+          <span class="big">2,295 <small>provably-excluded facts</small></span>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:22px">Between 88% and 94% of functions are provably pure, and no sensitive axis is held by more than ~4% of functions (paymentguard's <span class="ic">Fs</span> at 4.3%, three of seventy, is the worst case). These sound facts have no counterpart in any dependency SBOM: a dependency SBOM for <span class="ic">capa_claimdesk</span> lists six packages and cannot tell a consumer that exactly two functions reach the network, or that 187 functions are provably side-effect-free.</p>
+  </div>
+</section>
+
+<!-- REPRODUCIBILITY -->
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">Reproducibility</span>
+    <h2>Every number is committed and reproducible</h2>
+    <p class="section-intro">Each figure on this page is anchored to a versioned ground truth and a deterministic harness in the compiler repository. The CodeQL treatment reads pre-computed facts so the harness stays deterministic.</p>
+    <div class="nextgrid">
+      <a class="nextcard" href="https://github.com/nelsonduarte/capa-language/tree/main/evaluation/empirical_study">
+        <h4>The study, in the repository <span class="arr">→</span></h4>
+        <p>The full corpus, ground truth, and both halves (breadth and depth).</p>
+      </a>
+      <a class="nextcard" href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/empirical_study/summary.md">
+        <h4>The breadth summary <span class="arr">→</span></h4>
+        <p>The Q1 / Q2 tables, the three regimes, the per-pair results: the canonical source for this page.</p>
+      </a>
+      <a class="nextcard" href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/empirical_study/run_study.py">
+        <h4>run_study.py <span class="arr">→</span></h4>
+        <p>Regenerate the breadth tables end to end from the corpus and committed CodeQL facts.</p>
+      </a>
+      <a class="nextcard" href="https://github.com/nelsonduarte/capa-language/blob/main/evaluation/empirical_study/scratch_codeql/REPRODUCE.md">
+        <h4>scratch_codeql/REPRODUCE.md <span class="arr">→</span></h4>
+        <p>How the CodeQL 2.25.6 facts were produced with the good-faith reachability query.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->

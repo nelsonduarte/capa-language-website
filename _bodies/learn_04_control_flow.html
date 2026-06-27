@@ -1,0 +1,178 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 4 of 14</span>
+    <h1>Control flow</h1>
+    <p class="lead">How to make decisions and loop. The constructs are familiar; Capa lets most of them work both as statements and as expressions.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>If, the statement form</h2>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> n = 7
+    <span class="k">if</span> n &gt; 0
+        stdio.<span class="fn">println</span>(<span class="st">"positive"</span>)
+    <span class="k">elif</span> n &lt; 0
+        stdio.<span class="fn">println</span>(<span class="st">"negative"</span>)
+    <span class="k">else</span>
+        stdio.<span class="fn">println</span>(<span class="st">"zero"</span>)</code></pre></div>
+
+    <p>No parentheses around the condition. Indentation marks each branch's body. The chain is <span class="ic">if</span> / <span class="ic">elif</span> / <span class="ic">else</span>; the final <span class="ic">else</span> is optional. (The expression form below uses <span class="ic">else if</span>; only the statement form takes <span class="ic">elif</span>.)</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>If, the expression form</h2>
+
+    <p>The same construct also produces a value. When every branch produces a value of the same type, you can use <span class="ic">if</span> on the right-hand side of a <span class="ic">let</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> n = 7
+    <span class="k">let</span> sign = <span class="k">if</span> n &gt; 0 <span class="k">then</span> <span class="st">"+"</span> <span class="k">else if</span> n &lt; 0 <span class="k">then</span> <span class="st">"-"</span> <span class="k">else</span> <span class="st">"0"</span>
+    stdio.<span class="fn">println</span>(<span class="st">"sign is ${sign}"</span>)</code></pre></div>
+
+    <p>The keyword <span class="ic">then</span> separates the condition from the value when <span class="ic">if</span> is used as an expression on a single line. The branches must all produce the same type, and the <span class="ic">else</span> branch is mandatory.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>While</h2>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">var</span> n = 3
+    <span class="k">while</span> n &gt; 0
+        stdio.<span class="fn">println</span>(<span class="st">"${n}"</span>)
+        n = n - 1
+    stdio.<span class="fn">println</span>(<span class="st">"liftoff"</span>)</code></pre></div>
+
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run countdown.capa
+3
+2
+1
+liftoff</code></pre></div>
+
+    <p>The loop runs while the condition is <span class="ic">true</span>. <span class="ic">break</span> exits the loop; <span class="ic">continue</span> skips to the next iteration. Both must sit inside a loop or the compiler rejects them.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>For, with ranges</h2>
+
+    <p>The same countdown with <span class="ic">for</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">for</span> i <span class="k">in</span> 0..3
+        stdio.<span class="fn">println</span>(<span class="st">"${i}"</span>)</code></pre></div>
+
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+0
+1
+2</code></pre></div>
+
+    <p>The expression <span class="ic">0..3</span> is a <strong>range</strong>: it produces 0, 1, 2 in turn. The upper bound is <em>exclusive</em>. If you want it inclusive, use <span class="ic">0..=3</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">for</span> i <span class="k">in</span> 0..=3
+    stdio.<span class="fn">println</span>(<span class="st">"${i}"</span>)        <span class="cm">// prints 0 1 2 3</span></code></pre></div>
+
+    <p>A range is its own type (<span class="ic">Range&lt;Int&gt;</span>). When you iterate directly with <span class="ic">for x in a..b</span>, no list is built; the iteration is lazy. Materialise to a list with <span class="ic">.to_list()</span> if you need one.</p>
+
+    <p>You can also iterate any <span class="ic">List&lt;T&gt;</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> names = [<span class="st">"Ana"</span>, <span class="st">"Bruno"</span>, <span class="st">"Carla"</span>]
+    <span class="k">for</span> name <span class="k">in</span> names
+        stdio.<span class="fn">println</span>(<span class="st">"Hello, ${name}"</span>)</code></pre></div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Match, the gentle introduction</h2>
+
+    <p>The full power of <span class="ic">match</span> arrives in <a href="index.html">chapter 6</a> (when we introduce sum types). For now you can already use it on primitive values:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">describe</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">String</span>
+    <span class="k">match</span> n
+        0 -&gt; <span class="k">return</span> <span class="st">"zero"</span>
+        1 -&gt; <span class="k">return</span> <span class="st">"one"</span>
+        _ -&gt; <span class="k">return</span> <span class="st">"many"</span></code></pre></div>
+
+    <p>The shape is: scrutinee on the first line, then one arm per indented line. Each arm is <span class="ic">pattern -&gt; body</span>. The <span class="ic">_</span> wildcard matches anything that did not match a previous arm; it acts as a "default" branch.</p>
+
+    <p>Like <span class="ic">if</span>, <span class="ic">match</span> can also produce a value when every arm produces one and they share a type:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">describe</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">String</span>
+    <span class="k">return</span> <span class="k">match</span> n
+        0 -&gt; <span class="st">"zero"</span>
+        1 -&gt; <span class="st">"one"</span>
+        _ -&gt; <span class="st">"many"</span></code></pre></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>The two error modes</h2>
+
+    <p>First: mismatched branch types in expression form.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> x = <span class="k">if</span> <span class="k">true</span> <span class="k">then</span> 1 <span class="k">else</span> <span class="st">"two"</span>
+    stdio.<span class="fn">println</span>(<span class="st">"${x}"</span>)</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+hello.capa:2:13: error: if-expr: branches must have the same type;
+                        got Int (then) vs String (else)
+   2 |     let x = if true then 1 else "two"
+                   ^</code></pre></div>
+
+    <p>The <span class="ic">then</span> branch is <span class="ic">Int</span>, the <span class="ic">else</span> branch is <span class="ic">String</span>. There is no unifying type for both, so the analyzer rejects. If you want the result to be a <span class="ic">String</span> either way, write the <span class="ic">1</span> as <span class="ic">"1"</span>.</p>
+
+    <p>Second: <span class="ic">break</span> outside a loop.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">break</span></code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+hello.capa:2:5: error: 'break' is only valid inside a loop
+   2 |     break
+           ^</code></pre></div>
+
+    <p>The same diagnostic shape fires for <span class="ic">continue</span> outside a loop.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Where you are now</h2>
+
+    <p>You can branch, loop, and pattern-match on primitive values. The first four chapters give you a language that looks like Python with explicit types. From the next chapter onward, things get more interesting.</p>
+
+    <p>Chapter 5 is collections: lists, maps, sets, the higher-order methods that go with them. After that, you start building real programs.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="03-functions.html"><h4><span class="arr">&larr;</span> 3. Functions</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="05-collections.html"><h4>5. Collections <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>

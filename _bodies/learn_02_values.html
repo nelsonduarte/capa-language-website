@@ -1,0 +1,137 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 2 of 14</span>
+    <h1>Values and types</h1>
+    <p class="lead">The data your programs operate on. Six primitive types, two ways to bind names, and a string syntax with built-in interpolation.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The six primitive types</h2>
+
+    <p>Capa has six built-in primitives:</p>
+
+    <ul>
+        <li><span class="ic">Int</span> &middot; whole numbers, signed, 64-bit at runtime: <span class="ic">42</span>, <span class="ic">-7</span>, <span class="ic">0</span>.</li>
+        <li><span class="ic">Float</span> &middot; floating-point numbers: <span class="ic">3.14</span>, <span class="ic">-0.5</span>, <span class="ic">1e10</span>.</li>
+        <li><span class="ic">Bool</span> &middot; <span class="ic">true</span> or <span class="ic">false</span>.</li>
+        <li><span class="ic">String</span> &middot; text, double-quoted: <span class="ic">"Capa"</span>.</li>
+        <li><span class="ic">Char</span> &middot; one character, single-quoted: <span class="ic">'A'</span>.</li>
+        <li><span class="ic">Unit</span> &middot; the empty value, written <span class="ic">()</span>. The return type of any function that "returns nothing".</li>
+    </ul>
+
+    <p>No silent conversions between them. <span class="ic">1 + 1.0</span> is a compile error; you write <span class="ic">to_float(1) + 1.0</span> to make the intent explicit. The point is that nothing is ever surprising at run time: if it type-checks, the arithmetic is the arithmetic you wrote.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Binding names: <span class="ic">let</span> and <span class="ic">var</span></h2>
+
+    <p>Two keywords, two purposes:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">let</span> n = 42
+<span class="k">var</span> counter = 0</code></pre></div>
+
+    <p><span class="ic">let</span> is for values that never change after binding. Trying to reassign one is a compile error:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">let</span> n = 42
+n = 7   <span class="cm">// error: 'n' is bound with `let` and cannot be reassigned</span></code></pre></div>
+
+    <p><span class="ic">var</span> is for values that change. The type is fixed at binding time; only the value can change.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">var</span> counter = 0
+counter = counter + 1   <span class="cm">// fine</span>
+counter = <span class="st">"one"</span>          <span class="cm">// error: expected Int, got String</span></code></pre></div>
+
+    <p>Default to <span class="ic">let</span>. Reach for <span class="ic">var</span> only when the value genuinely changes; in practice this is mostly loop counters and accumulators that cannot be written as a fold. Capa's analyzer reads <span class="ic">let</span> as a strong hint to the reader, so prefer it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Types are inferred, but you can be explicit</h2>
+
+    <p>The examples above leave the type out: the compiler figures it out from the right-hand side. You can also write it explicitly:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">let</span> n: <span class="ty">Int</span> = 42
+<span class="k">let</span> pi: <span class="ty">Float</span> = 3.14
+<span class="k">let</span> ok: <span class="ty">Bool</span> = <span class="k">true</span>
+<span class="k">let</span> name: <span class="ty">String</span> = <span class="st">"Capa"</span></code></pre></div>
+
+    <p>Two reasons to be explicit: as documentation for the reader, and to constrain the inference when you really want a specific type (e.g. <span class="ic">let xs: List&lt;Int&gt; = []</span>; without the annotation the empty list cannot be inferred to anything in particular).</p>
+
+    <p>The convention in the standard library and the examples is: explicit types on function signatures (always), inferred on local <span class="ic">let</span> / <span class="ic">var</span> bindings (unless the type adds information).</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Strings interpolate by default</h2>
+
+    <p>To put a value inside a string, use <span class="ic">${expression}</span>. The expression is evaluated and its result is converted to a string:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> name = <span class="st">"Capa"</span>
+    <span class="k">let</span> n = 42
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, ${name}! n is ${n}."</span>)</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+Hello, Capa! n is 42.</code></pre></div>
+
+    <p>The expression inside <span class="ic">${...}</span> can be any expression that produces a value: <span class="ic">"${1 + 1}"</span> prints <span class="ic">2</span>. The conversion to string is automatic for every primitive type and for any type that has a <span class="ic">__str__</span> in the runtime (most user types do).</p>
+
+    <p>If you actually want the four characters <span class="ic">${ }</span> in your output, double the dollar: <span class="ic">"$${"</span> prints <span class="ic">${</span>.</p>
+
+    <div class="callout">
+        <p><strong>Raw strings.</strong> Prefix a string with <span class="ic">r</span> to disable both escapes and interpolation: <span class="ic">r"C:\path\to\file"</span> contains the literal backslashes. Useful for regular expressions and Windows paths.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The two error modes</h2>
+
+    <p>The first one we already saw above: reassigning a <span class="ic">let</span> binding is a compile error.</p>
+
+    <p>The second is type mismatch. Try to add an <span class="ic">Int</span> and a <span class="ic">String</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> result = 42 + <span class="st">"oops"</span>
+    stdio.<span class="fn">println</span>(<span class="st">"${result}"</span>)</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+hello.capa:2:18: error: '+': expected Int + Int or Float + Float or String + String,
+                        got Int + String
+   2 |     let result = 42 + "oops"
+                        ^</code></pre></div>
+
+    <p>Capa overloads <span class="ic">+</span> within each primitive type (<span class="ic">"a" + "b"</span> concatenates), but never across them. The error names the mismatch precisely so you know whether you wanted to convert the number to a string or convert the string to a number.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Where you are now</h2>
+
+    <p>You can declare values, give them types, and produce strings that include them. Next: how to put a sequence of statements behind a name and call it. Functions.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="01-hello.html"><h4><span class="arr">&larr;</span> 1. Hello, Capa</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="03-functions.html"><h4>3. Functions <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,159 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 7 of 14</span>
+    <h1>Errors as values</h1>
+    <p class="lead">Capa has no exceptions. Failure is just a value of a specific type, and the compiler makes sure you handle it. Two sum types in the standard library do the work, plus one operator that makes them pleasant to use.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Option: "might not be there"</h2>
+
+    <p>You met <span class="ic">Option&lt;T&gt;</span> implicitly in chapter 5: <span class="ic">xs.get(i)</span> returns one. <span class="ic">Option</span> is built in; conceptually its shape is:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="cm">// built-in; the names Some and None are reserved.</span>
+<span class="k">type</span> <span class="ty">Option</span>&lt;T&gt; =
+    <span class="ty">Some</span>(T)
+    <span class="ty">None</span></code></pre></div>
+
+    <p>It is the standard library's way of saying "this function might not have a sensible value to return". Searching a list, looking up a key, parsing a string that might be malformed: all return <span class="ic">Option</span>. You cannot redeclare it: <span class="ic">Some</span> and <span class="ic">None</span> are reserved variant names and the compiler will refuse to bind them to a user type.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">match</span> <span class="fn">parse_int</span>(<span class="st">"42"</span>)
+        <span class="ty">Some</span>(n) -&gt;
+            stdio.<span class="fn">println</span>(<span class="st">"parsed: ${n}"</span>)
+        <span class="ty">None</span> -&gt;
+            stdio.<span class="fn">println</span>(<span class="st">"not a number"</span>)</code></pre></div>
+
+    <p>The compiler will not let you reach into an <span class="ic">Option</span> without dealing with both cases. Pattern matching is the unflinching way; the methods on <span class="ic">Option</span> are the convenient way:</p>
+
+    <ul>
+        <li><span class="ic">opt.is_some()</span> / <span class="ic">opt.is_none()</span> &middot; boolean checks.</li>
+        <li><span class="ic">opt.unwrap_or(default)</span> &middot; the value, or a fallback.</li>
+        <li><span class="ic">opt.map(f)</span> &middot; if Some, apply <span class="ic">f</span> to the inner value.</li>
+        <li><span class="ic">opt.and_then(f)</span> &middot; if Some, call <span class="ic">f</span> with the inner value; <span class="ic">f</span> itself returns an <span class="ic">Option</span>, useful for chaining.</li>
+        <li><span class="ic">opt.or_else(f)</span> &middot; if None, call <span class="ic">f()</span> to produce a fallback <span class="ic">Option</span>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Result: "operation might fail with a reason"</h2>
+
+    <p>Where <span class="ic">Option</span> says "value or no value", <span class="ic">Result&lt;T, E&gt;</span> says "value of type <span class="ic">T</span> on success, value of type <span class="ic">E</span> on failure". The failure carries information. <span class="ic">Result</span> is also built in; its shape is:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="cm">// built-in; the names Ok and Err are reserved.</span>
+<span class="k">type</span> <span class="ty">Result</span>&lt;T, E&gt; =
+    <span class="ty">Ok</span>(T)
+    <span class="ty">Err</span>(E)</code></pre></div>
+
+    <p>Anything that does I/O or talks to the outside world returns a <span class="ic">Result</span>. Reading a file, fetching a URL, parsing a JSON document: each one returns <span class="ic">Result&lt;T, IoError&gt;</span> or similar. As with <span class="ic">Option</span>, the variant names <span class="ic">Ok</span> and <span class="ic">Err</span> are reserved; user sum types cannot reuse them.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>, fs: <span class="cp">Fs</span>)
+    <span class="k">match</span> fs.<span class="fn">read</span>(<span class="st">"config.txt"</span>)
+        <span class="ty">Ok</span>(text) -&gt;
+            stdio.<span class="fn">println</span>(<span class="st">"file: ${text}"</span>)
+        <span class="ty">Err</span>(e) -&gt;
+            stdio.<span class="fn">eprintln</span>(<span class="st">"error: ${e}"</span>)</code></pre></div>
+
+    <p>The methods mirror <span class="ic">Option</span>: <span class="ic">r.is_ok()</span>, <span class="ic">r.is_err()</span>, <span class="ic">r.unwrap_or(default)</span>, <span class="ic">r.map(f)</span>, <span class="ic">r.map_err(g)</span>, <span class="ic">r.and_then(f)</span>, <span class="ic">r.or_else(f)</span>. Plus two projections: <span class="ic">r.ok()</span> turns a <span class="ic">Result&lt;T, E&gt;</span> into an <span class="ic">Option&lt;T&gt;</span> (dropping the error), and <span class="ic">r.err()</span> turns it into an <span class="ic">Option&lt;E&gt;</span> (dropping the value).</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The <span class="ic">?</span> operator</h2>
+
+    <p>Writing <span class="ic">match</span> at every call site becomes tedious when half your function is "do thing, propagate failure, do next thing". Capa borrows Rust's <span class="ic">?</span>: append it to an expression that returns <span class="ic">Result&lt;T, E&gt;</span> or <span class="ic">Option&lt;T&gt;</span> and it does the obvious thing.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">load_config</span>(fs: <span class="cp">Fs</span>) -&gt; <span class="ty">Result</span>&lt;<span class="ty">String</span>, <span class="ty">IoError</span>&gt;
+    <span class="k">let</span> text = fs.<span class="fn">read</span>(<span class="st">"config.txt"</span>)?
+    <span class="k">let</span> trimmed = text.<span class="fn">trim</span>()
+    <span class="k">return</span> <span class="ty">Ok</span>(trimmed)</code></pre></div>
+
+    <p>Reading this aloud: "let <span class="ic">text</span> be the result of <span class="ic">read</span>; if that returned <span class="ic">Err</span>, return it from <span class="ic">load_config</span> immediately; otherwise unwrap the <span class="ic">Ok</span> and bind <span class="ic">text</span> to the inner string". The single <span class="ic">?</span> replaces a five-line <span class="ic">match</span>.</p>
+
+    <p>The same operator works on <span class="ic">Option&lt;T&gt;</span>, propagating <span class="ic">None</span> up:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">first_two</span>(xs: <span class="ty">List</span>&lt;<span class="ty">Int</span>&gt;) -&gt; <span class="ty">Option</span>&lt;<span class="ty">Int</span>&gt;
+    <span class="k">let</span> a = xs.<span class="fn">first</span>()?
+    <span class="k">let</span> b = xs.<span class="fn">get</span>(1)?
+    <span class="k">return</span> <span class="ty">Some</span>(a + b)</code></pre></div>
+
+    <p>The function returns <span class="ic">Option&lt;Int&gt;</span>, so the <span class="ic">?</span> on each line propagates <span class="ic">None</span> to the caller. The same rule applies for both: the enclosing function must return a matching <span class="ic">Option</span> / <span class="ic">Result</span> shape, otherwise the compiler rejects the <span class="ic">?</span>.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Why no exceptions</h2>
+
+    <p>The cost of unchecked exceptions: every function can fail in ways its signature does not declare, and the type system cannot help you enumerate the failure modes. The runtime answer is "wrap everything in <span class="ic">try</span>", which most code does not.</p>
+
+    <p>Capa's approach: failure becomes a value, the value carries a type, the compiler refuses to let you ignore it. The <span class="ic">?</span> operator gives you the ergonomics of unchecked exceptions in the cases where you genuinely want to "fail through", and full pattern matching for the cases where you want to recover.</p>
+
+    <p>The one escape hatch is <span class="ic">Unsafe</span> (chapter 8 introduces capabilities; <span class="ic">Unsafe</span> is the most permissive). Python interop crosses an <span class="ic">Unsafe</span> boundary and brings Python's exception semantics back into the program; the manifest flags every such function.</p>
+
+    <div class="callout">
+        <p><strong>Try this.</strong> Write <span class="ic">fun safe_divide(a: Int, b: Int) -&gt; Option&lt;Int&gt;</span> that returns <span class="ic">None</span> when <span class="ic">b</span> is zero. Now write a caller that uses <span class="ic">?</span> to chain two divisions and returns <span class="ic">None</span> if either fails.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The two error modes</h2>
+
+    <p>First: <span class="ic">?</span> in a function whose return type does not match. If the inner expression is <span class="ic">Result&lt;T, E&gt;</span>, the function must also return a <span class="ic">Result&lt;_, E&gt;</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">read_first_line</span>(fs: <span class="cp">Fs</span>) -&gt; <span class="ty">String</span>
+    <span class="k">let</span> text = fs.<span class="fn">read</span>(<span class="st">"config.txt"</span>)?
+    <span class="k">return</span> text</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code>error: '?' can only propagate to a function returning Result&lt;_, E&gt;
+       or Option&lt;_&gt;; this function returns String
+   2 |     let text = fs.read("config.txt")?
+                      ^</code></pre></div>
+
+    <p>Either change the return type to <span class="ic">Result&lt;String, IoError&gt;</span>, or stop using <span class="ic">?</span> and pattern-match locally.</p>
+
+    <p>Second: forgetting that <span class="ic">Option</span> is not the inner type. Same shape we saw at the end of chapter 5:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> xs = [10, 20, 30]
+    <span class="k">let</span> doubled = xs.<span class="fn">first</span>() * 2</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code>error: '*': expected Int * Int or Float * Float,
+       got Option&lt;Int&gt; * Int</code></pre></div>
+
+    <p>Pattern match on the <span class="ic">Option</span>, use <span class="ic">.unwrap_or(default)</span>, or apply <span class="ic">?</span> when the enclosing function returns a compatible type.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Where you are now</h2>
+
+    <p>You can model failures as values, handle them with <span class="ic">match</span>, propagate them with <span class="ic">?</span>. The next chapter is the heart of Capa: capabilities. We have been using <span class="ic">Stdio</span> all along; chapter 8 is where it stops being a magic word and starts being a tool you reason with.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="06-structs-and-sum-types.html"><h4><span class="arr">&larr;</span> 6. Structs and sum types</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="08-your-first-capability.html"><h4>8. Your first capability <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>

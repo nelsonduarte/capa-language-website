@@ -1,0 +1,124 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 1 of 14</span>
+    <h1>Hello, Capa</h1>
+    <p class="lead">The smallest possible Capa program, and the one piece of Capa syntax you cannot avoid learning on the way out.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The program</h2>
+
+    <p>Open your editor and save this as <span class="ic">hello.capa</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, Capa"</span>)</code></pre></div>
+
+    <p>Three things on three lines. Read it aloud as: "define a function called <span class="ic">main</span>, which takes a parameter called <span class="ic">stdio</span> of type <span class="ic">Stdio</span>; the body calls the <span class="ic">println</span> method on <span class="ic">stdio</span> with the string <span class="ic">"Hello, Capa"</span>".</p>
+
+    <p>From a terminal in the same directory:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+Hello, Capa</code></pre></div>
+
+    <p>That is your first Capa program running. Everything else in this tutorial builds on this shape.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>What just happened</h2>
+
+    <p>Three things worth knowing about the shape of that file:</p>
+
+    <ol>
+        <li>
+            <p><strong>Capa is indentation-significant.</strong> The body of <span class="ic">main</span> is one level indented (four spaces or one tab; mix them and the lexer complains). Like Python. There are no braces.</p>
+        </li>
+        <li>
+            <p><strong>Capa programs start at a function called <span class="ic">main</span>.</strong> The compiler looks for it; if you rename or remove it, the program does nothing at run time.</p>
+        </li>
+        <li>
+            <p><strong><span class="ic">stdio</span> is a parameter, not a global.</strong> This is the part of the program that will look unusual if you come from Python or JavaScript. In those languages, <span class="ic">print</span> is just there; the standard output stream is ambient authority. In Capa it is a value: the runtime hands a fresh <span class="ic">Stdio</span> to <span class="ic">main</span>, and only code that holds it can write to standard output.</p>
+        </li>
+    </ol>
+
+    <p>You do not need to fully internalise capabilities yet. We come back to them properly in <a href="index.html">chapter 8</a>. For now, the rule is simply: when you want to print, your function needs to receive a <span class="ic">Stdio</span> parameter and call <span class="ic">println</span> on it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The two error modes</h2>
+
+    <p>Try the two simplest mistakes so you see what the compiler does. First, remove the <span class="ic">stdio</span> parameter:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>()
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, Capa"</span>)</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+hello.capa:2:5: error: undefined name 'stdio'
+   2 |     stdio.println("Hello, Capa")
+           ^</code></pre></div>
+
+    <p>The compiler refused to run the program. <span class="ic">stdio</span> was not a parameter and is not a global, so the name does not exist in scope. This is the capability discipline doing its job: code with no <span class="ic">Stdio</span> in scope <em>cannot</em> print.</p>
+
+    <p>Second mistake: keep <span class="ic">stdio</span> as a parameter but never use it.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> _ = 1 + 1</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+hello.capa:1:14: error: capability parameter 'stdio' is declared but never used;
+                       prefix the name with '_' to silence this check
+   1 | fun main(stdio: Stdio)
+                  ^</code></pre></div>
+
+    <p>If you ask for a capability, you are committing to use it. A function that takes <span class="ic">Stdio</span> but never prints anything is suspicious. If you have a legitimate reason (maybe you are stubbing out a function under construction), prefix the parameter with <span class="ic">_</span>: <span class="ic">_stdio: Stdio</span>.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>A second program</h2>
+
+    <p>Print two lines. Same shape, two calls:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, Capa"</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"Welcome aboard."</span>)</code></pre></div>
+
+    <p>Both lines are in the body of <span class="ic">main</span> because they are indented to the same column. Statements are separated by newlines; there is no <span class="ic">;</span>.</p>
+
+    <div class="callout">
+        <p><strong>Try this.</strong> Change the second string to use the apostrophe directly: <span class="ic">"Don't be late."</span>. The string is double-quoted so the single quote needs no escape. What about double quotes inside a string? Try writing <span class="ic">"She said \"hi\""</span>. Does it work? Why?</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Where you are now</h2>
+
+    <p>You can write a Capa program, save it, and run it. You have seen the compiler reject two kinds of mistake: a missing name and an unused capability. The shape <span class="ic">fun main(stdio: Stdio)</span> will be every program you write in this tutorial until chapter 11, when we start importing modules.</p>
+
+    <p>The next chapter introduces the building blocks of every program after this one: values, variables, types.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="index.html"><h4><span class="arr">&larr;</span> Table of contents</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="02-values.html"><h4>2. Values and types <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>

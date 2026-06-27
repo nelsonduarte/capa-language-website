@@ -1,120 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>14. From source to SBOM | Learn Capa</title>
-    <meta name="description" content="Chapter 14 of Learn Capa: generate the capability manifest, CycloneDX and SPDX SBOMs, VEX, and SLSA provenance from one small program, and read them like an auditor.">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <script src="../theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>14. From source to SBOM | Learn Capa</title>
+<meta name="description" content="Chapter 14 of Learn Capa: generate the capability manifest, CycloneDX and SPDX SBOMs, VEX and SLSA provenance.">
+<link rel="canonical" href="https://capa-language.com/learn/14-from-source-to-sbom.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Capa">
+<meta property="og:title" content="14. From source to SBOM | Learn Capa">
+<meta property="og:description" content="Chapter 14 of Learn Capa: generate the capability manifest, CycloneDX and SPDX SBOMs, VEX and SLSA provenance.">
+<meta property="og:url" content="https://capa-language.com/learn/14-from-source-to-sbom.html">
+<meta property="og:image" content="https://capa-language.com/capa_logo.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="14. From source to SBOM | Learn Capa">
+<meta name="twitter:description" content="Chapter 14 of Learn Capa: generate the capability manifest, CycloneDX and SPDX SBOMs, VEX and SLSA provenance.">
+<meta name="twitter:image" content="https://capa-language.com/capa_logo.svg">
+<link rel="icon" href="../capa_logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-
-<header>
-    <nav>
-        <a href="../index.html" class="logo">
-            <img src="../capa_logo.svg" alt="" aria-hidden="true">
-            Capa
-        </a>
-        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
-        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
-            <span></span><span></span><span></span>
-        </label>
-        <div class="nav-links">
-            <a href="../index.html">Home</a>
-            <a href="../why.html">Why Capa</a>
-            <a href="../compare.html">Compare</a>
-            <a href="../study.html">Study</a>
-            <a href="index.html" class="current">Learn</a>
-            <a href="../reference.html">Reference</a>
-            <a href="../start.html">Get started</a>
-            <a href="../migrating.html">Migrating</a>
-            <a href="../regulatory.html">Regulatory</a>
-            <a href="../agent-demo.html">Agent demo</a>
-            <a href="../roadmap.html">Roadmap</a>
-            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
-            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
-        </div>
+<a class="skip-link" href="#main">Skip to content</a>
+<svg width="0" height="0" class="svg-defs" aria-hidden="true">
+ <symbol id="capa-mark" viewBox="0 0 577.22 782.7">
+  <path fill="#a885fa" d="M515.82,258.55c1.6,9.06-14.34-4.03-22.58-5.07-128.33-58.01-269.07,69.8-197.88,196.88,54.82,97.82,196.29,106.26,275.81,34.39,7.59-3.13,6.02,11.39,5.7,16.08,3.09,87.71-138.58,190.41-66.46,248.48,2.83,2.37,15.3,9.63,16,11.02,3.47,6.87-14.56,10.48-19.31,11.72-233.4,62-442.98-157.08-369.29-387.95-47,68.7-43.12,183.85-3.79,263.59.91,1.87,6.52,11.33,9.7,17.43.74,1.42-.95,2.87-2.23,1.91-20.32-15.17-40.98-28.25-64.64-38.16-21.07-8.82-65.58-18.79-76.15-39.85-11.95-141.41,132.91-331.75,245.19-408.17,27.89-10.82,56.49.72,81.86,13.37,9.26-.26-16.46-16.32-18.85-17.4-42.73-25.62-91.55,3.89-75.56-28.52,3.84-7.75,13.77-16.2,22-19,10.08-3.44,28.13-.72,16.54-16.46-5.41-7.34-16.48-14.32-24.64-18.36-6.77-3.35-33.51-10.83-32.19-19.41,61.39-110.77,222.44-79.82,314.35-28.77,26.38,17.14-27.13,108.94-38.71,131.34-46.28,52.42-2.25,17.23,25.13,80.91ZM530.68,69.52c.89,1.01,2.6.26,2.61-1.08.07-14.22-18.12-14.02-29.89-13.09-37.48,2.97-62.22,29.45-84.49,56.51-28.27,33.92-75.86,88.32-2.74,100.66,1.67.24,2.41-2.03.92-2.83l-8.44-4.52c-14.22-9.07-21.16-18.6-12.57-35.14,25.37-41.11,80.49-112.17,134.61-100.51Z"/>
+  <path fill="#fdfdfe" d="M533.29,68.44c0,1.34-1.72,2.08-2.61,1.08-.07-.08-.15-.16-.24-.24-10.04-8.31-43.94,6.95-54.23,12.88-25.39,14.64-66.61,61.78-80.14,87.86-8.56,16.51-1.72,25.98,12.45,35.08.04.02.07.05.11.07l8.44,4.52c1.49.8.75,3.08-.92,2.83-19.72-2.89-41.34-12.65-39.32-35.73,1.36-15.52,31.22-51.76,42.07-64.93,22.27-27.06,47.01-53.54,84.49-56.51,11.77-.93,29.97-1.13,29.89,13.09Z"/>
+ </symbol>
+</svg>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="../index.html"><svg class="mark"><use href="#capa-mark"/></svg> Capa</a>
+    <nav class="nav-links" id="navlinks">
+      <a href="../why.html">Why Capa</a>
+      <a href="../compare.html">Compare</a>
+      <a href="../learn/index.html" class="active">Learn</a>
+      <a href="../reference.html">Reference</a>
+      <div class="has-drop">
+        <button class="drop-btn" id="docsbtn" aria-haspopup="true" aria-expanded="false">Docs
+          <svg class="car" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l4 4 4-4"/></svg>
+        </button>
+        <div class="drop"><a href="../study.html">Study</a><a href="../migrating.html">Migrating</a><a href="../regulatory.html">Regulatory</a><a href="../agent-demo.html">Agent demo</a><a href="../stdlib.html">Standard library</a><a href="../community.html">Community</a></div>
+      </div>
+      <a href="../roadmap.html">Roadmap</a>
     </nav>
+    <div class="nav-cta">
+      <a class="nav-ico" href="https://github.com/nelsonduarte/capa-language" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      <a class="btn btn-primary" href="../start.html">Get started</a>
+      <button class="nav-toggle" id="navtoggle" aria-label="Menu"><span></span></button>
+    </div>
+  </div>
 </header>
-
-<main>
-
-<div class="page-heading">
-    <p class="learn-breadcrumb"><a href="index.html">Learn</a> &middot; Chapter 14 of 14</p>
+<main id="main">
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 14 of 14</span>
     <h1>From source to SBOM</h1>
-    <p>Everything the previous chapters taught, capabilities in signatures, attenuation, <code>@secret</code> and <code>declassify</code>, exists so the compiler can answer audit questions mechanically. This chapter takes one small program and pulls every audit artefact out of it: the capability manifest, a CycloneDX SBOM, an SPDX SBOM, a VEX document, and a SLSA provenance attestation. All five come from the compiler itself, from the same source the type checker reads.</p>
-</div>
-
-<section>
-    <h2>The program</h2>
-
-    <p>Create a working directory with a log file to analyse:</p>
-
-<pre><code>$ mkdir report &amp;&amp; cd report &amp;&amp; mkdir logs
-$ printf 'INFO boot\nERROR disk full\nINFO retry\nERROR disk full\nINFO ok\n' &gt; logs/app.log</code></pre>
-
-    <p>(PowerShell: <code>"INFO boot`nERROR disk full`nINFO retry`nERROR disk full`nINFO ok`n" | Set-Content -NoNewline logs/app.log</code>.)</p>
-
-    <p>Then save this as <code>report.capa</code>. It deliberately exercises the distinctive machinery: a pure helper, a capability-holding function, an attenuated <code>Fs</code>, a secret from <code>Env</code> routed through <code>declassify</code>, and one <code>@vex</code> claim:</p>
-
-<pre><code><span class="comment">// report.capa: read a log file, count error lines, print a summary.</span>
-
-<span class="kw-decl">fun</span> <span class="fn-name">count_errors</span>(lines: <span class="ty-builtin">List</span>&lt;<span class="ty-primitive">String</span>&gt;) -&gt; <span class="ty-primitive">Int</span>
-    <span class="kw-storage">var</span> n = <span class="num">0</span>
-    <span class="kw-ctrl">for</span> line <span class="kw-ctrl">in</span> lines
-        <span class="kw-ctrl">if</span> line.<span class="fn-call">contains</span>(<span class="str">"ERROR"</span>)
-            n = n + <span class="num">1</span>
-    <span class="kw-ctrl">return</span> n
-
-<span class="attr">@vex</span>(
-    cve: <span class="str">"CVE-2021-44228"</span>,
-    status: <span class="str">"not_affected"</span>,
-    justification: <span class="str">"code_not_reachable"</span>,
-    detail: <span class="str">"summarise declares no Net capability; a network-side exploit chain cannot be reached from this function. Statically enforced."</span>
-)
-<span class="kw-decl">fun</span> <span class="fn-name">summarise</span>(stdio: <span class="cap">Stdio</span>, fs: <span class="cap">Fs</span>, env: <span class="cap">Env</span>, path: <span class="ty-primitive">String</span>) -&gt; <span class="ty-builtin">Result</span>&lt;<span class="ty-primitive">Unit</span>, <span class="ty-builtin">IoError</span>&gt;
-    <span class="kw-storage">let</span> body = fs.<span class="fn-call">read</span>(path)?
-    <span class="kw-storage">let</span> lines = body.<span class="fn-call">split</span>(<span class="str">"\n"</span>)
-    <span class="kw-storage">let</span> errors = <span class="fn-call">count_errors</span>(lines)
-    <span class="kw-storage">let</span> token = env.<span class="fn-call">get</span>(<span class="str">"REPORT_TOKEN"</span>)    <span class="comment">// @secret by default</span>
-    <span class="kw-ctrl">match</span> token
-        <span class="variant">Some</span>(t) -&gt;
-            <span class="kw-storage">let</span> tail = t.<span class="fn-call">substring</span>(t.<span class="fn-call">length</span>() - <span class="num">4</span>, t.<span class="fn-call">length</span>())
-            <span class="kw-storage">let</span> masked = <span class="fn-call">declassify</span>(
-                <span class="str">"token ending ${tail}"</span>,
-                reason: <span class="str">"audit trail: last 4 chars identify the reporting token"</span>
-            )
-            stdio.<span class="fn-call">println</span>(<span class="str">"report by ${masked}"</span>)
-        <span class="variant">None</span> -&gt; stdio.<span class="fn-call">println</span>(<span class="str">"report (unauthenticated)"</span>)
-    stdio.<span class="fn-call">println</span>(<span class="str">"${errors} error lines in ${lines.length()} total"</span>)
-    <span class="kw-ctrl">return</span> <span class="variant">Ok</span>(())
-
-<span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>, fs: <span class="cap">Fs</span>, env: <span class="cap">Env</span>)
-    <span class="kw-storage">let</span> logs_fs = fs.<span class="fn-call">restrict_to</span>(<span class="str">"logs/"</span>)
-    <span class="kw-ctrl">match</span> <span class="fn-call">summarise</span>(stdio, logs_fs, env, <span class="str">"logs/app.log"</span>)
-        <span class="variant">Ok</span>(_) -&gt; ()
-        <span class="variant">Err</span>(e) -&gt; stdio.<span class="fn-call">eprintln</span>(<span class="str">"failed: ${e}"</span>)</code></pre>
-
-    <p>Check that it runs:</p>
-
-<pre><code>$ REPORT_TOKEN=tk_9f3a77c2 capa --run report.capa
-report by token ending 77c2
-2 error lines in 6 total</code></pre>
-
-    <p>(PowerShell: <code>$env:REPORT_TOKEN = "tk_9f3a77c2"; capa --run report.capa</code>.)</p>
-
-    <p>A working program. Now stop being its developer and become its auditor.</p>
+    <p class="lead">Everything the previous chapters taught, capabilities in signatures, attenuation, <span class="ic">@secret</span> and <span class="ic">declassify</span>, exists so the compiler can answer audit questions mechanically. This chapter takes one small program and pulls every audit artefact out of it: the capability manifest, a CycloneDX SBOM, an SPDX SBOM, a VEX document, and a SLSA provenance attestation. All five come from the compiler itself, from the same source the type checker reads.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
 </section>
 
 <section>
-    <h2>Artefact 1: the capability manifest</h2>
+  <div class="article"><h2>The program</h2>
 
-    <p><code>capa --manifest</code> emits Capa-native JSON describing every function's authority. Here is the entry for <code>summarise</code>, shortened with ellipses but otherwise verbatim:</p>
+    <p>Create a working directory with a log file to analyse:</p>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ mkdir report &amp;&amp; cd report &amp;&amp; mkdir logs
+$ printf 'INFO boot\nERROR disk full\nINFO retry\nERROR disk full\nINFO ok\n' &gt; logs/app.log</code></pre></div>
+
+    <p>(PowerShell: <span class="ic">"INFO boot`nERROR disk full`nINFO retry`nERROR disk full`nINFO ok`n" | Set-Content -NoNewline logs/app.log</span>.)</p>
+
+    <p>Then save this as <span class="ic">report.capa</span>. It deliberately exercises the distinctive machinery: a pure helper, a capability-holding function, an attenuated <span class="ic">Fs</span>, a secret from <span class="ic">Env</span> routed through <span class="ic">declassify</span>, and one <span class="ic">@vex</span> claim:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="cm">// report.capa: read a log file, count error lines, print a summary.</span>
+
+<span class="k">fun</span> <span class="fn">count_errors</span>(lines: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;) -&gt; <span class="ty">Int</span>
+    <span class="k">var</span> n = <span class="nu">0</span>
+    <span class="k">for</span> line <span class="k">in</span> lines
+        <span class="k">if</span> line.<span class="fn">contains</span>(<span class="st">"ERROR"</span>)
+            n = n + <span class="nu">1</span>
+    <span class="k">return</span> n
+
+<span class="cp">@vex</span>(
+    cve: <span class="st">"CVE-2021-44228"</span>,
+    status: <span class="st">"not_affected"</span>,
+    justification: <span class="st">"code_not_reachable"</span>,
+    detail: <span class="st">"summarise declares no Net capability; a network-side exploit chain cannot be reached from this function. Statically enforced."</span>
+)
+<span class="k">fun</span> <span class="fn">summarise</span>(stdio: <span class="cp">Stdio</span>, fs: <span class="cp">Fs</span>, env: <span class="cp">Env</span>, path: <span class="ty">String</span>) -&gt; <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
+    <span class="k">let</span> body = fs.<span class="fn">read</span>(path)?
+    <span class="k">let</span> lines = body.<span class="fn">split</span>(<span class="st">"\n"</span>)
+    <span class="k">let</span> errors = <span class="fn">count_errors</span>(lines)
+    <span class="k">let</span> token = env.<span class="fn">get</span>(<span class="st">"REPORT_TOKEN"</span>)    <span class="cm">// @secret by default</span>
+    <span class="k">match</span> token
+        <span class="ty">Some</span>(t) -&gt;
+            <span class="k">let</span> tail = t.<span class="fn">substring</span>(t.<span class="fn">length</span>() - <span class="nu">4</span>, t.<span class="fn">length</span>())
+            <span class="k">let</span> masked = <span class="fn">declassify</span>(
+                <span class="st">"token ending ${tail}"</span>,
+                reason: <span class="st">"audit trail: last 4 chars identify the reporting token"</span>
+            )
+            stdio.<span class="fn">println</span>(<span class="st">"report by ${masked}"</span>)
+        <span class="ty">None</span> -&gt; stdio.<span class="fn">println</span>(<span class="st">"report (unauthenticated)"</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"${errors} error lines in ${lines.length()} total"</span>)
+    <span class="k">return</span> <span class="ty">Ok</span>(())
+
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>, fs: <span class="cp">Fs</span>, env: <span class="cp">Env</span>)
+    <span class="k">let</span> logs_fs = fs.<span class="fn">restrict_to</span>(<span class="st">"logs/"</span>)
+    <span class="k">match</span> <span class="fn">summarise</span>(stdio, logs_fs, env, <span class="st">"logs/app.log"</span>)
+        <span class="ty">Ok</span>(_) -&gt; ()
+        <span class="ty">Err</span>(e) -&gt; stdio.<span class="fn">eprintln</span>(<span class="st">"failed: ${e}"</span>)</code></pre></div>
+
+    <p>Check that it runs:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ REPORT_TOKEN=tk_9f3a77c2 capa --run report.capa
+report by token ending 77c2
+2 error lines in 6 total</code></pre></div>
+
+    <p>(PowerShell: <span class="ic">$env:REPORT_TOKEN = "tk_9f3a77c2"; capa --run report.capa</span>.)</p>
+
+    <p>A working program. Now stop being its developer and become its auditor.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Artefact 1: the capability manifest</h2>
+
+    <p><span class="ic">capa --manifest</span> emits Capa-native JSON describing every function's authority. Here is the entry for <span class="ic">summarise</span>, shortened with ellipses but otherwise verbatim:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --manifest report.capa
 {
   "capa_version": "1.2.0",
@@ -150,12 +171,13 @@ report by token ending 77c2
     "declassification_sites": 1,
     "protocol_states": 0
   }
-}</code></pre>
+}</code></pre></div>
 
-    <p>Three fields carry the audit weight. <code>declared_capabilities</code> is the signature's claim. <code>provably_excluded_capabilities</code> is the type system's counter-claim: <code>summarise</code> can <em>never</em> touch <code>Net</code> or <code>Proc</code>, because those names are not in scope and the analyzer rejected every path to them. And <code>declassifications</code> lists every sanctioned secret disclosure with its stated reason, the record chapter 13 promised.</p>
+    <p>Three fields carry the audit weight. <span class="ic">declared_capabilities</span> is the signature's claim. <span class="ic">provably_excluded_capabilities</span> is the type system's counter-claim: <span class="ic">summarise</span> can <em>never</em> touch <span class="ic">Net</span> or <span class="ic">Proc</span>, because those names are not in scope and the analyzer rejected every path to them. And <span class="ic">declassifications</span> lists every sanctioned secret disclosure with its stated reason, the record chapter 13 promised.</p>
 
-    <p>The manifest also captures attenuation. Inside <code>main</code>'s entry, the call to <code>summarise</code> records that the <code>Fs</code> argument was narrowed before being handed down:</p>
+    <p>The manifest also captures attenuation. Inside <span class="ic">main</span>'s entry, the call to <span class="ic">summarise</span> records that the <span class="ic">Fs</span> argument was narrowed before being handed down:</p>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">output</span></div>
 <pre><code>"args_flow": [
   null,
   {
@@ -166,16 +188,18 @@ report by token ending 77c2
   },
   null,
   null
-]</code></pre>
+]</code></pre></div>
 
-    <p>An auditor reads this as: the filesystem authority that reaches <code>summarise</code> is not the program's full <code>Fs</code>, it is <code>Fs</code> restricted to <code>logs/</code>, and the compiler extracted that fact from the source, not from a questionnaire.</p>
+    <p>An auditor reads this as: the filesystem authority that reaches <span class="ic">summarise</span> is not the program's full <span class="ic">Fs</span>, it is <span class="ic">Fs</span> restricted to <span class="ic">logs/</span>, and the compiler extracted that fact from the source, not from a questionnaire.</p>
+  </div>
 </section>
 
 <section>
-    <h2>Artefact 2: the CycloneDX SBOM</h2>
+  <div class="article"><h2>Artefact 2: the CycloneDX SBOM</h2>
 
-    <p><code>capa --cyclonedx</code> wraps the same information in CycloneDX 1.5, the SBOM format most compliance tooling ingests. Each function becomes a component, and the capability data rides in standard <code>properties[]</code> under a <code>capa:</code> namespace:</p>
+    <p><span class="ic">capa --cyclonedx</span> wraps the same information in CycloneDX 1.5, the SBOM format most compliance tooling ingests. Each function becomes a component, and the capability data rides in standard <span class="ic">properties[]</span> under a <span class="ic">capa:</span> namespace:</p>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --cyclonedx report.capa
 {
   "bomFormat": "CycloneDX",
@@ -201,16 +225,18 @@ report by token ending 77c2
       ]
     }
   ]
-}</code></pre>
+}</code></pre></div>
 
-    <p>The point of the wrapper: any tool that already understands CycloneDX (dependency-track dashboards, policy engines, the <code>sbom-watch</code> program from the home page) can consume this without knowing anything about Capa. The capability claims are just properties on components. A scanner-produced SBOM tells you which packages are present; this one also tells you, per function, what each piece is allowed to do.</p>
+    <p>The point of the wrapper: any tool that already understands CycloneDX (dependency-track dashboards, policy engines, the <span class="ic">sbom-watch</span> program from the home page) can consume this without knowing anything about Capa. The capability claims are just properties on components. A scanner-produced SBOM tells you which packages are present; this one also tells you, per function, what each piece is allowed to do.</p>
+  </div>
 </section>
 
-<section>
-    <h2>Artefact 3: the SPDX companion</h2>
+<section class="band">
+  <div class="article"><h2>Artefact 3: the SPDX companion</h2>
 
-    <p><code>capa --spdx</code> emits the same content in SPDX 2.3, the Linux Foundation's format. Pick whichever your downstream consumer standardises on; the information is identical. Functions become packages related to the program by <code>CONTAINS</code>, capabilities by <code>DEPENDS_ON</code>, and the per-function metadata rides in <code>annotations[]</code>:</p>
+    <p><span class="ic">capa --spdx</span> emits the same content in SPDX 2.3, the Linux Foundation's format. Pick whichever your downstream consumer standardises on; the information is identical. Functions become packages related to the program by <span class="ic">CONTAINS</span>, capabilities by <span class="ic">DEPENDS_ON</span>, and the per-function metadata rides in <span class="ic">annotations[]</span>:</p>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --spdx report.capa
 {
   "spdxVersion": "SPDX-2.3",
@@ -227,16 +253,18 @@ report by token ending 77c2
       "relatedSpdxElement": "SPDXRef-Fn-report.capa-summarise" },
     ...
   ]
-}</code></pre>
+}</code></pre></div>
 
-    <p>(The <code>packages</code> array is abbreviated to names here; each entry is a full SPDX package object with <code>annotations[]</code> carrying the <code>capa:*</code> key-value pairs.)</p>
+    <p>(The <span class="ic">packages</span> array is abbreviated to names here; each entry is a full SPDX package object with <span class="ic">annotations[]</span> carrying the <span class="ic">capa:*</span> key-value pairs.)</p>
+  </div>
 </section>
 
 <section>
-    <h2>Artefact 4: VEX, the exploitability claim</h2>
+  <div class="article"><h2>Artefact 4: VEX, the exploitability claim</h2>
 
-    <p>An SBOM says what is in the box. VEX (Vulnerability Exploitability eXchange) says how the box is affected by a known CVE. The <code>@vex</code> attribute you wrote on <code>summarise</code> becomes a CycloneDX VEX document:</p>
+    <p>An SBOM says what is in the box. VEX (Vulnerability Exploitability eXchange) says how the box is affected by a known CVE. The <span class="ic">@vex</span> attribute you wrote on <span class="ic">summarise</span> becomes a CycloneDX VEX document:</p>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --vex report.capa
 {
   "bomFormat": "CycloneDX",
@@ -258,18 +286,20 @@ report by token ending 77c2
       "affects": [ { "ref": "capa:fn:report.capa:summarise" } ]
     }
   ]
-}</code></pre>
+}</code></pre></div>
 
-    <p>(The <code>detail</code> string is wrapped across three lines here for readability; the compiler emits it as a single line.)</p>
+    <p>(The <span class="ic">detail</span> string is wrapped across three lines here for readability; the compiler emits it as a single line.)</p>
 
-    <p>Standard VEX is per-package: "our product bundles a vulnerable library, but we are not affected". Capa refines the claim to per-function, and gives it a machine-verifiable basis: the manifest's <code>provably_excluded_capabilities</code> for <code>summarise</code> includes <code>Net</code>, so the "code not reachable" justification is grounded in a type-system fact. If a later edit added <code>net: Net</code> to the signature, the claim's basis would visibly disappear from the next manifest diff.</p>
+    <p>Standard VEX is per-package: "our product bundles a vulnerable library, but we are not affected". Capa refines the claim to per-function, and gives it a machine-verifiable basis: the manifest's <span class="ic">provably_excluded_capabilities</span> for <span class="ic">summarise</span> includes <span class="ic">Net</span>, so the "code not reachable" justification is grounded in a type-system fact. If a later edit added <span class="ic">net: Net</span> to the signature, the claim's basis would visibly disappear from the next manifest diff.</p>
+  </div>
 </section>
 
-<section>
-    <h2>Artefact 5: provenance</h2>
+<section class="band">
+  <div class="article"><h2>Artefact 5: provenance</h2>
 
-    <p>The last artefact answers "where did this come from?". <code>capa --provenance</code> emits a SLSA Build L1 attestation, an in-toto Statement v1 binding the artefact to the SHA-256 of its source:</p>
+    <p>The last artefact answers "where did this come from?". <span class="ic">capa --provenance</span> emits a SLSA Build L1 attestation, an in-toto Statement v1 binding the artefact to the SHA-256 of its source:</p>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --provenance report.capa
 {
   "_type": "https://in-toto.io/Statement/v1",
@@ -290,17 +320,18 @@ report by token ending 77c2
     },
     ...
   }
-}</code></pre>
+}</code></pre></div>
 
-    <p>(The <code>digest</code>, <code>externalParameters</code>, and <code>internalParameters</code> objects are compacted here for readability; the compiler emits each across multiple lines.)</p>
+    <p>(The <span class="ic">digest</span>, <span class="ic">externalParameters</span>, and <span class="ic">internalParameters</span> objects are compacted here for readability; the compiler emits each across multiple lines.)</p>
 
     <p>Anyone holding the source can recompute the digest and confirm this attestation describes exactly this file, no more, no less. L1 is the unsigned tier of the SLSA ladder; signing and a hardened builder are deliberately left to CI infrastructure, where they belong.</p>
+  </div>
 </section>
 
 <section>
-    <h2>What an auditor gets, in one table</h2>
+  <div class="article"><h2>What an auditor gets, in one table</h2>
 
-    <table class="ref-table">
+    <table class="tbl">
         <thead><tr><th>Artefact</th><th>The question it answers</th></tr></thead>
         <tbody>
             <tr><td>Manifest</td><td>Which functions hold which authorities, what is provably out of reach, where secrets are disclosed and why</td></tr>
@@ -312,57 +343,60 @@ report by token ending 77c2
     </table>
 
     <p>None of these required a scanner, an agent, or a form. The discipline you learned in chapters 8 through 13 put the information in the type system; the five flags serialise it.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Where you go next</h2>
+
+    <p>That is the whole tour, source to evidence. To see the same artefacts generated for a real codebase, read <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a>: its <span class="ic">conformity/</span> directory ships the manifest, both SBOMs, the VEX, the provenance, and a <span class="ic">CONFORMITY.md</span> that walks an auditor through them. To start a project with that layout from day one, <a href="https://github.com/nelsonduarte/capa_cra_template">capa_cra_template</a> is the scaffold. And the clause-by-clause mapping of these artefacts onto CRA, NIS2, DORA, NIST SSDF, and OWASP SCVS lives on the <a href="../regulatory.html">regulatory page</a>.</p>
+
+    <p>If you build something with Capa, send it. Real use is the best feedback.</p>
+  </div>
 </section>
 
 <section>
-    <h2>Where you go next</h2>
-
-    <p>That is the whole tour, source to evidence. To see the same artefacts generated for a real codebase, read <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a>: its <code>conformity/</code> directory ships the manifest, both SBOMs, the VEX, the provenance, and a <code>CONFORMITY.md</code> that walks an auditor through them. To start a project with that layout from day one, <a href="https://github.com/nelsonduarte/capa_cra_template">capa_cra_template</a> is the scaffold. And the clause-by-clause mapping of these artefacts onto CRA, NIS2, DORA, NIST SSDF, and OWASP SCVS lives on the <a href="../regulatory.html">regulatory page</a>.</p>
-
-    <p>If you build something with Capa, send it. Real use is the best feedback.</p>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="13-information-flow.html"><h4><span class="arr">&larr;</span> 13. Information-flow control</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="index.html"><h4>Table of contents <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
 </section>
 
-<nav class="chapter-nav" aria-label="Tutorial navigation">
-    <a class="prev" href="13-information-flow.html">&larr; 13. Information-flow control</a>
-    <a class="next" href="index.html">Table of contents &rarr;</a>
-</nav>
-
 </main>
-
-<footer>
-    <div class="footer-grid">
-        <div>
-            <h4>Pages</h4>
-            <ul>
-                <li><a href="../why.html">Why Capa</a></li>
-                <li><a href="index.html">Learn</a></li>
-                <li><a href="../reference.html">Reference</a></li>
-                <li><a href="../start.html">Get started</a></li>
-                <li><a href="../roadmap.html">Roadmap</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Documentation</h4>
-            <ul>
-                <li><a href="../start.html">Getting started</a></li>
-                <li><a href="../reference.html">Reference</a></li>
-                <li><a href="../stdlib.html">Standard library</a></li>
-                <li><a href="../manifest.html">Manifest</a></li>
-                <li><a href="../community.html">Community</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Project</h4>
-            <ul>
-                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
-                <li><a href="../brand.html">Brand assets</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
-                <li><a href="../privacy.html">Privacy</a></li>
-            </ul>
-        </div>
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a class="brand" href="../index.html"><svg class="mark mark-26"><use href="#capa-mark"/></svg> Capa</a>
+      <p>A capability-typed programming language. Every function declares the authorities it holds; the compiler checks the discipline statically.</p>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.12.0 &middot; MIT or Apache-2.0</p>
+    <div><h5>Pages</h5><ul>
+      <li><a href="../index.html">Home</a></li><li><a href="../why.html">Why Capa</a></li>
+      <li><a href="../learn/index.html">Learn</a></li><li><a href="../roadmap.html">Roadmap</a></li>
+    </ul></div>
+    <div><h5>Documentation</h5><ul>
+      <li><a href="../start.html">Getting started</a></li><li><a href="../reference.html">Reference</a></li>
+      <li><a href="../stdlib.html">Standard library</a></li><li><a href="../migrating.html">Migrating</a></li>
+    </ul></div>
+    <div><h5>Specification</h5><ul>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/semantics.md">&#955;cap &amp; soundness</a></li>
+      <li><a href="../regulatory.html">CRA / NIS2 / DORA</a></li>
+    </ul></div>
+    <div><h5>Project</h5><ul>
+      <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+      <li><a href="../community.html">Community</a></li><li><a href="../brand.html">Brand assets</a></li>
+      <li><a href="../privacy.html">Privacy</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-base">
+    <span>Built by Nelson Duarte &middot; v1.13.0 &middot; MIT or Apache-2.0</span>
+    <span>&copy; 2026 Capa</span>
+  </div>
 </footer>
-
+<script src="../menu.js"></script>
 </body>
 </html>

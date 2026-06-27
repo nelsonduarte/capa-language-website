@@ -1,186 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1. Hello, Capa | Learn Capa</title>
-    <meta name="description" content="Chapter 1 of Learn Capa: write your first program and understand the shape of main.">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <script src="../theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>1. Hello, Capa | Learn Capa</title>
+<meta name="description" content="Chapter 1 of Learn Capa: write your first program and understand the shape of main.">
+<link rel="canonical" href="https://capa-language.com/learn/01-hello.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Capa">
+<meta property="og:title" content="1. Hello, Capa | Learn Capa">
+<meta property="og:description" content="Chapter 1 of Learn Capa: write your first program and understand the shape of main.">
+<meta property="og:url" content="https://capa-language.com/learn/01-hello.html">
+<meta property="og:image" content="https://capa-language.com/capa_logo.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="1. Hello, Capa | Learn Capa">
+<meta name="twitter:description" content="Chapter 1 of Learn Capa: write your first program and understand the shape of main.">
+<meta name="twitter:image" content="https://capa-language.com/capa_logo.svg">
+<link rel="icon" href="../capa_logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-
-<header>
-    <nav>
-        <a href="../index.html" class="logo">
-            <img src="../capa_logo.svg" alt="" aria-hidden="true">
-            Capa
-        </a>
-        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
-        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
-            <span></span><span></span><span></span>
-        </label>
-        <div class="nav-links">
-            <a href="../index.html">Home</a>
-            <a href="../why.html">Why Capa</a>
-            <a href="../compare.html">Compare</a>
-            <a href="../study.html">Study</a>
-            <a href="index.html" class="current">Learn</a>
-            <a href="../reference.html">Reference</a>
-            <a href="../start.html">Get started</a>
-            <a href="../migrating.html">Migrating</a>
-            <a href="../regulatory.html">Regulatory</a>
-            <a href="../agent-demo.html">Agent demo</a>
-            <a href="../roadmap.html">Roadmap</a>
-            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
-            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
-        </div>
+<a class="skip-link" href="#main">Skip to content</a>
+<svg width="0" height="0" class="svg-defs" aria-hidden="true">
+ <symbol id="capa-mark" viewBox="0 0 577.22 782.7">
+  <path fill="#a885fa" d="M515.82,258.55c1.6,9.06-14.34-4.03-22.58-5.07-128.33-58.01-269.07,69.8-197.88,196.88,54.82,97.82,196.29,106.26,275.81,34.39,7.59-3.13,6.02,11.39,5.7,16.08,3.09,87.71-138.58,190.41-66.46,248.48,2.83,2.37,15.3,9.63,16,11.02,3.47,6.87-14.56,10.48-19.31,11.72-233.4,62-442.98-157.08-369.29-387.95-47,68.7-43.12,183.85-3.79,263.59.91,1.87,6.52,11.33,9.7,17.43.74,1.42-.95,2.87-2.23,1.91-20.32-15.17-40.98-28.25-64.64-38.16-21.07-8.82-65.58-18.79-76.15-39.85-11.95-141.41,132.91-331.75,245.19-408.17,27.89-10.82,56.49.72,81.86,13.37,9.26-.26-16.46-16.32-18.85-17.4-42.73-25.62-91.55,3.89-75.56-28.52,3.84-7.75,13.77-16.2,22-19,10.08-3.44,28.13-.72,16.54-16.46-5.41-7.34-16.48-14.32-24.64-18.36-6.77-3.35-33.51-10.83-32.19-19.41,61.39-110.77,222.44-79.82,314.35-28.77,26.38,17.14-27.13,108.94-38.71,131.34-46.28,52.42-2.25,17.23,25.13,80.91ZM530.68,69.52c.89,1.01,2.6.26,2.61-1.08.07-14.22-18.12-14.02-29.89-13.09-37.48,2.97-62.22,29.45-84.49,56.51-28.27,33.92-75.86,88.32-2.74,100.66,1.67.24,2.41-2.03.92-2.83l-8.44-4.52c-14.22-9.07-21.16-18.6-12.57-35.14,25.37-41.11,80.49-112.17,134.61-100.51Z"/>
+  <path fill="#fdfdfe" d="M533.29,68.44c0,1.34-1.72,2.08-2.61,1.08-.07-.08-.15-.16-.24-.24-10.04-8.31-43.94,6.95-54.23,12.88-25.39,14.64-66.61,61.78-80.14,87.86-8.56,16.51-1.72,25.98,12.45,35.08.04.02.07.05.11.07l8.44,4.52c1.49.8.75,3.08-.92,2.83-19.72-2.89-41.34-12.65-39.32-35.73,1.36-15.52,31.22-51.76,42.07-64.93,22.27-27.06,47.01-53.54,84.49-56.51,11.77-.93,29.97-1.13,29.89,13.09Z"/>
+ </symbol>
+</svg>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="../index.html"><svg class="mark"><use href="#capa-mark"/></svg> Capa</a>
+    <nav class="nav-links" id="navlinks">
+      <a href="../why.html">Why Capa</a>
+      <a href="../compare.html">Compare</a>
+      <a href="../learn/index.html" class="active">Learn</a>
+      <a href="../reference.html">Reference</a>
+      <div class="has-drop">
+        <button class="drop-btn" id="docsbtn" aria-haspopup="true" aria-expanded="false">Docs
+          <svg class="car" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l4 4 4-4"/></svg>
+        </button>
+        <div class="drop"><a href="../study.html">Study</a><a href="../migrating.html">Migrating</a><a href="../regulatory.html">Regulatory</a><a href="../agent-demo.html">Agent demo</a><a href="../stdlib.html">Standard library</a><a href="../community.html">Community</a></div>
+      </div>
+      <a href="../roadmap.html">Roadmap</a>
     </nav>
+    <div class="nav-cta">
+      <a class="nav-ico" href="https://github.com/nelsonduarte/capa-language" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      <a class="btn btn-primary" href="../start.html">Get started</a>
+      <button class="nav-toggle" id="navtoggle" aria-label="Menu"><span></span></button>
+    </div>
+  </div>
 </header>
-
-<main>
-
-<div class="page-heading">
-    <p class="learn-breadcrumb"><a href="index.html">Learn</a> &middot; Chapter 1 of 14</p>
+<main id="main">
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 1 of 14</span>
     <h1>Hello, Capa</h1>
-    <p>The smallest possible Capa program, and the one piece of Capa syntax you cannot avoid learning on the way out.</p>
-</div>
-
-<section>
-    <h2>The program</h2>
-
-    <p>Open your editor and save this as <code>hello.capa</code>:</p>
-
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
-    stdio.<span class="fn-call">println</span>(<span class="str">"Hello, Capa"</span>)</code></pre>
-
-    <p>Three things on three lines. Read it aloud as: "define a function called <code>main</code>, which takes a parameter called <code>stdio</code> of type <code>Stdio</code>; the body calls the <code>println</code> method on <code>stdio</code> with the string <code>"Hello, Capa"</code>".</p>
-
-    <p>From a terminal in the same directory:</p>
-
-<pre><code>$ capa --run hello.capa
-Hello, Capa</code></pre>
-
-    <p>That is your first Capa program running. Everything else in this tutorial builds on this shape.</p>
+    <p class="lead">The smallest possible Capa program, and the one piece of Capa syntax you cannot avoid learning on the way out.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
 </section>
 
 <section>
-    <h2>What just happened</h2>
+  <div class="article"><h2>The program</h2>
+
+    <p>Open your editor and save this as <span class="ic">hello.capa</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, Capa"</span>)</code></pre></div>
+
+    <p>Three things on three lines. Read it aloud as: "define a function called <span class="ic">main</span>, which takes a parameter called <span class="ic">stdio</span> of type <span class="ic">Stdio</span>; the body calls the <span class="ic">println</span> method on <span class="ic">stdio</span> with the string <span class="ic">"Hello, Capa"</span>".</p>
+
+    <p>From a terminal in the same directory:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+Hello, Capa</code></pre></div>
+
+    <p>That is your first Capa program running. Everything else in this tutorial builds on this shape.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>What just happened</h2>
 
     <p>Three things worth knowing about the shape of that file:</p>
 
     <ol>
         <li>
-            <p><strong>Capa is indentation-significant.</strong> The body of <code>main</code> is one level indented (four spaces or one tab; mix them and the lexer complains). Like Python. There are no braces.</p>
+            <p><strong>Capa is indentation-significant.</strong> The body of <span class="ic">main</span> is one level indented (four spaces or one tab; mix them and the lexer complains). Like Python. There are no braces.</p>
         </li>
         <li>
-            <p><strong>Capa programs start at a function called <code>main</code>.</strong> The compiler looks for it; if you rename or remove it, the program does nothing at run time.</p>
+            <p><strong>Capa programs start at a function called <span class="ic">main</span>.</strong> The compiler looks for it; if you rename or remove it, the program does nothing at run time.</p>
         </li>
         <li>
-            <p><strong><code>stdio</code> is a parameter, not a global.</strong> This is the part of the program that will look unusual if you come from Python or JavaScript. In those languages, <code>print</code> is just there; the standard output stream is ambient authority. In Capa it is a value: the runtime hands a fresh <code>Stdio</code> to <code>main</code>, and only code that holds it can write to standard output.</p>
+            <p><strong><span class="ic">stdio</span> is a parameter, not a global.</strong> This is the part of the program that will look unusual if you come from Python or JavaScript. In those languages, <span class="ic">print</span> is just there; the standard output stream is ambient authority. In Capa it is a value: the runtime hands a fresh <span class="ic">Stdio</span> to <span class="ic">main</span>, and only code that holds it can write to standard output.</p>
         </li>
     </ol>
 
-    <p>You do not need to fully internalise capabilities yet. We come back to them properly in <a href="index.html">chapter 8</a>. For now, the rule is simply: when you want to print, your function needs to receive a <code>Stdio</code> parameter and call <code>println</code> on it.</p>
+    <p>You do not need to fully internalise capabilities yet. We come back to them properly in <a href="index.html">chapter 8</a>. For now, the rule is simply: when you want to print, your function needs to receive a <span class="ic">Stdio</span> parameter and call <span class="ic">println</span> on it.</p>
+  </div>
 </section>
 
 <section>
-    <h2>The two error modes</h2>
+  <div class="article"><h2>The two error modes</h2>
 
-    <p>Try the two simplest mistakes so you see what the compiler does. First, remove the <code>stdio</code> parameter:</p>
+    <p>Try the two simplest mistakes so you see what the compiler does. First, remove the <span class="ic">stdio</span> parameter:</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>()
-    stdio.<span class="fn-call">println</span>(<span class="str">"Hello, Capa"</span>)</code></pre>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>()
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, Capa"</span>)</code></pre></div>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
 hello.capa:2:5: error: undefined name 'stdio'
    2 |     stdio.println("Hello, Capa")
-           ^</code></pre>
+           ^</code></pre></div>
 
-    <p>The compiler refused to run the program. <code>stdio</code> was not a parameter and is not a global, so the name does not exist in scope. This is the capability discipline doing its job: code with no <code>Stdio</code> in scope <em>cannot</em> print.</p>
+    <p>The compiler refused to run the program. <span class="ic">stdio</span> was not a parameter and is not a global, so the name does not exist in scope. This is the capability discipline doing its job: code with no <span class="ic">Stdio</span> in scope <em>cannot</em> print.</p>
 
-    <p>Second mistake: keep <code>stdio</code> as a parameter but never use it.</p>
+    <p>Second mistake: keep <span class="ic">stdio</span> as a parameter but never use it.</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
-    <span class="kw-storage">let</span> _ = 1 + 1</code></pre>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> _ = 1 + 1</code></pre></div>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
 hello.capa:1:14: error: capability parameter 'stdio' is declared but never used;
                        prefix the name with '_' to silence this check
    1 | fun main(stdio: Stdio)
-                  ^</code></pre>
+                  ^</code></pre></div>
 
-    <p>If you ask for a capability, you are committing to use it. A function that takes <code>Stdio</code> but never prints anything is suspicious. If you have a legitimate reason (maybe you are stubbing out a function under construction), prefix the parameter with <code>_</code>: <code>_stdio: Stdio</code>.</p>
+    <p>If you ask for a capability, you are committing to use it. A function that takes <span class="ic">Stdio</span> but never prints anything is suspicious. If you have a legitimate reason (maybe you are stubbing out a function under construction), prefix the parameter with <span class="ic">_</span>: <span class="ic">_stdio: Stdio</span>.</p>
+  </div>
 </section>
 
-<section>
-    <h2>A second program</h2>
+<section class="band">
+  <div class="article"><h2>A second program</h2>
 
     <p>Print two lines. Same shape, two calls:</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
-    stdio.<span class="fn-call">println</span>(<span class="str">"Hello, Capa"</span>)
-    stdio.<span class="fn-call">println</span>(<span class="str">"Welcome aboard."</span>)</code></pre>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, Capa"</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"Welcome aboard."</span>)</code></pre></div>
 
-    <p>Both lines are in the body of <code>main</code> because they are indented to the same column. Statements are separated by newlines; there is no <code>;</code>.</p>
+    <p>Both lines are in the body of <span class="ic">main</span> because they are indented to the same column. Statements are separated by newlines; there is no <span class="ic">;</span>.</p>
 
     <div class="callout">
-        <p><strong>Try this.</strong> Change the second string to use the apostrophe directly: <code>"Don't be late."</code>. The string is double-quoted so the single quote needs no escape. What about double quotes inside a string? Try writing <code>"She said \"hi\""</code>. Does it work? Why?</p>
+        <p><strong>Try this.</strong> Change the second string to use the apostrophe directly: <span class="ic">"Don't be late."</span>. The string is double-quoted so the single quote needs no escape. What about double quotes inside a string? Try writing <span class="ic">"She said \"hi\""</span>. Does it work? Why?</p>
     </div>
+  </div>
 </section>
 
 <section>
-    <h2>Where you are now</h2>
+  <div class="article"><h2>Where you are now</h2>
 
-    <p>You can write a Capa program, save it, and run it. You have seen the compiler reject two kinds of mistake: a missing name and an unused capability. The shape <code>fun main(stdio: Stdio)</code> will be every program you write in this tutorial until chapter 11, when we start importing modules.</p>
+    <p>You can write a Capa program, save it, and run it. You have seen the compiler reject two kinds of mistake: a missing name and an unused capability. The shape <span class="ic">fun main(stdio: Stdio)</span> will be every program you write in this tutorial until chapter 11, when we start importing modules.</p>
 
     <p>The next chapter introduces the building blocks of every program after this one: values, variables, types.</p>
+  </div>
 </section>
 
-<nav class="chapter-nav" aria-label="Tutorial navigation">
-    <a class="prev" href="index.html">&larr; Table of contents</a>
-    <a class="next" href="02-values.html">2. Values and types &rarr;</a>
-</nav>
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="index.html"><h4><span class="arr">&larr;</span> Table of contents</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="02-values.html"><h4>2. Values and types <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>
 
 </main>
-
-<footer>
-    <div class="footer-grid">
-        <div>
-            <h4>Pages</h4>
-            <ul>
-                <li><a href="../why.html">Why Capa</a></li>
-                <li><a href="index.html">Learn</a></li>
-                <li><a href="../reference.html">Reference</a></li>
-                <li><a href="../start.html">Get started</a></li>
-                <li><a href="../roadmap.html">Roadmap</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Documentation</h4>
-            <ul>
-                <li><a href="../start.html">Getting started</a></li>
-                <li><a href="../reference.html">Reference</a></li>
-                <li><a href="../stdlib.html">Standard library</a></li>
-                <li><a href="../manifest.html">Manifest</a></li>
-                <li><a href="../community.html">Community</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Project</h4>
-            <ul>
-                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
-                <li><a href="../brand.html">Brand assets</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
-                <li><a href="../privacy.html">Privacy</a></li>
-            </ul>
-        </div>
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a class="brand" href="../index.html"><svg class="mark mark-26"><use href="#capa-mark"/></svg> Capa</a>
+      <p>A capability-typed programming language. Every function declares the authorities it holds; the compiler checks the discipline statically.</p>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.12.0 &middot; MIT or Apache-2.0</p>
+    <div><h5>Pages</h5><ul>
+      <li><a href="../index.html">Home</a></li><li><a href="../why.html">Why Capa</a></li>
+      <li><a href="../learn/index.html">Learn</a></li><li><a href="../roadmap.html">Roadmap</a></li>
+    </ul></div>
+    <div><h5>Documentation</h5><ul>
+      <li><a href="../start.html">Getting started</a></li><li><a href="../reference.html">Reference</a></li>
+      <li><a href="../stdlib.html">Standard library</a></li><li><a href="../migrating.html">Migrating</a></li>
+    </ul></div>
+    <div><h5>Specification</h5><ul>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/semantics.md">&#955;cap &amp; soundness</a></li>
+      <li><a href="../regulatory.html">CRA / NIS2 / DORA</a></li>
+    </ul></div>
+    <div><h5>Project</h5><ul>
+      <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+      <li><a href="../community.html">Community</a></li><li><a href="../brand.html">Brand assets</a></li>
+      <li><a href="../privacy.html">Privacy</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-base">
+    <span>Built by Nelson Duarte &middot; v1.13.0 &middot; MIT or Apache-2.0</span>
+    <span>&copy; 2026 Capa</span>
+  </div>
 </footer>
-
+<script src="../menu.js"></script>
 </body>
 </html>

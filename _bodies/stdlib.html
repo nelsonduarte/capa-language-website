@@ -1,0 +1,191 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Standard library</span>
+    <h1>Built-ins, no imports required</h1>
+    <p class="lead">Every built-in type, function and capability available in any Capa program. For language syntax and semantics, see the <a href="reference.html">language reference</a>.</p>
+  </div>
+</section>
+
+<section style="padding-top:30px">
+  <div class="docs">
+    <nav class="toc">
+      <h6>Contents</h6>
+      <ol>
+        <li><a href="#primitives">Primitive types</a></li>
+        <li><a href="#list">List&lt;T&gt;</a></li>
+        <li><a href="#map">Map&lt;K, V&gt;</a></li>
+        <li><a href="#set">Set&lt;T&gt;</a></li>
+        <li><a href="#option">Option&lt;T&gt;</a></li>
+        <li><a href="#result">Result&lt;T, E&gt;</a></li>
+        <li><a href="#json">JsonValue</a></li>
+        <li><a href="#conversions">Conversions &amp; panic</a></li>
+        <li><a href="#py-interop">Python interop</a></li>
+        <li><a href="#caps">Capabilities</a></li>
+        <li><a href="#io-error">IoError</a></li>
+      </ol>
+    </nav>
+
+    <div class="docbody">
+      <h2 id="primitives">Primitive types</h2>
+      <table class="tbl">
+        <thead><tr><th>Type</th><th>Size / Range</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ic">Int</span></td><td>64-bit signed</td><td>Arithmetic does not check for overflow</td></tr>
+          <tr><td><span class="ic">Float</span></td><td>64-bit IEEE 754</td><td></td></tr>
+          <tr><td><span class="ic">String</span></td><td>UTF-8</td><td>Immutable</td></tr>
+          <tr><td><span class="ic">Bool</span> / <span class="ic">Char</span></td><td><span class="ic">true</span>/<span class="ic">false</span> · code point</td><td>Char is a str of length 1 at runtime</td></tr>
+          <tr><td><span class="ic">Unit</span></td><td><span class="ic">()</span></td><td>For functions with no return value</td></tr>
+        </tbody>
+      </table>
+      <h3><span class="ic">String</span> methods</h3>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">length()</span> / <span class="ic">is_empty()</span></td><td>Code-point count · emptiness</td></tr>
+          <tr><td><span class="ic">to_upper()</span> / <span class="ic">to_lower()</span> / <span class="ic">trim()</span></td><td>Case and whitespace</td></tr>
+          <tr><td><span class="ic">contains</span> / <span class="ic">starts_with</span> / <span class="ic">ends_with</span></td><td><span class="ic">Bool</span></td></tr>
+          <tr><td><span class="ic">split(sep)</span></td><td><span class="ic">List&lt;String&gt;</span></td></tr>
+          <tr><td><span class="ic">replace(old, new)</span> / <span class="ic">substring(start, end)</span></td><td><span class="ic">String</span> (substring clamps out-of-range)</td></tr>
+          <tr><td><span class="ic">char_at(i)</span> / <span class="ic">index_of(needle)</span></td><td><span class="ic">Option&lt;String&gt;</span> · <span class="ic">Option&lt;Int&gt;</span></td></tr>
+          <tr><td><span class="ic">bytes()</span></td><td><span class="ic">List&lt;Int&gt;</span>, the UTF-8 bytes</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="list">List&lt;T&gt;</h2>
+      <p>Mutable homogeneous list. Construct with <span class="ic">[a, b, c]</span> or by <span class="ic">push</span>. Index with <span class="ic">xs[i]</span> (unchecked) or <span class="ic">get(i)</span> (safe).</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">length()</span> / <span class="ic">is_empty()</span> / <span class="ic">contains(x)</span></td><td><span class="ic">Int</span> · <span class="ic">Bool</span> · <span class="ic">Bool</span></td></tr>
+          <tr><td><span class="ic">push(x)</span></td><td>Append (mutation)</td></tr>
+          <tr><td><span class="ic">first()</span> / <span class="ic">last()</span> / <span class="ic">get(i)</span></td><td><span class="ic">Option&lt;T&gt;</span></td></tr>
+          <tr><td><span class="ic">map(f)</span> / <span class="ic">filter(p)</span> / <span class="ic">fold(init, f)</span></td><td>Transform · keep · reduce</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Ranges:</strong> <span class="ic">a..b</span> (exclusive) and <span class="ic">a..=b</span> (inclusive) produce a <span class="ic">List&lt;Int&gt;</span> and support the full List API. Float endpoints are excluded; <span class="ic">a..b..c</span> is a syntax error.</p>
+      <div class="code">
+<pre><code><span class="k">for</span> i <span class="k">in</span> <span class="nu">0</span>..<span class="nu">10</span>            <span class="cm"># 0, 1, ..., 9</span>
+    stdio.<span class="fn">println</span>(<span class="st">"${i}"</span>)
+
+<span class="k">let</span> evens = (<span class="nu">0</span>..<span class="nu">10</span>).<span class="fn">filter</span>(<span class="k">fun</span> (<span class="pu">x:</span> <span class="ty">Int</span>) <span class="pu">-&gt;</span> <span class="ty">Bool</span> <span class="pu">=&gt;</span> x % <span class="nu">2</span> == <span class="nu">0</span>)</code></pre></div>
+
+      <h2 id="map">Map&lt;K, V&gt;</h2>
+      <p>Hash map. Construct via <span class="ic">new_map()</span> with a required type annotation.</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">length()</span> / <span class="ic">is_empty()</span> / <span class="ic">contains_key(k)</span></td><td><span class="ic">Int</span> · <span class="ic">Bool</span> · <span class="ic">Bool</span></td></tr>
+          <tr><td><span class="ic">get(k)</span></td><td><span class="ic">Option&lt;V&gt;</span></td></tr>
+          <tr><td><span class="ic">set(k, v)</span></td><td>Insert / update (mutation)</td></tr>
+          <tr><td><span class="ic">keys()</span> / <span class="ic">values()</span> / <span class="ic">pairs()</span></td><td><span class="ic">List&lt;K&gt;</span> · <span class="ic">List&lt;V&gt;</span> · <span class="ic">List&lt;(K, V)&gt;</span></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="set">Set&lt;T&gt;</h2>
+      <p>Set of unique elements. Construct via <span class="ic">new_set()</span> with a type annotation.</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">length()</span> / <span class="ic">is_empty()</span> / <span class="ic">contains(x)</span></td><td><span class="ic">Int</span> · <span class="ic">Bool</span> · <span class="ic">Bool</span></td></tr>
+          <tr><td><span class="ic">add(x)</span> / <span class="ic">remove(x)</span></td><td>No-op if duplicate / absent</td></tr>
+          <tr><td><span class="ic">to_list()</span></td><td><span class="ic">List&lt;T&gt;</span></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="option">Option&lt;T&gt;</h2>
+      <p>Built-in sum type <span class="ic">Some(T) | None</span>.</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">is_some()</span> / <span class="ic">is_none()</span></td><td><span class="ic">Bool</span></td></tr>
+          <tr><td><span class="ic">unwrap_or(default)</span></td><td><span class="ic">T</span></td></tr>
+          <tr><td><span class="ic">map(f)</span> / <span class="ic">and_then(f)</span> / <span class="ic">filter(p)</span> / <span class="ic">or_else(f)</span></td><td><span class="ic">Option&lt;…&gt;</span></td></tr>
+          <tr><td><span class="ic">ok_or(err)</span></td><td><span class="ic">Result&lt;T, E&gt;</span></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="result">Result&lt;T, E&gt;</h2>
+      <p>Built-in sum type <span class="ic">Ok(T) | Err(E)</span>. The <span class="ic">?</span> operator propagates <span class="ic">Err</span> in functions that return <span class="ic">Result</span>.</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">is_ok()</span> / <span class="ic">is_err()</span> / <span class="ic">unwrap_or(d)</span></td><td><span class="ic">Bool</span> · <span class="ic">Bool</span> · <span class="ic">T</span></td></tr>
+          <tr><td><span class="ic">map(f)</span> / <span class="ic">and_then(f)</span> / <span class="ic">map_err(f)</span> / <span class="ic">or_else(f)</span></td><td><span class="ic">Result&lt;…&gt;</span></td></tr>
+          <tr><td><span class="ic">ok()</span> / <span class="ic">err()</span></td><td><span class="ic">Option&lt;T&gt;</span> · <span class="ic">Option&lt;E&gt;</span></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="json">JsonValue</h2>
+      <p>Built-in sum type: <span class="ic">JNull | JBool(Bool) | JNum(Float) | JStr(String) | JArr(List&lt;JsonValue&gt;) | JObj(Map&lt;String, JsonValue&gt;)</span>.</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">is_null()</span></td><td><span class="ic">Bool</span></td></tr>
+          <tr><td><span class="ic">as_bool()</span> / <span class="ic">as_num()</span> / <span class="ic">as_string()</span></td><td><span class="ic">Option&lt;Bool&gt;</span> · <span class="ic">Option&lt;Float&gt;</span> · <span class="ic">Option&lt;String&gt;</span></td></tr>
+          <tr><td><span class="ic">as_array()</span> / <span class="ic">as_object()</span></td><td><span class="ic">Option&lt;List&lt;…&gt;&gt;</span> · <span class="ic">Option&lt;Map&lt;…&gt;&gt;</span></td></tr>
+          <tr><td><span class="ic">parse_json(s)</span> / <span class="ic">to_json(j)</span></td><td><span class="ic">Result&lt;JsonValue, String&gt;</span> · <span class="ic">String</span></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="conversions">Conversions &amp; panic</h2>
+      <p>Capa has <strong>no implicit numeric coercion</strong>: <span class="ic">Float + Int</span> is a type error. Convert explicitly at the call site.</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">parse_int(s)</span> / <span class="ic">parse_float(s)</span></td><td><span class="ic">Option&lt;Int&gt;</span> · <span class="ic">Option&lt;Float&gt;</span></td></tr>
+          <tr><td><span class="ic">to_float(i)</span> / <span class="ic">to_int(f)</span></td><td><span class="ic">Float</span> · <span class="ic">Int</span> (truncates toward zero)</td></tr>
+          <tr><td><span class="ic">new_map()</span> / <span class="ic">new_set()</span></td><td>Require a <span class="ic">let</span> annotation to pin the types</td></tr>
+        </tbody>
+      </table>
+      <p><span class="ic">panic(message)</span> terminates the program immediately: no unwinding, no catch. <span class="ic">panic: &lt;message&gt;</span> is written to stderr and the process exits non-zero. The contract is identical on every backend (Wasm and Component Model trap, translated to exit 1).</p>
+
+      <h2 id="py-interop">Python interoperability</h2>
+      <p>Both functions cross the Capa/Python trust boundary and require <span class="ic">Unsafe</span> as the first argument. Crossing loses Capa's static guarantees: the Python value can do anything its type allows, with full ambient authority. <span class="ic">--manifest</span> marks such functions <span class="ic">has_unsafe: true</span>.</p>
+      <div class="code">
+<pre><code><span class="k">fun</span> <span class="fn">square_root</span>(<span class="pu">unsafe:</span> <span class="cp">Unsafe</span>, <span class="pu">x:</span> <span class="ty">Float</span>) <span class="pu">-&gt;</span> <span class="ty">Float</span>
+    <span class="k">let</span> math = <span class="fn">py_import</span>(unsafe, <span class="st">"math"</span>)
+    <span class="k">return</span> <span class="fn">py_invoke</span>(unsafe, math.sqrt, [x])</code></pre></div>
+
+      <h2 id="caps">Capabilities</h2>
+      <h3><span class="ic">Stdio</span></h3>
+      <p><span class="ic">print(s)</span>, <span class="ic">println(s)</span>, <span class="ic">eprintln(s)</span> (stderr), <span class="ic">read_line() -&gt; Result&lt;String, IoError&gt;</span>.</p>
+      <h3><span class="ic">Fs</span></h3>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">read(p)</span> / <span class="ic">write(p, c)</span></td><td><span class="ic">Result&lt;String, IoError&gt;</span> · <span class="ic">Result&lt;(), IoError&gt;</span></td></tr>
+          <tr><td><span class="ic">exists(p)</span> / <span class="ic">is_dir(p)</span></td><td><span class="ic">Bool</span> (false on denied paths)</td></tr>
+          <tr><td><span class="ic">mkdir(p)</span> / <span class="ic">list_dir(p)</span></td><td><span class="ic">Result&lt;(), …&gt;</span> · <span class="ic">Result&lt;List&lt;String&gt;, …&gt;</span></td></tr>
+          <tr><td><span class="ic">restrict_to(prefix)</span> / <span class="ic">allows(path)</span></td><td>Attenuated <span class="ic">Fs</span> (monotonic) · query without I/O</td></tr>
+        </tbody>
+      </table>
+      <h3><span class="ic">Env</span> · <span class="ic">Clock</span> · <span class="ic">Random</span></h3>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">env.get(name)</span> / <span class="ic">env.args()</span></td><td><span class="ic">Option&lt;String&gt;</span> · <span class="ic">List&lt;String&gt;</span></td></tr>
+          <tr><td><span class="ic">env.restrict_to_keys(keys)</span></td><td>Attenuated <span class="ic">Env</span></td></tr>
+          <tr><td><span class="ic">clock.now_secs()</span> / <span class="ic">now_monotonic()</span> / <span class="ic">sleep(s)</span></td><td><span class="ic">Float</span> · <span class="ic">Float</span> · <span class="ic">()</span></td></tr>
+          <tr><td><span class="ic">clock.restrict_to_after(t)</span></td><td>Active only after timestamp (takes the maximum threshold)</td></tr>
+          <tr><td><span class="ic">random.int_range(low, high)</span> / <span class="ic">float_unit()</span></td><td><span class="ic">Int</span> in [low,high) · <span class="ic">Float</span> in [0,1)</td></tr>
+          <tr><td><span class="ic">random.with_seed(seed)</span></td><td>Deterministic sequence</td></tr>
+        </tbody>
+      </table>
+      <h3><span class="ic">Net</span></h3>
+      <p>A <span class="ic">Net</span> from <span class="ic">main</span> is unrestricted; <span class="ic">restrict_to(host)</span> returns a fresh <span class="ic">Net</span> whose authority is the intersection with <span class="ic">{host}</span> (monotonic). <span class="ic">get(url)</span> returns <span class="ic">Err</span> immediately if the host is outside the restriction set, <em>before</em> any system call.</p>
+      <div class="code">
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(<span class="pu">net:</span> <span class="cp">Net</span>, <span class="pu">stdio:</span> <span class="cp">Stdio</span>)
+    <span class="k">let</span> api = net.<span class="fn">restrict_to</span>(<span class="st">"api.example.com"</span>)
+    <span class="k">match</span> <span class="fn">fetch</span>(api)
+        <span class="ty">Ok</span>(body) <span class="pu">-&gt;</span> stdio.<span class="fn">println</span>(body)
+        <span class="ty">Err</span>(e)   <span class="pu">-&gt;</span> stdio.<span class="fn">eprintln</span>(<span class="st">"${e}"</span>)</code></pre></div>
+      <h3>User-defined capabilities</h3>
+      <p>Libraries declare their own capabilities with the <span class="ic">capability</span> keyword; any type that <span class="ic">impl</span>s it becomes a valid implementor. A cap-bearing struct may hold built-in caps as fields. Only call / method-call right-hand sides produce fresh capability instances that can be bound; a plain alias <span class="ic">let dup = mailer</span> is rejected.</p>
+      <div class="code">
+<pre><code><span class="k">capability</span> <span class="ty">SendEmail</span>
+    <span class="k">fun</span> <span class="fn">send</span>(<span class="k">self</span>, <span class="pu">to:</span> <span class="ty">String</span>, <span class="pu">subject:</span> <span class="ty">String</span>, <span class="pu">body:</span> <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
+
+<span class="k">impl</span> <span class="ty">SendEmail</span> <span class="k">for</span> <span class="ty">SmtpMailer</span>
+    <span class="k">fun</span> <span class="fn">send</span>(<span class="k">self</span>, ...) <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
+        <span class="k">return</span> <span class="ty">Ok</span>(())</code></pre></div>
+
+      <h2 id="io-error">The IoError type</h2>
+      <p>Opaque type for I/O errors, available as the error parameter in <span class="ic">Result&lt;T, IoError&gt;</span> and in pattern matching. Its string representation is human-readable; the internal contents are private.</p>
+      <div class="code">
+<pre><code><span class="k">match</span> fs.<span class="fn">read</span>(<span class="st">"x.txt"</span>)
+    <span class="ty">Ok</span>(content) <span class="pu">-&gt;</span> stdio.<span class="fn">println</span>(content)
+    <span class="ty">Err</span>(e) <span class="pu">-&gt;</span> stdio.<span class="fn">eprintln</span>(<span class="st">"error: ${e}"</span>)</code></pre></div>
+    </div>
+  </div>
+</section>

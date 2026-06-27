@@ -1,0 +1,43 @@
+Self-hosted web fonts: provenance and licensing
+================================================
+
+This folder contains the web fonts used by the Capa website, served locally
+(first-party) so the site loads no third-party resources and works under a
+strict Content-Security-Policy (font-src 'self').
+
+Families
+--------
+- Source Serif 4   (headings, wordmark)   weights 400, 500, 600, 700 + 400 italic
+- Inter            (body and UI text)      weights 400, 500, 600, 700
+- IBM Plex Mono    (code and labels)       weights 400, 500, 600
+
+Format and subsets
+------------------
+- Format: woff2 only.
+- Subsets: latin and latin-ext only (the character coverage the site needs).
+  The cyrillic, greek and vietnamese subsets offered by Google Fonts were not
+  downloaded, to keep the payload small.
+- File naming: <family-slug>-<weight>[-italic]-<subset>.woff2
+
+Source
+------
+The woff2 files were retrieved from the Google Fonts CSS API (css2 endpoint)
+on 2026-06-27. Google Fonts redistributes these families verbatim under their
+upstream SIL Open Font License; the binaries are the upstream font data, not a
+Google-specific derivative. The @font-face rules (weight, style, unicode-range)
+were taken from the same CSS response and rewritten to point at the local files
+(see fonts.css).
+
+Licensing
+---------
+All three families are licensed under the SIL Open Font License, Version 1.1,
+which permits embedding, self-hosting and redistribution. The full upstream
+license text for each family is included alongside this note:
+
+  - OFL-source-serif-4.txt   Copyright 2014-2023 Adobe, RFN "Source"
+  - OFL-inter.txt            Copyright 2016 The Inter Project Authors
+  - OFL-ibm-plex-mono.txt    Copyright 2017 IBM Corp., RFN "Plex"
+
+No font file has been renamed in a way that conflicts with a Reserved Font Name:
+the on-disk file names are descriptive slugs, not font family names, and the
+font-family declared in CSS and inside the font binaries is unchanged.

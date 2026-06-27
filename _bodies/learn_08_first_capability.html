@@ -1,0 +1,172 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 8 of 14</span>
+    <h1>Your first capability</h1>
+    <p class="lead">You have been using one since chapter 1. This chapter is where capabilities stop being a magic word in <span class="ic">main</span> and become a tool you reason about explicitly.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The thing you have already been doing</h2>
+
+    <p>Every program in this tutorial has looked like this:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"..."</span>)</code></pre></div>
+
+    <p>The <span class="ic">stdio</span> parameter is a <strong>capability</strong>. The runtime hands a fresh <span class="ic">Stdio</span> value to <span class="ic">main</span> when the program starts, and that single value is the only way anything downstream of <span class="ic">main</span> can write to standard output.</p>
+
+    <p>To see why this is unusual, look at the same idea in Python:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="cm"># Python</span>
+<span class="k">def</span> <span class="fn">main</span>():
+    <span class="fn">print</span>(<span class="st">"Hello"</span>)</code></pre></div>
+
+    <p>The Python <span class="ic">main</span> takes no parameters and yet has access to <span class="ic">print</span>. The standard output stream is <em>ambient authority</em>: it is in the surrounding environment, available to any code anywhere in the process, without anything in the function's signature indicating that fact. The same is true of <span class="ic">open</span>, <span class="ic">os.environ</span>, <span class="ic">urllib.request.urlopen</span>, and every other I/O primitive.</p>
+
+    <p>Capa removes ambient authority. The standard output stream becomes a <em>value</em>: a <span class="ic">Stdio</span> instance, no different at the language level from an <span class="ic">Int</span> or a <span class="ic">String</span>. The runtime gives one to <span class="ic">main</span>; code that does not receive one cannot use it.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>The full set of built-in capabilities</h2>
+
+    <p>Nine capability types are baked into the language:</p>
+
+    <ul>
+        <li><span class="ic">Stdio</span> &middot; standard output and input. <span class="ic">println</span>, <span class="ic">print</span>, <span class="ic">eprintln</span>, <span class="ic">read_line</span>.</li>
+        <li><span class="ic">Fs</span> &middot; the filesystem. <span class="ic">read</span>, <span class="ic">write</span>, <span class="ic">exists</span>, <span class="ic">list_dir</span>.</li>
+        <li><span class="ic">Net</span> &middot; the network. <span class="ic">get</span> (HTTP).</li>
+        <li><span class="ic">Env</span> &middot; environment variables. <span class="ic">get</span>, <span class="ic">args</span>.</li>
+        <li><span class="ic">Proc</span> &middot; subprocesses. Spawning and running external programs.</li>
+        <li><span class="ic">Clock</span> &middot; wall-clock time. <span class="ic">now_secs</span>, <span class="ic">sleep</span>.</li>
+        <li><span class="ic">Random</span> &middot; non-deterministic randomness. <span class="ic">float_unit</span>, <span class="ic">int_range</span>, <span class="ic">with_seed</span>.</li>
+        <li><span class="ic">Db</span> &middot; database access. Queries against a connected database.</li>
+        <li><span class="ic">Unsafe</span> &middot; the escape hatch. Anything that crosses into Python interop.</li>
+    </ul>
+
+    <p>Any function that needs one of these declares it as a parameter:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">read_config</span>(fs: <span class="cp">Fs</span>) -&gt; <span class="ty">Result</span>&lt;<span class="ty">String</span>, <span class="ty">IoError</span>&gt;
+    <span class="k">return</span> fs.<span class="fn">read</span>(<span class="st">"config.txt"</span>)
+
+<span class="k">fun</span> <span class="fn">fetch_users</span>(net: <span class="cp">Net</span>) -&gt; <span class="ty">Result</span>&lt;<span class="ty">String</span>, <span class="ty">IoError</span>&gt;
+    <span class="k">return</span> net.<span class="fn">get</span>(<span class="st">"https://api.example.com/users"</span>)</code></pre></div>
+
+    <p>A function that takes no capabilities <strong>cannot</strong> do I/O. Not "is asked not to"; <em>cannot</em>: the names of the capability values are not in scope, and there is no way to obtain one out of thin air. The compiler enforces this structurally.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>How a capability gets to where it is needed</h2>
+
+    <p>The runtime gives the full set of capabilities to <span class="ic">main</span>. From <span class="ic">main</span> down, capabilities flow as parameters:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">greet</span>(stdio: <span class="cp">Stdio</span>, name: <span class="ty">String</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, ${name}"</span>)
+
+<span class="k">fun</span> <span class="fn">greet_all</span>(stdio: <span class="cp">Stdio</span>, names: <span class="ty">List</span>&lt;<span class="ty">String</span>&gt;)
+    <span class="k">for</span> name <span class="k">in</span> names
+        <span class="fn">greet</span>(stdio, name)
+
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="fn">greet_all</span>(stdio, [<span class="st">"Ana"</span>, <span class="st">"Bruno"</span>, <span class="st">"Carla"</span>])</code></pre></div>
+
+    <p>Both intermediate functions declare <span class="ic">Stdio</span> because they ultimately call <span class="ic">println</span> or call a function that does. Reading the signatures of a Capa program tells you the exact authority surface: a function whose signature contains no capabilities is provably pure.</p>
+
+    <p>When <span class="ic">main</span> needs more than one capability, list them as additional parameters:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>, fs: <span class="cp">Fs</span>)
+    <span class="k">match</span> fs.<span class="fn">read</span>(<span class="st">"hello.txt"</span>)
+        <span class="ty">Ok</span>(text) -&gt;
+            stdio.<span class="fn">println</span>(text)
+        <span class="ty">Err</span>(e) -&gt;
+            stdio.<span class="fn">eprintln</span>(<span class="st">"error: ${e}"</span>)</code></pre></div>
+
+    <p>The runtime instantiates each parameter from its type: <span class="ic">Stdio</span> becomes a fresh <span class="ic">Stdio</span>, <span class="ic">Fs</span> a fresh <span class="ic">Fs</span>, and so on.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>The discipline, in three rules</h2>
+
+    <p>Capabilities are not normal values. The analyzer enforces three rules that distinguish them. None of them are arbitrary; each one closes a specific hole that ambient authority leaves open.</p>
+
+    <ol>
+        <li>
+            <p><strong>No aliasing.</strong> A capability cannot be bound to a <span class="ic">let</span>. <span class="ic">let copy = stdio</span> is a compile error. If you could alias a cap, code could squirrel it away in a global and bypass the signature-as-contract.</p>
+        </li>
+        <li>
+            <p><strong>No returning, no storing.</strong> A built-in capability cannot be returned from a function, stored as a struct field, or captured by a lambda. Authority flows downward through parameters; it cannot flow upward or sideways. (User-defined capabilities, chapter 10, relax this for the wrapper pattern; built-ins do not.)</p>
+        </li>
+        <li>
+            <p><strong>Must be used.</strong> A function that declares a capability parameter and never invokes a method on it is a compile error. The signature is a contract; declaring a cap you do not use is a misleading contract.</p>
+        </li>
+    </ol>
+
+    <p>Together, the three rules guarantee that the set of capabilities in a function's signature is an upper bound on what the function can actually do. The manifest you saw in chapter 1 (and that the compiler emits at any time with <span class="ic">capa --manifest</span>) is just this fact written out.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The two error modes</h2>
+
+    <p>First: trying to use a capability you did not declare.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> contents = fs.<span class="fn">read</span>(<span class="st">"hello.txt"</span>)</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code>error: undefined name 'fs'
+   2 |     let contents = fs.read("hello.txt")
+                          ^</code></pre></div>
+
+    <p>The name <span class="ic">fs</span> is not in scope. Add it to <span class="ic">main</span>'s parameters: <span class="ic">fun main(stdio: Stdio, fs: Fs)</span>.</p>
+
+    <p>Second: trying to alias a capability.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> dup = stdio
+    dup.<span class="fn">println</span>(<span class="st">"hi"</span>)</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code>error: 'stdio' is a capability and cannot be bound to a 'let'
+       (capabilities flow through function parameters only)
+   2 |     let dup = stdio
+                     ^</code></pre></div>
+
+    <p>If you want a copy with narrower authority, use <span class="ic">restrict_to</span> (chapter 9). If you want to pass the capability into a helper function, do so directly: <span class="ic">helper(stdio)</span> instead of binding-then-passing.</p>
+
+    <div class="callout">
+        <p><strong>Try this.</strong> Write a program that reads <span class="ic">hello.txt</span> and prints its length. <span class="ic">main</span> takes <span class="ic">stdio: Stdio</span> and <span class="ic">fs: Fs</span>; the body uses <span class="ic">?</span> on the <span class="ic">fs.read</span> call to propagate failure, then prints the string's length.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Where you are now</h2>
+
+    <p>You understand what a capability is and how authority flows through a Capa program. The next chapter is about narrowing that authority before passing it on: a function that ultimately calls one specific URL does not need full <span class="ic">Net</span> authority. <span class="ic">restrict_to</span> is the tool.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="07-errors-as-values.html"><h4><span class="arr">&larr;</span> 7. Errors as values</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="09-attenuating-capabilities.html"><h4>9. Attenuating capabilities <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>

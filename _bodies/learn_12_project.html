@@ -1,0 +1,187 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 12 of 14</span>
+    <h1>A small project</h1>
+    <p class="lead">Putting it together. A grade-book tool that reads student scores from a CSV-ish text file, computes per-student statistics, and writes a small report. Uses most of what the previous eleven chapters introduced.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The brief</h2>
+
+    <p>The tool reads a file called <span class="ic">scores.txt</span> with one student per line in the shape <span class="ic">Name,score1,score2,score3</span>. It computes each student's average and pass/fail status (passing is average &geq; 10), then writes a report to <span class="ic">report.txt</span> and prints a summary to the terminal.</p>
+
+    <p>Input:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code>Ana,17,15,19
+Bruno,8,11,9
+Carla,14,13,15</code></pre></div>
+
+    <p>Expected output:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code>Ana: 17.0 (Pass)
+Bruno: 9.33 (Fail)
+Carla: 14.0 (Pass)
+
+Passed: 2/3</code></pre></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>The shape</h2>
+
+    <p>Three files. <span class="ic">parse.capa</span> turns one input line into a typed record. <span class="ic">report.capa</span> takes records and produces the report string. <span class="ic">main.capa</span> is the entry point that wires the capabilities.</p>
+
+    <p>The data model:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="cm">// parse.capa</span>
+<span class="k">pub</span> <span class="k">type</span> <span class="ty">Student</span> {
+    name: <span class="ty">String</span>,
+    scores: <span class="ty">List</span>&lt;<span class="ty">Int</span>&gt;,
+    average: <span class="ty">Float</span>,
+    passed: <span class="ty">Bool</span>
+}
+
+<span class="k">pub</span> <span class="k">fun</span> <span class="fn">parse_line</span>(line: <span class="ty">String</span>) -&gt; <span class="ty">Option</span>&lt;<span class="ty">Student</span>&gt;
+    <span class="k">let</span> parts = line.<span class="fn">split</span>(<span class="st">","</span>)
+    <span class="k">if</span> parts.<span class="fn">length</span>() &lt; 2
+        <span class="k">return</span> <span class="ty">None</span>
+    <span class="k">let</span> name = parts.<span class="fn">get</span>(0)?
+    <span class="k">var</span> scores: <span class="ty">List</span>&lt;<span class="ty">Int</span>&gt; = []
+    <span class="k">var</span> sum = 0
+    <span class="k">var</span> i = 1
+    <span class="k">while</span> i &lt; parts.<span class="fn">length</span>()
+        <span class="k">let</span> token = parts.<span class="fn">get</span>(i)?
+        <span class="k">let</span> n = <span class="fn">parse_int</span>(token)?
+        scores.<span class="fn">push</span>(n)
+        sum = sum + n
+        i = i + 1
+    <span class="k">if</span> scores.<span class="fn">is_empty</span>()
+        <span class="k">return</span> <span class="ty">None</span>
+    <span class="k">let</span> avg = <span class="fn">to_float</span>(sum) / <span class="fn">to_float</span>(scores.<span class="fn">length</span>())
+    <span class="k">return</span> <span class="ty">Some</span>(<span class="ty">Student</span> {
+        name: name,
+        scores: scores,
+        average: avg,
+        passed: avg &gt;= 10.0
+    })</code></pre></div>
+
+    <p>Three things to notice. Each <span class="ic">?</span> hands back <span class="ic">None</span> if a parse step fails; the function's return type <span class="ic">Option&lt;Student&gt;</span> matches what the analyzer expects (chapter 7). <span class="ic">parts.get(i)</span> returns an <span class="ic">Option&lt;String&gt;</span> because string-list indexing is total; the <span class="ic">?</span> unwraps. The <span class="ic">Student</span> struct holds the original scores plus the derived <span class="ic">average</span> and <span class="ic">passed</span>, so report generation does not have to recompute.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Report generation</h2>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="cm">// report.capa</span>
+<span class="k">import</span> parse
+
+<span class="k">pub</span> <span class="k">fun</span> <span class="fn">render</span>(students: <span class="ty">List</span>&lt;<span class="ty">Student</span>&gt;) -&gt; <span class="ty">String</span>
+    <span class="k">var</span> out = <span class="st">""</span>
+    <span class="k">for</span> s <span class="k">in</span> students
+        <span class="k">let</span> status = <span class="k">if</span> s.passed <span class="k">then</span> <span class="st">"Pass"</span> <span class="k">else</span> <span class="st">"Fail"</span>
+        out = out + <span class="st">"${s.name}: ${s.average} (${status})\n"</span>
+    <span class="k">let</span> passed = students.<span class="fn">filter</span>(<span class="k">fun</span> (s: <span class="ty">Student</span>) -&gt; <span class="ty">Bool</span> =&gt; s.passed).<span class="fn">length</span>()
+    out = out + <span class="st">"\nPassed: ${passed}/${students.length()}\n"</span>
+    <span class="k">return</span> out</code></pre></div>
+
+    <p><span class="ic">report.capa</span> imports <span class="ic">parse</span> so it has the <span class="ic">Student</span> type in scope. The function takes a list of students, walks them to build the per-line section, and uses <span class="ic">filter().length()</span> for the count of passing students.</p>
+
+    <p>The <span class="ic">if cond then a else b</span> form is the expression flavour of <span class="ic">if</span> from chapter 4; it gives <span class="ic">status</span> a value without writing a four-line statement.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>The entry point</h2>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="cm">// main.capa</span>
+<span class="k">import</span> parse
+<span class="k">import</span> report
+
+<span class="k">fun</span> <span class="fn">load_students</span>(fs: <span class="cp">Fs</span>, path: <span class="ty">String</span>) -&gt; <span class="ty">Result</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Student</span>&gt;, <span class="ty">IoError</span>&gt;
+    <span class="k">let</span> text = fs.<span class="fn">read</span>(path)?
+    <span class="k">var</span> students: <span class="ty">List</span>&lt;<span class="ty">Student</span>&gt; = []
+    <span class="k">for</span> line <span class="k">in</span> text.<span class="fn">split</span>(<span class="st">"\n"</span>)
+        <span class="k">match</span> <span class="fn">parse_line</span>(line)
+            <span class="ty">Some</span>(s) -&gt; students.<span class="fn">push</span>(s)
+            <span class="ty">None</span> -&gt; ()   <span class="cm">// skip empty / malformed lines silently</span>
+    <span class="k">return</span> <span class="ty">Ok</span>(students)
+
+<span class="k">fun</span> <span class="fn">main</span>(fs: <span class="cp">Fs</span>, stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> work_dir = fs.<span class="fn">restrict_to</span>(<span class="st">"./"</span>)
+    <span class="k">match</span> <span class="fn">load_students</span>(work_dir, <span class="st">"scores.txt"</span>)
+        <span class="ty">Err</span>(e) -&gt;
+            stdio.<span class="fn">eprintln</span>(<span class="st">"read failed: ${e}"</span>)
+            <span class="k">return</span>
+        <span class="ty">Ok</span>(students) -&gt;
+            <span class="k">let</span> output = <span class="fn">render</span>(students)
+            <span class="k">match</span> work_dir.<span class="fn">write</span>(<span class="st">"report.txt"</span>, output)
+                <span class="ty">Err</span>(e) -&gt; stdio.<span class="fn">eprintln</span>(<span class="st">"write failed: ${e}"</span>)
+                <span class="ty">Ok</span>(_) -&gt; stdio.<span class="fn">println</span>(output)</code></pre></div>
+
+    <p>Three things to call out. <span class="ic">main</span> takes only <span class="ic">Fs</span> and <span class="ic">Stdio</span>; the rest of the program is built from those two. <span class="ic">load_students</span> is given a <em>narrowed</em> <span class="ic">Fs</span> (via <span class="ic">fs.restrict_to("./")</span>); even if a future change introduced a path traversal, the narrowed cap would deny it before any filesystem call (chapter 9). And the program propagates failures explicitly through <span class="ic">Result</span> with a top-level <span class="ic">match</span>; there is no <span class="ic">try</span> / <span class="ic">except</span>, no panicking, no silent crash.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Run it</h2>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run main.capa
+Ana: 17.0 (Pass)
+Bruno: 9.333333333333334 (Fail)
+Carla: 14.0 (Pass)
+
+Passed: 2/3</code></pre></div>
+
+    <p>The <span class="ic">report.txt</span> file in the working directory contains the same content. Confirm with <span class="ic">cat report.txt</span> on Unix or <span class="ic">type report.txt</span> on Windows.</p>
+
+    <p>The capability manifest for this program tells you what it can do:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --manifest main.capa | grep declared_capabilities
+      "declared_capabilities": ["Fs"],
+      "declared_capabilities": ["Fs", "Stdio"],
+      "declared_capabilities": [],
+      "declared_capabilities": []</code></pre></div>
+
+    <p><span class="ic">parse_line</span> and <span class="ic">render</span> are listed last: they declare nothing. They are provably incapable of touching the filesystem, the network, or any other system resource. A reviewer looking at the SBOM learns that the parsing and reporting logic is sandboxed from authority by construction, not by convention.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>What you have built</h2>
+
+    <p>A multi-file program that reads a file, parses input into typed records, computes derived values, generates a report, and writes output. Every error path is named in a type. The two functions that do not touch the outside world are provably pure. The two that do, declare exactly what they touch. The narrowing at <span class="ic">main</span>'s boundary makes the filesystem reach the smallest the program can run with.</p>
+
+    <p>This is what writing programs in a capability-typed language looks like in the small. Scale up: more files, more types, more user-defined capabilities for domain operations. The discipline scales with you because the type system enforces it, not the conventions.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Where you go next</h2>
+
+    <p>The fundamentals are behind you. One advanced chapter remains: <a href="13-information-flow.html">information-flow control</a>, the second axis of the type system, where you mark data <span class="ic">@secret</span> and the compiler proves it cannot leak. The <a href="../reference.html">language reference</a> and the <a href="../stdlib.html">standard library</a> are the dense companions for lookup, and the <a href="https://github.com/nelsonduarte/capa-language/tree/main/examples"><span class="ic">examples/</span> directory in the repo</a> has a working program for almost every feature, including the CVE case studies that motivated the design.</p>
+
+    <p>If you build something with Capa, send it. The language is at v1.13.0; real use is the best feedback.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="11-modules-and-visibility.html"><h4><span class="arr">&larr;</span> 11. Modules and visibility</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="13-information-flow.html"><h4>13. Information-flow control <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>

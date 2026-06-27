@@ -1,0 +1,60 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn</span>
+    <h1>A step-by-step tutorial</h1>
+    <p class="lead">Fourteen chapters, hands-on. Every chapter has a runnable program and one focused new idea. Read it in order on the first pass; come back as a reference later. No prior capability-language experience is assumed: if you have written Python, Go, Rust, or any C-family language, you will feel at home.</p>
+    <div class="phero-actions">
+      <a class="btn btn-primary" href="01-hello.html">Start chapter 1</a>
+      <a class="btn btn-ghost" href="../start.html">Install first</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Before you start</span>
+    <h2>Three things you need</h2>
+    <ul class="bullets" style="margin-top:8px">
+      <li><strong>Capa installed and on your <span class="ic">PATH</span>.</strong> Check with <span class="ic">capa --version</span>; if not, see <a href="../start.html">Get started</a>.</li>
+      <li><strong>A text editor.</strong> Any editor works; for syntax highlighting and the language server, see <a href="../start.html">editor integration</a> on the install page.</li>
+      <li><strong>A terminal.</strong> Every chapter has a <span class="ic">capa --run file.capa</span> step.</li>
+    </ul>
+    <div class="note">The capability discipline starts to bite in <strong>chapter 8</strong>: the first seven chapters are a normal-looking language so the surface stays familiar before the unusual ideas arrive. Chapter 12 is a worked example, chapter 13 adds information-flow control, and chapter 14 turns the discipline into audit artefacts.</div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">The fourteen chapters</span>
+    <h2>From zero to real programs</h2>
+    <p class="section-intro">Each chapter is short: 5-10 minutes of reading plus typing. You can stop after any chapter and have a working program.</p>
+    <div class="grid g2" style="margin-top:8px">
+      <a class="card" href="01-hello.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">01</span>Hello, Capa</h3><p>Your first program. The shape of <span class="ic">main</span>.</p></a>
+      <a class="card" href="02-values.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">02</span>Values and types</h3><p>Primitives, <span class="ic">let</span> vs <span class="ic">var</span>, type inference, string interpolation.</p></a>
+      <a class="card" href="03-functions.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">03</span>Functions</h3><p>Signatures, parameters, return types, named arguments.</p></a>
+      <a class="card" href="04-control-flow.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">04</span>Control flow</h3><p><span class="ic">if</span>, <span class="ic">while</span>, <span class="ic">for</span>, ranges, statement vs expression.</p></a>
+      <a class="card" href="05-collections.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">05</span>Collections</h3><p><span class="ic">List</span>, <span class="ic">Map</span>, <span class="ic">Set</span>, higher-order methods.</p></a>
+      <a class="card" href="06-structs-and-sum-types.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">06</span>Structs and sum types</h3><p>Defining your own types, pattern matching on variants.</p></a>
+      <a class="card" href="07-errors-as-values.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">07</span>Errors as values</h3><p><span class="ic">Option&lt;T&gt;</span>, <span class="ic">Result&lt;T, E&gt;</span>, the <span class="ic">?</span> operator.</p></a>
+      <a class="card" href="08-your-first-capability.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">08</span>Your first capability</h3><p>What <span class="ic">Stdio</span> really is. Why <span class="ic">main</span> declares it. The discipline.</p></a>
+      <a class="card" href="09-attenuating-capabilities.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">09</span>Attenuating capabilities</h3><p><span class="ic">restrict_to</span>. Monotonic narrowing. Least-authority programs.</p></a>
+      <a class="card" href="10-defining-your-own-capability.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">10</span>Defining your own capability</h3><p><span class="ic">capability X</span>, <span class="ic">impl X for Y</span>. Library contracts.</p></a>
+      <a class="card" href="11-modules-and-visibility.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">11</span>Modules and visibility</h3><p><span class="ic">import</span>, <span class="ic">pub</span>, <span class="ic">CAPA_PATH</span>.</p></a>
+      <a class="card" href="12-a-small-project.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">12</span>A small project</h3><p>Putting it together. A real CLI tool in Capa.</p></a>
+      <a class="card" href="13-information-flow.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">13</span>Information-flow control</h3><p><span class="ic">@secret</span>, <span class="ic">declassify</span>, and proving data cannot leak.</p></a>
+      <a class="card" href="14-from-source-to-sbom.html"><h3><span style="font-family:var(--serif);color:var(--soft);margin-right:.4em">14</span>From source to SBOM</h3><p><span class="ic">--manifest</span>, <span class="ic">--cyclonedx</span>, <span class="ic">--spdx</span>, <span class="ic">--vex</span>, <span class="ic">--provenance</span>.</p></a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Companions</span>
+    <h2>The dense references for later</h2>
+    <div class="nextgrid">
+      <a class="nextcard" href="../reference.html"><h4>Language reference <span class="arr">→</span></h4><p>Full syntax and semantics, section by section.</p></a>
+      <a class="nextcard" href="../stdlib.html"><h4>Standard library <span class="arr">→</span></h4><p>The built-in types and capability APIs, method by method.</p></a>
+    </div>
+  </div>
+</section>

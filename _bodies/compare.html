@@ -1,0 +1,126 @@
+<!-- HERO -->
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Positioning</span>
+    <h1>How Capa compares</h1>
+    <p class="lead">Where Capa sits among the capability-typed languages and among the existing sources of capability claims. Everything here tracks <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">docs/positioning.md</a> in the compiler repository, which is the canonical version; last reviewed against it in June 2026.</p>
+  </div>
+</section>
+
+<!-- PROPERTY -->
+<section>
+  <div class="article">
+    <span class="eyebrow">The property being compared</span>
+    <h2>Where do the claims come from?</h2>
+    <p class="section-intro">Comparing an SBOM's capability claims against a policy file is roughly thirty lines of code in any language. The pipeline downstream of the claims is not the interesting part. The interesting part is upstream: <strong>where do the claims come from, and why should an auditor believe them?</strong></p>
+    <div class="pull">Capa's answer: the compiler refuses to ship a program whose actual code reaches an authority its declaration omits, so the declaration is a bound on behaviour rather than a report about it. Every row below is compared against that one property.</div>
+  </div>
+</section>
+
+<!-- SOURCES -->
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">Where claims come from today</span>
+    <h2>Three existing sources, and Capa</h2>
+    <p class="section-intro">In the ecosystems that have capability claims at all, the claims come from one of three places. The right column is what an auditor actually gets.</p>
+    <div class="cmp">
+      <div class="cmp-row">
+        <div class="cmp-term">Author-declared manifests<span class="sub">npm permissions · Deno --allow-* · AndroidManifest</span></div>
+        <p class="cmp-desc">The runtime enforces the list, but the static picture depends on the author being honest and complete; in practice a previous release's manifest gets copy-pasted forward and the discrepancies accumulate.</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term">Heuristic static analysis<span class="sub">CodeQL · Semgrep · Joern · Slither</span></div>
+        <p class="cmp-desc">Output with both false negatives (unmodelled indirect calls; adversarial code can route around the analyser) and false positives, so "no Net usage detected" cannot be distinguished from "the analyser missed it".</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term">Runtime observation<span class="sub">seccomp · Linux audit · Deno prompts · eBPF</span></div>
+        <p class="cmp-desc">A record of what the program did during the runs that were observed, which says nothing about what it could do on a path no test exercised.</p>
+      </div>
+      <div class="cmp-row is-capa">
+        <div class="cmp-term"><svg class="chk" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10.5l4 4 8-9"/></svg>Capa</div>
+        <p class="cmp-desc">A declaration that lists every authority the function could possibly use, with a compiler that rejects any program whose code reaches an authority the declaration omits. The auditor re-derives the SBOM from source with <span class="ic">capa --cyclonedx</span> and needs no second analyser.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADJACENT LANGUAGES -->
+<section>
+  <div class="article">
+    <span class="eyebrow">Adjacent languages</span>
+    <h2>Capability typing predates Capa by decades</h2>
+    <p class="section-intro">Several language families have explored it. One sentence on each, and on how it relates to Capa's use case.</p>
+    <div class="cmp">
+      <div class="cmp-row">
+        <div class="cmp-term">Pony</div>
+        <p class="cmp-desc">Reference capabilities (<span class="ic">iso</span>, <span class="ic">trn</span>, <span class="ic">ref</span>, <span class="ic">val</span>, <span class="ic">box</span>, <span class="ic">tag</span>) govern aliasing and data-race freedom in an actor model: the same intellectual family, aimed at concurrency safety rather than external-authority audit.</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term">Koka · Eff · OCaml 5<span class="sub">effect handlers</span></div>
+        <p class="cmp-desc">An effect row that includes <span class="ic">&lt;net&gt;</span> is shape-equivalent to a function taking a <span class="ic">Net</span> parameter, but the ecosystems are research-grade and there is no SBOM tooling story today.</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term">Haskell</div>
+        <p class="cmp-desc">Phantom types and the <span class="ic">ReaderT</span>-of-capability-record pattern get close to the same soundness property, but as a library convention rather than a language guarantee: any contributor who imports <span class="ic">IO</span> directly bypasses it.</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term">Roc</div>
+        <p class="cmp-desc">Capabilities arrive through the platform (the platform provides effectful primitives, the program receives them as values), making Roc the closest in spirit among production-aimed new languages; it is still pre-1.0 and the SBOM angle has not been explored upstream.</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term">WebAssembly Component Model<span class="sub">+ WIT</span></div>
+        <p class="cmp-desc">A component's WIT imports are a genuine, machine-readable capability surface, at module granularity rather than function granularity; Capa compiles to Wasm-CM, so the two are complementary rather than competing.</p>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-term">Zero<span class="sub">Vercel Labs · May 2026</span></div>
+        <p class="cmp-desc">The only other language with capability-based I/O as its headline: a systems language in the C / Rust space whose toolchain emits stable error codes and typed repair categories for AI-agent repair loops; it shares Capa's root and splits on audience (AI-agent toolchain vs supply-chain auditor).</p>
+      </div>
+    </div>
+    <div class="note"><strong>The granularity point matters most for audit work.</strong> Most CVEs are caused by a small set of functions inside an otherwise-trusted module, and a module-level import list cannot isolate them; function-level claims can.</div>
+  </div>
+</section>
+
+<!-- CANNOT CLAIM -->
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">The honest column</span>
+    <h2>What Capa cannot claim</h2>
+    <p class="section-intro">A comparison page that only lists wins is marketing. From the same positioning document:</p>
+    <ul class="bullets">
+      <li><strong>The mechanism is not new.</strong> Capability typing is decades old and well-understood; Capa's contribution is the combination (discipline by construction feeding machine-verifiable per-function audit artefacts), not the primitive.</li>
+      <li><strong>It is a one-person project.</strong> Capa is at 1.13 with a stability commitment, but there are no industrial adopters and no third-party libraries.</li>
+      <li><strong>The default runtime is CPython,</strong> with measured overhead between 1.00× and 1.45× against hand-written Python on the benchmark suite; the Wasm Component Model backend covers native AOT, and a dedicated LLVM backend is deliberately deferred.</li>
+      <li><strong>The ecosystem is shallow.</strong> There is a CLI, an LSP server, a formatter, the SBOM emitters and diff tooling, a package manager with a signed registry index, and a small standard library; no debugger story beyond CPython's.</li>
+      <li><strong>The Wasm Component Model competes for the same role</strong> at module granularity, with a much larger ecosystem behind it.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- NEXT -->
+<section>
+  <div class="article">
+    <span class="eyebrow">Next</span>
+    <h2>Where to go next</h2>
+    <div class="nextgrid">
+      <a class="nextcard" href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">
+        <h4>Full positioning document <span class="arr">→</span></h4>
+        <p>The canonical, maintained version of everything on this page, including the thesis in one sentence.</p>
+      </a>
+      <a class="nextcard" href="why.html">
+        <h4>Why Capa exists <span class="arr">→</span></h4>
+        <p>The case against ambient authority, with runnable code rather than comparisons.</p>
+      </a>
+      <a class="nextcard" href="reference.html">
+        <h4>The audit artefacts <span class="arr">→</span></h4>
+        <p>What <span class="ic">--manifest</span>, <span class="ic">--cyclonedx</span>, <span class="ic">--spdx</span>, <span class="ic">--vex</span> and <span class="ic">--provenance</span> emit.</p>
+      </a>
+      <a class="nextcard" href="agent-demo.html">
+        <h4>See it on an LLM agent <span class="arr">→</span></h4>
+        <p>A worked example where the per-function capability bound is the security argument.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->

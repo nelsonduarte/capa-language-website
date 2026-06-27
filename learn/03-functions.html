@@ -1,67 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3. Functions | Learn Capa</title>
-    <meta name="description" content="Chapter 3 of Learn Capa: signatures, parameters, return types, named arguments.">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <script src="../theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>3. Functions | Learn Capa</title>
+<meta name="description" content="Chapter 3 of Learn Capa: signatures, parameters, return types and named arguments.">
+<link rel="canonical" href="https://capa-language.com/learn/03-functions.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Capa">
+<meta property="og:title" content="3. Functions | Learn Capa">
+<meta property="og:description" content="Chapter 3 of Learn Capa: signatures, parameters, return types and named arguments.">
+<meta property="og:url" content="https://capa-language.com/learn/03-functions.html">
+<meta property="og:image" content="https://capa-language.com/capa_logo.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="3. Functions | Learn Capa">
+<meta name="twitter:description" content="Chapter 3 of Learn Capa: signatures, parameters, return types and named arguments.">
+<meta name="twitter:image" content="https://capa-language.com/capa_logo.svg">
+<link rel="icon" href="../capa_logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-
-<header>
-    <nav>
-        <a href="../index.html" class="logo">
-            <img src="../capa_logo.svg" alt="" aria-hidden="true">
-            Capa
-        </a>
-        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
-        <label for="nav-toggle" class="nav-burger" aria-hidden="true">
-            <span></span><span></span><span></span>
-        </label>
-        <div class="nav-links">
-            <a href="../index.html">Home</a>
-            <a href="../why.html">Why Capa</a>
-            <a href="../compare.html">Compare</a>
-            <a href="../study.html">Study</a>
-            <a href="index.html" class="current">Learn</a>
-            <a href="../reference.html">Reference</a>
-            <a href="../start.html">Get started</a>
-            <a href="../migrating.html">Migrating</a>
-            <a href="../regulatory.html">Regulatory</a>
-            <a href="../agent-demo.html">Agent demo</a>
-            <a href="../roadmap.html">Roadmap</a>
-            <a href="https://github.com/nelsonduarte/capa-language" class="github">GitHub</a>
-            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
-        </div>
+<a class="skip-link" href="#main">Skip to content</a>
+<svg width="0" height="0" class="svg-defs" aria-hidden="true">
+ <symbol id="capa-mark" viewBox="0 0 577.22 782.7">
+  <path fill="#a885fa" d="M515.82,258.55c1.6,9.06-14.34-4.03-22.58-5.07-128.33-58.01-269.07,69.8-197.88,196.88,54.82,97.82,196.29,106.26,275.81,34.39,7.59-3.13,6.02,11.39,5.7,16.08,3.09,87.71-138.58,190.41-66.46,248.48,2.83,2.37,15.3,9.63,16,11.02,3.47,6.87-14.56,10.48-19.31,11.72-233.4,62-442.98-157.08-369.29-387.95-47,68.7-43.12,183.85-3.79,263.59.91,1.87,6.52,11.33,9.7,17.43.74,1.42-.95,2.87-2.23,1.91-20.32-15.17-40.98-28.25-64.64-38.16-21.07-8.82-65.58-18.79-76.15-39.85-11.95-141.41,132.91-331.75,245.19-408.17,27.89-10.82,56.49.72,81.86,13.37,9.26-.26-16.46-16.32-18.85-17.4-42.73-25.62-91.55,3.89-75.56-28.52,3.84-7.75,13.77-16.2,22-19,10.08-3.44,28.13-.72,16.54-16.46-5.41-7.34-16.48-14.32-24.64-18.36-6.77-3.35-33.51-10.83-32.19-19.41,61.39-110.77,222.44-79.82,314.35-28.77,26.38,17.14-27.13,108.94-38.71,131.34-46.28,52.42-2.25,17.23,25.13,80.91ZM530.68,69.52c.89,1.01,2.6.26,2.61-1.08.07-14.22-18.12-14.02-29.89-13.09-37.48,2.97-62.22,29.45-84.49,56.51-28.27,33.92-75.86,88.32-2.74,100.66,1.67.24,2.41-2.03.92-2.83l-8.44-4.52c-14.22-9.07-21.16-18.6-12.57-35.14,25.37-41.11,80.49-112.17,134.61-100.51Z"/>
+  <path fill="#fdfdfe" d="M533.29,68.44c0,1.34-1.72,2.08-2.61,1.08-.07-.08-.15-.16-.24-.24-10.04-8.31-43.94,6.95-54.23,12.88-25.39,14.64-66.61,61.78-80.14,87.86-8.56,16.51-1.72,25.98,12.45,35.08.04.02.07.05.11.07l8.44,4.52c1.49.8.75,3.08-.92,2.83-19.72-2.89-41.34-12.65-39.32-35.73,1.36-15.52,31.22-51.76,42.07-64.93,22.27-27.06,47.01-53.54,84.49-56.51,11.77-.93,29.97-1.13,29.89,13.09Z"/>
+ </symbol>
+</svg>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="../index.html"><svg class="mark"><use href="#capa-mark"/></svg> Capa</a>
+    <nav class="nav-links" id="navlinks">
+      <a href="../why.html">Why Capa</a>
+      <a href="../compare.html">Compare</a>
+      <a href="../learn/index.html" class="active">Learn</a>
+      <a href="../reference.html">Reference</a>
+      <div class="has-drop">
+        <button class="drop-btn" id="docsbtn" aria-haspopup="true" aria-expanded="false">Docs
+          <svg class="car" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l4 4 4-4"/></svg>
+        </button>
+        <div class="drop"><a href="../study.html">Study</a><a href="../migrating.html">Migrating</a><a href="../regulatory.html">Regulatory</a><a href="../agent-demo.html">Agent demo</a><a href="../stdlib.html">Standard library</a><a href="../community.html">Community</a></div>
+      </div>
+      <a href="../roadmap.html">Roadmap</a>
     </nav>
+    <div class="nav-cta">
+      <a class="nav-ico" href="https://github.com/nelsonduarte/capa-language" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      <a class="btn btn-primary" href="../start.html">Get started</a>
+      <button class="nav-toggle" id="navtoggle" aria-label="Menu"><span></span></button>
+    </div>
+  </div>
 </header>
-
-<main>
-
-<div class="page-heading">
-    <p class="learn-breadcrumb"><a href="index.html">Learn</a> &middot; Chapter 3 of 14</p>
+<main id="main">
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 3 of 14</span>
     <h1>Functions</h1>
-    <p>How to put a sequence of operations behind a name and call it. Capa's signatures are precise: parameter types, return type, no overloading.</p>
-</div>
+    <p class="lead">How to put a sequence of operations behind a name and call it. Capa's signatures are precise: parameter types, return type, no overloading.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
 
 <section>
-    <h2>The shape of a function</h2>
+  <div class="article"><h2>The shape of a function</h2>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">double</span>(n: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span>
-    <span class="kw-ctrl">return</span> n * 2</code></pre>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">double</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">return</span> n * 2</code></pre></div>
 
-    <p>The same five parts you would expect: the keyword <code>fun</code>, the name <code>double</code>, a parenthesised parameter list (each one annotated with a type), an optional return type after <code>-&gt;</code>, and the body indented underneath.</p>
+    <p>The same five parts you would expect: the keyword <span class="ic">fun</span>, the name <span class="ic">double</span>, a parenthesised parameter list (each one annotated with a type), an optional return type after <span class="ic">-&gt;</span>, and the body indented underneath.</p>
 
     <p>Call it like any other function:</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
-    <span class="kw-storage">let</span> n = <span class="fn-call">double</span>(7)
-    stdio.<span class="fn-call">println</span>(<span class="str">"${n}"</span>)        <span class="comment">// 14</span></code></pre>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> n = <span class="fn">double</span>(7)
+    stdio.<span class="fn">println</span>(<span class="st">"${n}"</span>)        <span class="cm">// 14</span></code></pre></div>
 
     <p>Two function-shape rules to internalise early:</p>
 
@@ -70,133 +88,147 @@
             <p><strong>Every parameter has a type annotation</strong>, always. The compiler does not guess from call sites. This is a deliberate readability rule: a function's signature is the most useful summary of what it does, so the signature must be self-describing.</p>
         </li>
         <li>
-            <p><strong>The return type is required when the function returns a value.</strong> A function with no return type implicitly returns <code>Unit</code>; you can write that explicitly as <code>-&gt; ()</code> but most code leaves it off.</p>
+            <p><strong>The return type is required when the function returns a value.</strong> A function with no return type implicitly returns <span class="ic">Unit</span>; you can write that explicitly as <span class="ic">-&gt; ()</span> but most code leaves it off.</p>
         </li>
     </ol>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>No overloading, no defaults</h2>
+
+    <p>A name is bound to exactly one function. You cannot have two functions called <span class="ic">double</span> with different parameter types. If you want two flavours, give them two names: <span class="ic">double_int</span>, <span class="ic">double_float</span>.</p>
+
+    <p>There are also no default argument values. Every parameter must be passed at every call site. The cost of typing <span class="ic">some_lib.connect(host, port, timeout, retries)</span> is small; the cost of having defaults silently change between library versions is large.</p>
+  </div>
 </section>
 
 <section>
-    <h2>No overloading, no defaults</h2>
-
-    <p>A name is bound to exactly one function. You cannot have two functions called <code>double</code> with different parameter types. If you want two flavours, give them two names: <code>double_int</code>, <code>double_float</code>.</p>
-
-    <p>There are also no default argument values. Every parameter must be passed at every call site. The cost of typing <code>some_lib.connect(host, port, timeout, retries)</code> is small; the cost of having defaults silently change between library versions is large.</p>
-</section>
-
-<section>
-    <h2>Named arguments</h2>
+  <div class="article"><h2>Named arguments</h2>
 
     <p>For functions with more than two or three parameters, positional calls become hard to read. Capa lets you pass arguments by name at the call site:</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">greet</span>(name: <span class="ty-primitive">String</span>, age: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">String</span>
-    <span class="kw-ctrl">return</span> <span class="str">"${name} is ${age}."</span>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">greet</span>(name: <span class="ty">String</span>, age: <span class="ty">Int</span>) -&gt; <span class="ty">String</span>
+    <span class="k">return</span> <span class="st">"${name} is ${age}."</span>
 
-<span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
-    <span class="kw-storage">let</span> s = <span class="fn-call">greet</span>(name: <span class="str">"Ana"</span>, age: 30)
-    stdio.<span class="fn-call">println</span>(s)</code></pre>
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> s = <span class="fn">greet</span>(name: <span class="st">"Ana"</span>, age: 30)
+    stdio.<span class="fn">println</span>(s)</code></pre></div>
 
-    <p>Named and positional arguments cannot be mixed: a positional argument cannot appear after a named one. The analyzer also rejects unknown names, duplicates, and arity mismatches. Built-in methods (<code>String</code>, <code>Map</code>, <code>Set</code>, capabilities) only accept positional arguments because their parameter names are not tracked in the type system.</p>
+    <p>Named and positional arguments cannot be mixed: a positional argument cannot appear after a named one. The analyzer also rejects unknown names, duplicates, and arity mismatches. Built-in methods (<span class="ic">String</span>, <span class="ic">Map</span>, <span class="ic">Set</span>, capabilities) only accept positional arguments because their parameter names are not tracked in the type system.</p>
+  </div>
 </section>
 
-<section>
-    <h2>Functions that take other functions</h2>
+<section class="band">
+  <div class="article"><h2>Functions that take other functions</h2>
 
-    <p>A function type is written <code>Fun(T1, T2, ...) -&gt; R</code>. A function that takes a function looks like:</p>
+    <p>A function type is written <span class="ic">Fun(T1, T2, ...) -&gt; R</span>. A function that takes a function looks like:</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">apply_twice</span>(f: <span class="ty-builtin">Fun</span>(<span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span>, x: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span>
-    <span class="kw-ctrl">return</span> <span class="fn-call">f</span>(<span class="fn-call">f</span>(x))
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">apply_twice</span>(f: <span class="ty">Fun</span>(<span class="ty">Int</span>) -&gt; <span class="ty">Int</span>, x: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">return</span> <span class="fn">f</span>(<span class="fn">f</span>(x))
 
-<span class="kw-decl">fun</span> <span class="fn-name">inc</span>(n: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span>
-    <span class="kw-ctrl">return</span> n + 1
+<span class="k">fun</span> <span class="fn">inc</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">return</span> n + 1
 
-<span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
-    stdio.<span class="fn-call">println</span>(<span class="str">"${apply_twice(inc, 10)}"</span>)   <span class="comment">// 12</span></code></pre>
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"${apply_twice(inc, 10)}"</span>)   <span class="cm">// 12</span></code></pre></div>
 
-    <p>You can also write a function in-place as a lambda. The lambda is introduced with the same <code>fun</code> keyword, an explicit parameter list and return type, and a <code>=&gt;</code> separator before the body expression:</p>
+    <p>You can also write a function in-place as a lambda. The lambda is introduced with the same <span class="ic">fun</span> keyword, an explicit parameter list and return type, and a <span class="ic">=&gt;</span> separator before the body expression:</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">main</span>(stdio: <span class="cap">Stdio</span>)
-    <span class="kw-storage">let</span> add = <span class="kw-decl">fun</span> (a: <span class="ty-primitive">Int</span>, b: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span> =&gt; a + b
-    stdio.<span class="fn-call">println</span>(<span class="str">"${add(3, 4)}"</span>)         <span class="comment">// 7</span></code></pre>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> add = <span class="k">fun</span> (a: <span class="ty">Int</span>, b: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span> =&gt; a + b
+    stdio.<span class="fn">println</span>(<span class="st">"${add(3, 4)}"</span>)         <span class="cm">// 7</span></code></pre></div>
 
     <p>Lambdas have one important limit: they cannot capture capabilities from the outer scope. This is part of the capability discipline (you cannot smuggle authority through a closure). We come back to this in chapter 8.</p>
+  </div>
 </section>
 
 <section>
-    <h2>The two error modes</h2>
+  <div class="article"><h2>The two error modes</h2>
 
     <p>First: a missing return.</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">double</span>(n: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span>
-    <span class="kw-storage">let</span> r = n * 2</code></pre>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">double</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">let</span> r = n * 2</code></pre></div>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
 hello.capa:1:5: error: function 'double': declared return type 'Int',
                        but the body can fall through without returning a value
    1 | fun double(n: Int) -> Int
-         ^</code></pre>
+         ^</code></pre></div>
 
-    <p>The analyzer reads every path through the body. If any path can reach the end of the function without a <code>return</code>, and the declared return type is not <code>Unit</code>, you get this error. Add <code>return r</code> on its own line at the end.</p>
+    <p>The analyzer reads every path through the body. If any path can reach the end of the function without a <span class="ic">return</span>, and the declared return type is not <span class="ic">Unit</span>, you get this error. Add <span class="ic">return r</span> on its own line at the end.</p>
 
     <p>Second: a wrong return type.</p>
 
-<pre><code><span class="kw-decl">fun</span> <span class="fn-name">double</span>(n: <span class="ty-primitive">Int</span>) -&gt; <span class="ty-primitive">Int</span>
-    <span class="kw-ctrl">return</span> <span class="str">"twice that"</span></code></pre>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">double</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">return</span> <span class="st">"twice that"</span></code></pre></div>
 
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
 hello.capa:2:12: error: return: expected Int, got String
    2 |     return "twice that"
-                  ^</code></pre>
+                  ^</code></pre></div>
 
     <p>The return value's type must match the declared one exactly. There are no implicit conversions.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Where you are now</h2>
+
+    <p>You can write functions, give them precise signatures, call them positionally or by name, and pass functions to other functions. Next: how to make decisions and loop. Control flow.</p>
+  </div>
 </section>
 
 <section>
-    <h2>Where you are now</h2>
-
-    <p>You can write functions, give them precise signatures, call them positionally or by name, and pass functions to other functions. Next: how to make decisions and loop. Control flow.</p>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="02-values.html"><h4><span class="arr">&larr;</span> 2. Values and types</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="04-control-flow.html"><h4>4. Control flow <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
 </section>
 
-<nav class="chapter-nav" aria-label="Tutorial navigation">
-    <a class="prev" href="02-values.html">&larr; 2. Values and types</a>
-    <a class="next" href="04-control-flow.html">4. Control flow &rarr;</a>
-</nav>
-
 </main>
-
-<footer>
-    <div class="footer-grid">
-        <div>
-            <h4>Pages</h4>
-            <ul>
-                <li><a href="../why.html">Why Capa</a></li>
-                <li><a href="index.html">Learn</a></li>
-                <li><a href="../reference.html">Reference</a></li>
-                <li><a href="../start.html">Get started</a></li>
-                <li><a href="../roadmap.html">Roadmap</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Documentation</h4>
-            <ul>
-                <li><a href="../start.html">Getting started</a></li>
-                <li><a href="../reference.html">Reference</a></li>
-                <li><a href="../stdlib.html">Standard library</a></li>
-                <li><a href="../manifest.html">Manifest</a></li>
-                <li><a href="../community.html">Community</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4>Project</h4>
-            <ul>
-                <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
-                <li><a href="../brand.html">Brand assets</a></li>
-                <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/LICENSE">License (MIT or Apache-2.0)</a></li>
-                <li><a href="../privacy.html">Privacy</a></li>
-            </ul>
-        </div>
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a class="brand" href="../index.html"><svg class="mark mark-26"><use href="#capa-mark"/></svg> Capa</a>
+      <p>A capability-typed programming language. Every function declares the authorities it holds; the compiler checks the discipline statically.</p>
     </div>
-    <p class="colophon">Built by Nelson Duarte &middot; v1.12.0 &middot; MIT or Apache-2.0</p>
+    <div><h5>Pages</h5><ul>
+      <li><a href="../index.html">Home</a></li><li><a href="../why.html">Why Capa</a></li>
+      <li><a href="../learn/index.html">Learn</a></li><li><a href="../roadmap.html">Roadmap</a></li>
+    </ul></div>
+    <div><h5>Documentation</h5><ul>
+      <li><a href="../start.html">Getting started</a></li><li><a href="../reference.html">Reference</a></li>
+      <li><a href="../stdlib.html">Standard library</a></li><li><a href="../migrating.html">Migrating</a></li>
+    </ul></div>
+    <div><h5>Specification</h5><ul>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/Capa-EBNF.md">EBNF grammar</a></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/semantics.md">&#955;cap &amp; soundness</a></li>
+      <li><a href="../regulatory.html">CRA / NIS2 / DORA</a></li>
+    </ul></div>
+    <div><h5>Project</h5><ul>
+      <li><a href="https://github.com/nelsonduarte/capa-language">Source</a></li>
+      <li><a href="../community.html">Community</a></li><li><a href="../brand.html">Brand assets</a></li>
+      <li><a href="../privacy.html">Privacy</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-base">
+    <span>Built by Nelson Duarte &middot; v1.13.0 &middot; MIT or Apache-2.0</span>
+    <span>&copy; 2026 Capa</span>
+  </div>
 </footer>
-
+<script src="../menu.js"></script>
 </body>
 </html>

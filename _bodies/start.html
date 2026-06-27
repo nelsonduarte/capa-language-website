@@ -1,0 +1,183 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Get started</span>
+    <h1>From zero to a running program in five minutes</h1>
+    <p class="lead">Capa is a Python 3.10+ package that transpiles <span class="ic">.capa</span> source into Python and executes it with a small runtime. Three ways to install; pick one.</p>
+    <div class="phero-actions">
+      <a class="btn btn-primary" href="#install-a">One-line installer</a>
+      <a class="btn btn-ghost" href="#first">Your first program</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Install</span>
+    <h2>Three paths</h2>
+    <p class="section-intro">The <strong>one-line installer</strong> if you just want <span class="ic">capa</span> on your PATH; the <strong>manual binary</strong> if you prefer to verify the asset yourself; <strong>from source</strong> if you intend to contribute.</p>
+
+    <h3 id="install-a" style="scroll-margin-top:90px">Option A: one-line installer <span class="ic">recommended</span></h3>
+    <p>Downloads the latest pre-built binary into <span class="ic">~/.local/bin/capa</span> (Linux / macOS) or <span class="ic">%LOCALAPPDATA%\capa\capa.exe</span> (Windows). Open a new shell and <span class="ic">capa --version</span> should answer.</p>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">Linux / macOS</span></div>
+<pre><code><span class="cm"># Linux / macOS</span>
+$ curl -fsSL https://github.com/nelsonduarte/capa-language/releases/latest/download/install.sh | bash</code></pre></div>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">Windows (PowerShell)</span></div>
+<pre><code>PS&gt; irm https://github.com/nelsonduarte/capa-language/releases/latest/download/install.ps1 | iex</code></pre></div>
+    <div class="note"><strong>Verify before you run.</strong> Each one-liner has a companion <span class="ic">.sha256</span> in the same release. Download both, <span class="ic">sha256sum -c install.sh.sha256</span>, read the script, then <span class="ic">bash install.sh</span>. Override the location with <span class="ic">INSTALL_DIR</span> / <span class="ic">CAPA_INSTALL_DIR</span>; the installer is idempotent; rerun to upgrade. It adds the install dir to your PATH automatically (set <span class="ic">CAPA_NO_MODIFY_PATH=1</span> to opt out).</div>
+
+    <h3>Option B: manual binary download</h3>
+    <p>Each tagged release publishes a standalone PyInstaller binary that bundles the compiler and a Python interpreter into one file. No <span class="ic">pip install</span>, no Python required. The language server is bundled too, so <span class="ic">capa lsp</span> works straight from it.</p>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">Linux · x86_64</span></div>
+<pre><code>$ curl -L -o capa \
+   https://github.com/nelsonduarte/capa-language/releases/latest/download/capa-linux-x86_64
+$ chmod +x capa
+$ ./capa --run hello.capa</code></pre></div>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">macOS · Apple Silicon</span></div>
+<pre><code>$ curl -L -o capa \
+   https://github.com/nelsonduarte/capa-language/releases/latest/download/capa-macos-arm64
+$ chmod +x capa
+$ xattr -d com.apple.quarantine capa   <span class="cm"># bypass Gatekeeper</span>
+$ ./capa --run hello.capa</code></pre></div>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">Windows · x86_64</span></div>
+<pre><code>PS&gt; Invoke-WebRequest `
+      -Uri "https://github.com/nelsonduarte/capa-language/releases/latest/download/capa-windows-x86_64.exe" `
+      -OutFile capa.exe
+PS&gt; .\capa.exe --run hello.capa</code></pre></div>
+    <div class="note">Each binary ships a matching <span class="ic">.sha256</span>; verify with <span class="ic">sha256sum -c</span> before running. On Linux the binary is a CLI tool, not a desktop app: open a terminal and <span class="ic">chmod +x</span> rather than double-clicking. The macOS build is not yet notarised, so remove the quarantine attribute or allow it in System Settings → Privacy &amp; Security.</div>
+
+    <h3>Option C: from source</h3>
+    <p>Requirements: <strong>Python 3.10+</strong> and <strong>git</strong>. Tested on 3.10, 3.12 and 3.14 across all three platforms. Zero runtime dependencies outside the standard library.</p>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">source install</span></div>
+<pre><code>$ git clone https://github.com/nelsonduarte/capa-language
+$ cd capa
+$ pip install -e .
+$ python -m unittest discover tests   <span class="cm"># over 3,200 tests, a couple of minutes</span></code></pre></div>
+    <p class="muted">The editable install registers the package <em>and</em> adds a <span class="ic">capa</span> command on your PATH, so both <span class="ic">capa &lt;args&gt;</span> and <span class="ic">python -m capa &lt;args&gt;</span> work from any directory. The Wasm backend is optional: <span class="ic">pip install -e '.[wasm]'</span> unlocks <span class="ic">capa --wasm --run</span>.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">Packages</span>
+    <h2>Dependencies in <span style="font-family:var(--mono);font-size:.7em">capa.toml</span></h2>
+    <p class="section-intro">Projects declare dependencies in a <span class="ic">capa.toml</span> at the root. The same file pins the source: a git URL with an exact tag, or a relative path. A signed <a href="https://github.com/nelsonduarte/capa-registry">registry index</a> maps short names to git sources and is GPG-verified before any name is trusted.</p>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa.toml</span></div>
+<pre><code><span class="pu">[package]</span>
+<span class="cp">name</span> = <span class="st">"my-project"</span>
+<span class="cp">version</span> = <span class="st">"0.1.0"</span>
+<span class="cp">capa</span> = <span class="st">"&gt;=0.8.4"</span>
+
+<span class="pu">[dependencies]</span>
+<span class="cp">capa_log</span> = { git = <span class="st">"https://github.com/nelsonduarte/capa_log"</span>, tag = <span class="st">"v0.1.2"</span> }
+
+<span class="pu">[dev-dependencies]</span>
+<span class="cp">capa_test</span> = { git = <span class="st">"https://github.com/nelsonduarte/capa_test"</span>, tag = <span class="st">"v0.1.1"</span> }</code></pre></div>
+    <div class="code">
+<pre><code>$ capa install        <span class="cm"># resolve, fetch deps into ./vendor/, write capa.lock</span>
+$ capa --run main.capa
+$ capa install        <span class="cm"># idempotent: rerun to refresh against capa.lock</span></code></pre></div>
+    <p class="muted">The <span class="ic">capa.lock</span> pins the resolved git SHA plus a SHA-256 of the fetched tarball, so installs are bit-reproducible. When a dependency carries a <span class="ic">verify_key</span>, <span class="ic">capa install</span> verifies the GPG tag signature or Sigstore SLSA attestation before unpacking. Full guide in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md">docs/packages.md</a>.</p>
+
+    <h3>Seed libraries</h3>
+    <p>The signed registry currently lists eight libraries. Each declares its own capability surface, visible in the SBOM before you read its code. A library marked <em>none</em> is provably pure.</p>
+    <table class="tbl">
+      <thead><tr><th>Package</th><th>What it does</th><th>Capability</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ic">capa_cli</span></td><td>Command-line argument parsing: flags, positionals, subcommands</td><td>none</td></tr>
+        <tr><td><span class="ic">capa_csv</span></td><td>RFC 4180 CSV parser, header view, and writer</td><td>none</td></tr>
+        <tr><td><span class="ic">capa_datetime</span></td><td>Date and time values plus formatting</td><td>none</td></tr>
+        <tr><td><span class="ic">capa_hash</span></td><td>SHA-256, SHA-224 and HMAC-SHA256, constant-time compare</td><td>none</td></tr>
+        <tr><td><span class="ic">capa_http</span></td><td>HTTP client: request and response handling</td><td><span class="ic">Net</span></td></tr>
+        <tr><td><span class="ic">capa_log</span></td><td>Structured logging with levels and formatters</td><td><span class="ic">Stdio</span></td></tr>
+        <tr><td><span class="ic">capa_sbom</span></td><td>CycloneDX / SPDX JSON parsing with capability queries</td><td>none</td></tr>
+        <tr><td><span class="ic">capa_test</span></td><td>A tiny assertion library for the <span class="ic">capa test</span> runner</td><td><span class="ic">Stdio</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="first" style="scroll-margin-top:80px">
+  <div class="article">
+    <span class="eyebrow">Your first program</span>
+    <h2>Hello, Capa</h2>
+    <p class="section-intro">The fastest path is to let the compiler scaffold one for you.</p>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">scaffold</span></div>
+<pre><code>$ capa init my-project
+$ cd my-project
+$ capa --run main.capa
+Hello from Capa!</code></pre></div>
+    <p>Or type it yourself; create <span class="ic">hello.capa</span>:</p>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">hello.capa</span></div>
+<pre><code><span class="cm">// hello.capa</span>
+<span class="k">fun</span> <span class="fn">main</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"Hello, Capa!"</span>)</code></pre></div>
+    <p>The <span class="ic">stdio: Stdio</span> parameter is the language asking explicitly for the right to write to standard output. The runtime hands one to <span class="ic">main</span>, and <span class="ic">main</span> can hand it further down, or not. This is the whole language in one line.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">The CLI</span>
+    <h2>Pipeline modes and tooling flags</h2>
+    <p class="section-intro">Each pipeline mode subsumes the previous: <span class="ic">--run</span> implies <span class="ic">--transpile</span>, which implies <span class="ic">--check</span>.</p>
+    <table class="tbl">
+      <thead><tr><th>Flag</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ic">init [name]</span></td><td>Scaffold a new project: <span class="ic">main.capa</span>, <span class="ic">README.md</span>, <span class="ic">.gitignore</span>, <span class="ic">.capa-version</span>.</td></tr>
+        <tr><td><span class="ic">(none)</span></td><td>Tokenize: print the lexer token stream.</td></tr>
+        <tr><td><span class="ic">--parse</span></td><td>Parse to AST and print a structured dump.</td></tr>
+        <tr><td><span class="ic">--check</span></td><td>Full analyzer: name resolution, types, capability discipline. Prints errors or <span class="ic">OK</span>.</td></tr>
+        <tr><td><span class="ic">--transpile</span></td><td>Emit equivalent Python 3.10+ source to stdout.</td></tr>
+        <tr><td><span class="ic">--run</span></td><td>Transpile and execute. The everyday flag.</td></tr>
+        <tr><td><span class="ic">--fmt</span> / <span class="ic">--fmt-check</span></td><td>Rewrite in canonical style, or verify only.</td></tr>
+        <tr><td><span class="ic">--doc</span></td><td>Emit a self-contained HTML page from <span class="ic">///</span> doc comments.</td></tr>
+        <tr><td><span class="ic">--manifest</span> … <span class="ic">--provenance</span></td><td>Emit the authority graph in five formats: Capa JSON, CycloneDX 1.5, SPDX 2.3, VEX, SLSA L1 provenance.</td></tr>
+        <tr><td><span class="ic">--watch</span></td><td>Re-run on every change. Implies <span class="ic">--run</span>.</td></tr>
+        <tr><td><span class="ic">lsp</span></td><td>Start the language server on stdio.</td></tr>
+      </tbody>
+    </table>
+    <div class="code">
+<pre><code>$ capa --check examples/io.capa
+OK
+
+$ capa --run examples/grades.capa
+=== Roster ===
+  Ana: 17.5 (Excellent)
+  Bruno: 13.0 (Pass)</code></pre></div>
+    <p class="muted">Every invocation also works as <span class="ic">python -m capa &lt;args&gt;</span> if <span class="ic">capa</span> is not on your PATH.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Editor integration</span>
+    <h2>An LSP server in the box</h2>
+    <p class="section-intro">Any LSP-capable editor (Helix, Neovim, Zed, VSCode, JetBrains, Emacs…) gets diagnostics, hover, go-to-definition, find-references, outline, completion, semantic highlighting, rename and Quick Fixes: the server runs the same lexer / parser / analyzer the CLI runs.</p>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">Helix · languages.toml</span></div>
+<pre><code><span class="pu">[[language]]</span>
+<span class="cp">name</span> = <span class="st">"capa"</span>
+<span class="cp">language-servers</span> = [<span class="st">"capa"</span>]
+<span class="cp">file-types</span> = [<span class="st">"capa"</span>]
+
+<span class="pu">[language-server.capa]</span>
+<span class="cp">command</span> = <span class="st">"capa"</span>
+<span class="cp">args</span> = [<span class="st">"lsp"</span>]</code></pre></div>
+    <p>The <strong>VSCode extension</strong> is on the <a href="https://marketplace.visualstudio.com/items?itemName=nelsonduarte.capa-language">Marketplace</a>, with syntax highlighting, snippets, and a bundled LSP client that auto-connects to <span class="ic">capa lsp</span>:</p>
+    <div class="code">
+<pre><code>$ code --install-extension nelsonduarte.capa-language</code></pre></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">Next</span>
+    <h2>Where to go next</h2>
+    <div class="nextgrid">
+      <a class="nextcard" href="why.html"><h4>Read the case <span class="arr">→</span></h4><p>Why Capa exists, the problem it addresses, and what it does <em>not</em> claim to solve.</p></a>
+      <a class="nextcard" href="migrating.html"><h4>Migrate from Python <span class="arr">→</span></h4><p>Move an existing program into Capa one function at a time, shrinking the <span class="ic">Unsafe</span> surface.</p></a>
+      <a class="nextcard" href="learn/index.html"><h4>Tour the language <span class="arr">→</span></h4><p>A guided pass through the syntax: types, control flow, generics, capabilities, attenuation.</p></a>
+      <a class="nextcard" href="https://github.com/nelsonduarte/capa-language/tree/main/examples"><h4>Read the examples <span class="arr">→</span></h4><p>Over fifty runnable programs, from <span class="ic">hello.capa</span> to SBOM parsers and the CVE case studies.</p></a>
+    </div>
+  </div>
+</section>

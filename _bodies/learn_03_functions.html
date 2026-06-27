@@ -1,0 +1,143 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 3 of 14</span>
+    <h1>Functions</h1>
+    <p class="lead">How to put a sequence of operations behind a name and call it. Capa's signatures are precise: parameter types, return type, no overloading.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The shape of a function</h2>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">double</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">return</span> n * 2</code></pre></div>
+
+    <p>The same five parts you would expect: the keyword <span class="ic">fun</span>, the name <span class="ic">double</span>, a parenthesised parameter list (each one annotated with a type), an optional return type after <span class="ic">-&gt;</span>, and the body indented underneath.</p>
+
+    <p>Call it like any other function:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> n = <span class="fn">double</span>(7)
+    stdio.<span class="fn">println</span>(<span class="st">"${n}"</span>)        <span class="cm">// 14</span></code></pre></div>
+
+    <p>Two function-shape rules to internalise early:</p>
+
+    <ol>
+        <li>
+            <p><strong>Every parameter has a type annotation</strong>, always. The compiler does not guess from call sites. This is a deliberate readability rule: a function's signature is the most useful summary of what it does, so the signature must be self-describing.</p>
+        </li>
+        <li>
+            <p><strong>The return type is required when the function returns a value.</strong> A function with no return type implicitly returns <span class="ic">Unit</span>; you can write that explicitly as <span class="ic">-&gt; ()</span> but most code leaves it off.</p>
+        </li>
+    </ol>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>No overloading, no defaults</h2>
+
+    <p>A name is bound to exactly one function. You cannot have two functions called <span class="ic">double</span> with different parameter types. If you want two flavours, give them two names: <span class="ic">double_int</span>, <span class="ic">double_float</span>.</p>
+
+    <p>There are also no default argument values. Every parameter must be passed at every call site. The cost of typing <span class="ic">some_lib.connect(host, port, timeout, retries)</span> is small; the cost of having defaults silently change between library versions is large.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Named arguments</h2>
+
+    <p>For functions with more than two or three parameters, positional calls become hard to read. Capa lets you pass arguments by name at the call site:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">greet</span>(name: <span class="ty">String</span>, age: <span class="ty">Int</span>) -&gt; <span class="ty">String</span>
+    <span class="k">return</span> <span class="st">"${name} is ${age}."</span>
+
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> s = <span class="fn">greet</span>(name: <span class="st">"Ana"</span>, age: 30)
+    stdio.<span class="fn">println</span>(s)</code></pre></div>
+
+    <p>Named and positional arguments cannot be mixed: a positional argument cannot appear after a named one. The analyzer also rejects unknown names, duplicates, and arity mismatches. Built-in methods (<span class="ic">String</span>, <span class="ic">Map</span>, <span class="ic">Set</span>, capabilities) only accept positional arguments because their parameter names are not tracked in the type system.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Functions that take other functions</h2>
+
+    <p>A function type is written <span class="ic">Fun(T1, T2, ...) -&gt; R</span>. A function that takes a function looks like:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">apply_twice</span>(f: <span class="ty">Fun</span>(<span class="ty">Int</span>) -&gt; <span class="ty">Int</span>, x: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">return</span> <span class="fn">f</span>(<span class="fn">f</span>(x))
+
+<span class="k">fun</span> <span class="fn">inc</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">return</span> n + 1
+
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"${apply_twice(inc, 10)}"</span>)   <span class="cm">// 12</span></code></pre></div>
+
+    <p>You can also write a function in-place as a lambda. The lambda is introduced with the same <span class="ic">fun</span> keyword, an explicit parameter list and return type, and a <span class="ic">=&gt;</span> separator before the body expression:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> add = <span class="k">fun</span> (a: <span class="ty">Int</span>, b: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span> =&gt; a + b
+    stdio.<span class="fn">println</span>(<span class="st">"${add(3, 4)}"</span>)         <span class="cm">// 7</span></code></pre></div>
+
+    <p>Lambdas have one important limit: they cannot capture capabilities from the outer scope. This is part of the capability discipline (you cannot smuggle authority through a closure). We come back to this in chapter 8.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The two error modes</h2>
+
+    <p>First: a missing return.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">double</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">let</span> r = n * 2</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+hello.capa:1:5: error: function 'double': declared return type 'Int',
+                       but the body can fall through without returning a value
+   1 | fun double(n: Int) -> Int
+         ^</code></pre></div>
+
+    <p>The analyzer reads every path through the body. If any path can reach the end of the function without a <span class="ic">return</span>, and the declared return type is not <span class="ic">Unit</span>, you get this error. Add <span class="ic">return r</span> on its own line at the end.</p>
+
+    <p>Second: a wrong return type.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">double</span>(n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span>
+    <span class="k">return</span> <span class="st">"twice that"</span></code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --run hello.capa
+hello.capa:2:12: error: return: expected Int, got String
+   2 |     return "twice that"
+                  ^</code></pre></div>
+
+    <p>The return value's type must match the declared one exactly. There are no implicit conversions.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Where you are now</h2>
+
+    <p>You can write functions, give them precise signatures, call them positionally or by name, and pass functions to other functions. Next: how to make decisions and loop. Control flow.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="02-values.html"><h4><span class="arr">&larr;</span> 2. Values and types</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="04-control-flow.html"><h4>4. Control flow <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>

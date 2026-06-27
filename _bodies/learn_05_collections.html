@@ -1,0 +1,178 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Learn &middot; Chapter 5 of 14</span>
+    <h1>Collections</h1>
+    <p class="lead">Lists, maps, sets, and the higher-order methods. Most of the data your programs handle lives in one of these.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Lists</h2>
+
+    <p>A <span class="ic">List&lt;T&gt;</span> is an ordered, growable sequence of values of the same type. Literal syntax uses square brackets:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">let</span> xs: <span class="ty">List</span>&lt;<span class="ty">Int</span>&gt; = [1, 2, 3, 4]
+<span class="k">let</span> empty: <span class="ty">List</span>&lt;<span class="ty">Int</span>&gt; = []</code></pre></div>
+
+    <p>The type parameter on the empty literal matters: an empty <span class="ic">[]</span> with no context is ambiguous; the annotation tells the compiler what element type to fix.</p>
+
+    <p>Methods you reach for most:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> xs = [10, 20, 30]
+    stdio.<span class="fn">println</span>(<span class="st">"length: ${xs.length()}"</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"contains 20? ${xs.contains(20)}"</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"empty? ${xs.is_empty()}"</span>)</code></pre></div>
+
+    <p>Indexed access returns an <span class="ic">Option</span> rather than raising on out-of-bounds: <span class="ic">xs.get(1)</span> returns <span class="ic">Some(20)</span>, <span class="ic">xs.get(99)</span> returns <span class="ic">None</span>. The same shape applies to <span class="ic">xs.first()</span> and <span class="ic">xs.last()</span>. You will not get an "index out of range" exception at runtime; the type system forces you to handle the absent case.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Higher-order: map, filter, fold</h2>
+
+    <p>The three classic higher-order methods. <span class="ic">map</span> applies a function to every element and returns a new list:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> xs = [1, 2, 3, 4]
+    <span class="k">let</span> doubled = xs.<span class="fn">map</span>(<span class="k">fun</span> (n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span> =&gt; n * 2)
+    stdio.<span class="fn">println</span>(<span class="st">"${doubled}"</span>)     <span class="cm">// [2, 4, 6, 8]</span></code></pre></div>
+
+    <p><span class="ic">filter</span> keeps elements for which a predicate returns <span class="ic">true</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">let</span> evens = xs.<span class="fn">filter</span>(<span class="k">fun</span> (n: <span class="ty">Int</span>) -&gt; <span class="ty">Bool</span> =&gt; n % 2 == 0)   <span class="cm">// [2, 4]</span></code></pre></div>
+
+    <p><span class="ic">fold</span> reduces the list to a single value, threading an accumulator:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">let</span> sum = xs.<span class="fn">fold</span>(0, <span class="k">fun</span> (acc: <span class="ty">Int</span>, n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span> =&gt; acc + n)   <span class="cm">// 10</span></code></pre></div>
+
+    <p>The three compose naturally:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">let</span> sum_of_doubled_evens = xs
+    .<span class="fn">filter</span>(<span class="k">fun</span> (n: <span class="ty">Int</span>) -&gt; <span class="ty">Bool</span> =&gt; n % 2 == 0)
+    .<span class="fn">map</span>(<span class="k">fun</span> (n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span> =&gt; n * 2)
+    .<span class="fn">fold</span>(0, <span class="k">fun</span> (acc: <span class="ty">Int</span>, n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span> =&gt; acc + n)</code></pre></div>
+
+    <p>Two more worth knowing: <span class="ic">find</span> returns the first element matching a predicate as an <span class="ic">Option&lt;T&gt;</span>; <span class="ic">find_index</span> returns the index instead.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Maps</h2>
+
+    <p>A <span class="ic">Map&lt;K, V&gt;</span> is an unordered set of key-value pairs. There is no map literal in v1; you create one with <span class="ic">new_map()</span> and populate it with <span class="ic">set</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">var</span> ages: <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Int</span>&gt; = <span class="fn">new_map</span>()
+    ages.<span class="fn">set</span>(<span class="st">"Ana"</span>, 30)
+    ages.<span class="fn">set</span>(<span class="st">"Bruno"</span>, 25)
+    stdio.<span class="fn">println</span>(<span class="st">"length: ${ages.length()}"</span>)
+    <span class="k">match</span> ages.<span class="fn">get</span>(<span class="st">"Ana"</span>)
+        <span class="ty">Some</span>(age) -&gt; stdio.<span class="fn">println</span>(<span class="st">"Ana's age: ${age}"</span>)   <span class="cm">// Ana's age: 30</span>
+        <span class="ty">None</span> -&gt; stdio.<span class="fn">println</span>(<span class="st">"Ana is unknown"</span>)
+    <span class="k">match</span> ages.<span class="fn">get</span>(<span class="st">"Carla"</span>)
+        <span class="ty">Some</span>(age) -&gt; stdio.<span class="fn">println</span>(<span class="st">"Carla's age: ${age}"</span>)
+        <span class="ty">None</span> -&gt; stdio.<span class="fn">println</span>(<span class="st">"Carla is unknown"</span>)  <span class="cm">// printed: Carla absent</span></code></pre></div>
+
+    <p>Same shape as <span class="ic">List.get</span>: keys that are not present yield <span class="ic">None</span>, not a runtime error, and you have to handle both cases. (Interpolating an <span class="ic">Option</span> directly into a string is a compile error; <span class="ic">match</span> on it, or call <span class="ic">to_string</span>.) Other methods worth knowing: <span class="ic">contains_key</span>, <span class="ic">keys</span>, <span class="ic">values</span>, <span class="ic">pairs</span>.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Sets</h2>
+
+    <p>A <span class="ic">Set&lt;T&gt;</span> is an unordered collection of unique values:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">var</span> tags: <span class="ty">Set</span>&lt;<span class="ty">String</span>&gt; = <span class="fn">new_set</span>()
+    tags.<span class="fn">add</span>(<span class="st">"red"</span>)
+    tags.<span class="fn">add</span>(<span class="st">"blue"</span>)
+    tags.<span class="fn">add</span>(<span class="st">"red"</span>)        <span class="cm">// no effect; "red" already in</span>
+    stdio.<span class="fn">println</span>(<span class="st">"length: ${tags.length()}"</span>)           <span class="cm">// 2</span>
+    stdio.<span class="fn">println</span>(<span class="st">"has blue? ${tags.contains(\"blue\")}"</span>)  <span class="cm">// true</span></code></pre></div>
+
+    <p>Sets shine when you have to ask "is this in the collection?" often.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Ranges revisited</h2>
+
+    <p>Chapter 4 introduced ranges as the thing you iterate over in a <span class="ic">for</span>. They are also a type, <span class="ic">Range&lt;Int&gt;</span>, with their own small method surface:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> r = 0..1000
+    stdio.<span class="fn">println</span>(<span class="st">"length: ${r.length()}"</span>)         <span class="cm">// 1000</span>
+    stdio.<span class="fn">println</span>(<span class="st">"contains 42? ${r.contains(42)}"</span>) <span class="cm">// true</span></code></pre></div>
+
+    <p>A range is <em>lazy</em>: building <span class="ic">0..1_000_000_000</span> does not allocate a billion integers. The list operations (<span class="ic">map</span> / <span class="ic">filter</span> / <span class="ic">fold</span>) are not on Range; convert with <span class="ic">.to_list()</span> first when you need them.</p>
+
+    <div class="callout">
+        <p><strong>Try this.</strong> Compute the sum of the squares of the first 100 integers. Two ways: with a <span class="ic">for</span> loop accumulating into a <span class="ic">var</span>, and with <span class="ic">(0..100).to_list().map(...).fold(...)</span>. Which one is easier to read?</p>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>The two error modes</h2>
+
+    <p>First: type mismatch in a literal. Capa infers a single element type for a list and rejects elements that do not match:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">let</span> mixed = [1, 2, <span class="st">"three"</span>]</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code>error: list literal: elements must have the same type;
+       got Int and String
+   1 | let mixed = [1, 2, "three"]
+                          ^</code></pre></div>
+
+    <p>If you genuinely want a heterogeneous collection, you need a sum type (chapter 6).</p>
+
+    <p>Second: forgetting that indexed access returns <span class="ic">Option</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">let</span> xs = [10, 20, 30]
+    <span class="k">let</span> n = xs.<span class="fn">get</span>(0)
+    stdio.<span class="fn">println</span>(<span class="st">"${n + 1}"</span>)</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code>error: '+': expected Int + Int or Float + Float or String + String,
+       got Option&lt;Int&gt; + Int
+   3 |     stdio.println("${n + 1}")
+                          ^</code></pre></div>
+
+    <p><span class="ic">xs.get(0)</span> is an <span class="ic">Option&lt;Int&gt;</span>, not an <span class="ic">Int</span>. To use the value you either pattern-match on <span class="ic">Some(n) / None</span> (chapter 6) or apply the <span class="ic">?</span> operator (chapter 7).</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Where you are now</h2>
+
+    <p>You can store and transform collections of data. The natural next step is to define your own types: a struct for "a record with named fields" and a sum type for "one of these tagged variants". That gives you the vocabulary to model anything more interesting than a list of integers.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="04-control-flow.html"><h4><span class="arr">&larr;</span> 4. Control flow</h4><p>Previous chapter.</p></a>
+      <a class="nextcard" href="06-structs-and-sum-types.html"><h4>6. Structs and sum types <span class="arr">&rarr;</span></h4><p>Next chapter.</p></a>
+    </div>
+  </div>
+</section>

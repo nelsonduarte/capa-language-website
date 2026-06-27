@@ -1,0 +1,211 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Reference</span>
+    <h1>Language reference</h1>
+    <p class="lead">Full specification of the syntax and semantics of Capa. For a guided introduction see the <a href="learn/index.html">Learn</a> track; for the built-in APIs see the <a href="stdlib.html">standard library</a>.</p>
+  </div>
+</section>
+
+<section style="padding-top:30px">
+  <div class="docs">
+    <nav class="toc">
+      <h6>Sections</h6>
+      <ol>
+        <li><a href="#lex">Lexical structure</a></li>
+        <li><a href="#types">Type system</a></li>
+        <li><a href="#stmts">Statements</a></li>
+        <li><a href="#exprs">Expressions</a></li>
+        <li><a href="#patterns">Pattern matching</a></li>
+        <li><a href="#caps">Capabilities</a></li>
+        <li><a href="#ifc">Information-flow control</a></li>
+        <li><a href="#imports">Imports</a></li>
+        <li><a href="#main">The main program</a></li>
+        <li><a href="#attrs">Attributes</a></li>
+        <li><a href="#cli">Compiler CLI</a></li>
+        <li><a href="#vs-python">Differences from Python</a></li>
+        <li><a href="#limits">Known limitations</a></li>
+      </ol>
+    </nav>
+
+    <div class="docbody">
+      <h2 id="lex"><span class="nx">1</span>Lexical structure</h2>
+      <p><strong>Encoding.</strong> UTF-8 required. Identifiers may contain any Unicode letter, digit and <span class="ic">_</span>, but must start with a letter or <span class="ic">_</span>. <strong>Indentation</strong> is significant, à la Python: implicit <span class="ic">INDENT</span> / <span class="ic">DEDENT</span> / <span class="ic">NEWLINE</span> tokens; inside <span class="ic">(</span> <span class="ic">[</span> <span class="ic">{</span> a newline is suppressed. A line beginning with <span class="ic">.</span> continues the previous one (method chaining).</p>
+      <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">comments</span></div>
+<pre><code><span class="cm">// Line comment</span>
+<span class="cm">/// Doc comment (attaches to the next declaration)</span>
+<span class="cm">/** Block doc comment (same role) */</span></code></pre></div>
+      <p><strong>Keywords:</strong> <span class="ic">fun let var if then elif else match while for in break continue return import const type trait impl capability true false and or not consume self Self</span>. Reserved for future use: <span class="ic">async await yield defer where mut</span>.</p>
+      <table class="tbl">
+        <thead><tr><th>Type</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr><td>Integer</td><td><span class="ic">42</span>, <span class="ic">1_000_000</span>, <span class="ic">0xff</span>, <span class="ic">0o755</span>, <span class="ic">0b1010</span></td></tr>
+          <tr><td>Float</td><td><span class="ic">3.14</span>, <span class="ic">2.0</span>, <span class="ic">1e10</span></td></tr>
+          <tr><td>String</td><td><span class="ic">"hello"</span>, <span class="ic">"a\nb"</span>, <span class="ic">"x = ${x}"</span></td></tr>
+          <tr><td>Char / Bool</td><td><span class="ic">'a'</span>, <span class="ic">'\n'</span> · <span class="ic">true</span>, <span class="ic">false</span></td></tr>
+          <tr><td>List / Tuple</td><td><span class="ic">[1, 2, 3]</span> · <span class="ic">(1, "a")</span>, <span class="ic">()</span></td></tr>
+          <tr><td>Range</td><td><span class="ic">a..b</span> (exclusive), <span class="ic">a..=b</span> (inclusive)</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Interpolation:</strong> <span class="ic">${expr}</span> inside a string is parsed as a Capa expression; <span class="ic">$$</span> is a literal <span class="ic">$</span>. Nested string literals inside interpolation are not supported.</p>
+
+      <h2 id="types"><span class="nx">2</span>Type system</h2>
+      <p>Primitives: <span class="ic">Int</span>, <span class="ic">Float</span>, <span class="ic">String</span>, <span class="ic">Bool</span>, <span class="ic">Char</span>, <span class="ic">Unit</span>. Compound: <span class="ic">List&lt;T&gt;</span>, tuples, <span class="ic">Fun(T1,T2)-&gt;Ret</span>, <span class="ic">Map&lt;K,V&gt;</span>, <span class="ic">Set&lt;T&gt;</span>, <span class="ic">Option&lt;T&gt;</span>, <span class="ic">Result&lt;T,E&gt;</span>.</p>
+      <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">user types</span></div>
+<pre><code><span class="k">type</span> <span class="ty">Person</span> { <span class="pu">name:</span> <span class="ty">String</span>, <span class="pu">age:</span> <span class="ty">Int</span> }
+
+<span class="k">type</span> <span class="ty">Shape</span> =
+    <span class="ty">Circle</span>(<span class="ty">Float</span>)
+    <span class="ty">Rectangle</span>(<span class="ty">Float</span>, <span class="ty">Float</span>)
+    <span class="ty">Square</span>(<span class="ty">Float</span>)
+
+<span class="k">fun</span> <span class="fn">first</span>&lt;<span class="ty">T</span>&gt;(<span class="pu">xs:</span> <span class="ty">List</span>&lt;<span class="ty">T</span>&gt;) <span class="pu">-&gt;</span> <span class="ty">Option</span>&lt;<span class="ty">T</span>&gt;
+    <span class="k">return</span> xs.<span class="fn">first</span>()</code></pre></div>
+      <p>Variants without a payload are <em>constants</em>, used without <span class="ic">()</span>. <span class="ic">Ok</span>, <span class="ic">Err</span>, <span class="ic">Some</span>, <span class="ic">None</span> are reserved. Generics use local inference, so the caller rarely supplies explicit args. Cross-statement inference: <span class="ic">let xs = []</span> is <span class="ic">List&lt;TyVar&gt;</span> and the first use pins the type. <span class="ic">TyUnknown</span> and <span class="ic">TyVar</span> are compatible with any type.</p>
+
+      <h2 id="stmts"><span class="nx">3</span>Statements</h2>
+      <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">bindings &amp; control flow</span></div>
+<pre><code><span class="k">let</span> name = <span class="st">"Ana"</span>          <span class="cm"># immutable, inferred</span>
+<span class="k">let</span> age: <span class="ty">Int</span> = <span class="nu">30</span>        <span class="cm"># explicit type</span>
+<span class="k">var</span> counter = <span class="nu">0</span>           <span class="cm"># mutable</span>
+<span class="k">let</span> (a, b) = <span class="fn">pair</span>()        <span class="cm"># tuple destructuring</span>
+
+<span class="k">if</span> cond
+    body1
+<span class="k">elif</span> cond2
+    body2
+<span class="k">else</span>
+    body3
+
+<span class="k">for</span> x <span class="k">in</span> iter
+    body
+
+<span class="k">match</span> scrutinee
+    pat1 <span class="pu">-&gt;</span> body1
+    pat2 <span class="pu">-&gt;</span> body2</code></pre></div>
+      <p>Assignment is only valid for <span class="ic">var</span>. Any expression can stand as a statement (its value is discarded).</p>
+
+      <h2 id="exprs"><span class="nx">4</span>Expressions</h2>
+      <p><strong>Operator precedence</strong> (decreasing): call / index / field <span class="ic">. () []</span>; unary <span class="ic">not -</span>; <span class="ic">* / %</span>; <span class="ic">+ -</span>; range <span class="ic">.. ..=</span>; comparison; <span class="ic">and</span>; <span class="ic">or</span>; try <span class="ic">?</span>.</p>
+      <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">expressions</span></div>
+<pre><code><span class="cm"># if as expression: `then` is the discriminator</span>
+<span class="k">let</span> cat = <span class="k">if</span> cond <span class="k">then</span> e1 <span class="k">else</span> e2
+
+<span class="cm"># match expression, inline form</span>
+<span class="k">let</span> r = <span class="k">match</span> scrutinee { pat1 <span class="pu">-&gt;</span> e1, pat2 <span class="pu">-&gt;</span> e2 }
+
+<span class="cm"># lambdas</span>
+<span class="k">fun</span> (<span class="pu">x:</span> <span class="ty">Int</span>) <span class="pu">-&gt;</span> <span class="ty">Int</span> <span class="pu">=&gt;</span> x * <span class="nu">2</span>
+
+<span class="cm"># the ? operator propagates Err</span>
+<span class="k">let</span> a = fs.<span class="fn">read</span>(<span class="st">"a"</span>)?</code></pre></div>
+
+      <h2 id="patterns"><span class="nx">5</span>Pattern matching</h2>
+      <table class="tbl">
+        <thead><tr><th>Pattern</th><th>Syntax</th><th>Matches</th></tr></thead>
+        <tbody>
+          <tr><td>Wildcard / Identifier</td><td><span class="ic">_</span> · <span class="ic">x</span></td><td>Any value · binds to <span class="ic">x</span></td></tr>
+          <tr><td>Literal</td><td><span class="ic">42</span>, <span class="ic">"x"</span>, <span class="ic">true</span></td><td>Equality</td></tr>
+          <tr><td>Variant</td><td><span class="ic">None</span> · <span class="ic">Some(x)</span></td><td>Singleton · match + bind</td></tr>
+          <tr><td>Struct / Tuple</td><td><span class="ic">Person { name, age }</span> · <span class="ic">(a, b)</span></td><td>Match + bind</td></tr>
+          <tr><td>Or-pattern</td><td><span class="ic">a | b | c</span></td><td>Any alternative</td></tr>
+        </tbody>
+      </table>
+      <p>Or-patterns may bind, provided every alternative binds the same names with compatible types (<span class="ic">Add(n) | Sub(n) -&gt; n</span>). Guards: <span class="ic">x if x &gt; 0 -&gt; …</span>. <strong>Exhaustiveness is checked</strong>: every variant of a sum type, or a catch-all <span class="ic">_</span>.</p>
+
+      <h2 id="caps"><span class="nx">6</span>Capabilities</h2>
+      <p>Capabilities are primitive types representing access to system resources (<span class="ic">Stdio</span>, <span class="ic">Fs</span>, <span class="ic">Net</span>, <span class="ic">Env</span>, <span class="ic">Proc</span>, <span class="ic">Clock</span>, <span class="ic">Random</span>, <span class="ic">Db</span>, <span class="ic">Unsafe</span>). They are only accessible via function parameters; there are no global instances. The discipline has three layers:</p>
+      <ul class="bullets">
+        <li><strong>Structural.</strong> Capabilities cannot appear in struct fields, variant payloads, return types, constants, bindings, generic args or tuples, only parameters. One relaxation: cap-bearing structs implementing a user-defined capability may hold built-in caps as fields.</li>
+        <li><strong>Flow.</strong> No aliasing (the same cap cannot fill two arg slots of one call); capability parameters must be used (or prefixed <span class="ic">_</span>).</li>
+        <li><strong>Linearity.</strong> <span class="ic">consume</span> marks ownership transfer; consumed variables are tracked across fork/merge in <span class="ic">if</span> and <span class="ic">match</span>.</li>
+      </ul>
+      <p><strong>Attenuation:</strong> every built-in capability has an attenuator returning a fresh, narrower instance:</p>
+      <table class="tbl">
+        <thead><tr><th>Capability</th><th>Attenuator</th><th>Semantics</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ic">Net</span></td><td><span class="ic">restrict_to(host)</span></td><td>Allowed host set, monotonic intersection</td></tr>
+          <tr><td><span class="ic">Fs</span></td><td><span class="ic">restrict_to(prefix)</span></td><td>Allowed path prefix, monotonic</td></tr>
+          <tr><td><span class="ic">Env</span></td><td><span class="ic">restrict_to_keys(keys)</span></td><td>Allowed key set, monotonic intersection</td></tr>
+          <tr><td><span class="ic">Clock</span></td><td><span class="ic">restrict_to_after(t)</span></td><td>Active only after timestamp</td></tr>
+          <tr><td><span class="ic">Random</span></td><td><span class="ic">with_seed(seed)</span></td><td>Deterministic sequence</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="ifc"><span class="nx">7</span>Information-flow control</h2>
+      <p>A two-point lattice: <span class="ic">@public</span> (default) below <span class="ic">@secret</span>. A label attaches to a type expression, so it can appear on parameters, bindings, return types and struct fields. A value's label is the <em>join</em> of every label flowing into it (operators, interpolation, field reads, indexing, <span class="ic">?</span>). <span class="ic">env.get</span> is secret by default; <span class="ic">fs.read</span> is intentionally not.</p>
+      <table class="tbl">
+        <thead><tr><th>Capability</th><th>Sink methods</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ic">Stdio</span></td><td><span class="ic">print</span>, <span class="ic">println</span>, <span class="ic">eprintln</span></td></tr>
+          <tr><td><span class="ic">Net</span> / <span class="ic">Fs</span> / <span class="ic">Db</span></td><td><span class="ic">get</span>, <span class="ic">post</span> · <span class="ic">write</span> · <span class="ic">exec</span>, <span class="ic">query</span></td></tr>
+        </tbody>
+      </table>
+      <p><strong>Warn-then-enforce:</strong> a violation is a warning by default, a hard error under <span class="ic">@strict_ifc()</span> (which also catches implicit flows). The single auditable bridge is <span class="ic">declassify(value, reason: "…")</span>, recorded in the SBOM. Labels cannot be shed by repackaging into aggregates or mutable containers. The analysis is intra-procedural with whole-aggregate granularity.</p>
+
+      <h2 id="imports"><span class="nx">8</span>Imports</h2>
+      <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">import forms</span></div>
+<pre><code><span class="k">import</span> util                       <span class="cm"># sibling: ./util.capa</span>
+<span class="k">import</span> sinks.csv_sink             <span class="cm"># nested</span>
+<span class="k">import</span> util <span class="k">as</span> U                  <span class="cm"># alias</span>
+<span class="k">import</span> util (greet <span class="k">as</span> hi, Color)  <span class="cm"># selective + rename</span></code></pre></div>
+      <h3 id="visibility" style="scroll-margin-top:84px">Visibility</h3>
+      <p>Top-level items are private by default. Mark a function, constant, type, trait or capability <span class="ic">pub</span> to expose it to importers; anything without <span class="ic">pub</span> is callable only from inside the same file. Selective import <span class="ic">import foo (a, b as c)</span> brings only the listed <span class="ic">pub</span> symbols into scope, the hygienic way to resolve a name collision between two dependencies (e.g. <span class="ic">capa_csv</span> and <span class="ic">capa_cli</span> both exporting <span class="ic">parse</span>).</p>
+      <h3 id="module-search-paths" style="scroll-margin-top:84px">Module search paths</h3>
+      <p>The loader resolves <span class="ic">import x.y</span> in order: importing-file directory, <span class="ic">CAPA_PATH</span> entries, <span class="ic">./vendor/</span>, the parent of every <span class="ic">path=</span> entry in <span class="ic">capa.toml</span>, <span class="ic">./libraries/</span>, then the root-file directory. The importer-relative path always wins. Set <span class="ic">CAPA_PATH</span> (separated by <span class="ic">;</span> on Windows, <span class="ic">:</span> elsewhere) to add roots. Python interop uses <span class="ic">py_import</span> / <span class="ic">py_invoke</span>, both gated by <span class="ic">Unsafe</span>.</p>
+
+      <h2 id="main"><span class="nx">9</span>The main program</h2>
+      <p>The entry point is a function called <span class="ic">main</span> that may take one or more capabilities; the runtime instantiates them at boot. If <span class="ic">main</span> returns <span class="ic">Result&lt;(), E&gt;</span>, an <span class="ic">Err</span> causes a non-zero exit code.</p>
+      <div class="code">
+<pre><code><span class="k">fun</span> <span class="fn">main</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">fs:</span> <span class="cp">Fs</span>, <span class="pu">env:</span> <span class="cp">Env</span>)
+    <span class="k">let</span> argv = env.<span class="fn">args</span>()
+    stdio.<span class="fn">println</span>(<span class="st">"received ${argv.length()} arguments"</span>)</code></pre></div>
+
+      <h2 id="attrs"><span class="nx">10</span>Attributes</h2>
+      <table class="tbl">
+        <thead><tr><th>Attribute</th><th>Keys</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ic">@security</span></td><td>cve, cwe, severity, fixed_in</td><td>Link a function to a known security history.</td></tr>
+          <tr><td><span class="ic">@deprecated</span></td><td>reason, since, use, removed_in</td><td>Mark an API as superseded.</td></tr>
+          <tr><td><span class="ic">@audited</span></td><td>date, by, scope, notes</td><td>Record a manual security audit.</td></tr>
+          <tr><td><span class="ic">@vex</span></td><td>cve, status, justification, detail</td><td>Per-function CycloneDX VEX exploitability claim.</td></tr>
+        </tbody>
+      </table>
+      <p class="muted"><span class="ic">@vex status</span> accepts the CycloneDX vocabulary (<span class="ic">not_affected</span>, <span class="ic">exploitable</span>, <span class="ic">in_triage</span>, <span class="ic">resolved</span>, <span class="ic">false_positive</span>).</p>
+
+      <h2 id="cli"><span class="nx">11</span>Compiler CLI</h2>
+      <table class="tbl">
+        <thead><tr><th>Flag</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ic">repl</span> / <span class="ic">test</span></td><td>REPL with caps pre-bound · discover and run <span class="ic">tests/test_*.capa</span>.</td></tr>
+          <tr><td><span class="ic">--run</span> / <span class="ic">--transpile</span> / <span class="ic">--watch</span></td><td>Execute · print generated Python · re-run on change.</td></tr>
+          <tr><td><span class="ic">--wasm</span> [<span class="ic">--component</span>]</td><td>Compile through CIR to WebAssembly; wrap as a Component Model component.</td></tr>
+          <tr><td><span class="ic">--manifest</span></td><td>Capa-native JSON: per-function caps, attributes, Unsafe crossings, <span class="ic">args_flow</span>.</td></tr>
+          <tr><td><span class="ic">--cyclonedx</span> / <span class="ic">--spdx</span></td><td>CycloneDX 1.5 / SPDX 2.3 SBOM with per-function capability metadata.</td></tr>
+          <tr><td><span class="ic">--vex</span> / <span class="ic">--provenance</span></td><td>CycloneDX VEX per <span class="ic">@vex</span> · SLSA L1 provenance bound to the source SHA-256.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="vs-python"><span class="nx">12</span>Differences from Python</h2>
+      <table class="tbl">
+        <thead><tr><th>Capa</th><th>Python</th></tr></thead>
+        <tbody>
+          <tr><td>Capabilities required for I/O</td><td>Globals such as <span class="ic">print</span>, <span class="ic">open</span></td></tr>
+          <tr><td>Types checked at compile time</td><td>Duck typing</td></tr>
+          <tr><td>Exhaustive <span class="ic">match</span> checked</td><td>Runtime match, no exhaustiveness</td></tr>
+          <tr><td>Mutation only with <span class="ic">var</span> / <span class="ic">consume</span></td><td>Everything mutable</td></tr>
+          <tr><td>Manifest / SBOM emitted by compiler</td><td>Manual via external tools</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="limits"><span class="nx">13</span>Known limitations</h2>
+      <ul class="bullets">
+        <li>String literals are single-line (use <span class="ic">\n</span>); nested string literals inside interpolation are unsupported.</li>
+        <li>No asynchronous I/O operations.</li>
+        <li><span class="ic">if</span>/<span class="ic">match</span> in block-body lambdas need <span class="ic">=&gt;</span> before the indented block.</li>
+        <li>Multi-line <span class="ic">match</span> inside parentheses requires the inline <span class="ic">{ }</span> form.</li>
+      </ul>
+      <p class="muted">For the full roadmap see the <a href="roadmap.html">roadmap page</a> and <a href="https://github.com/nelsonduarte/capa-language/blob/main/TODO.md">TODO.md</a>.</p>
+    </div>
+  </div>
+</section>
