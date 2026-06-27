@@ -244,7 +244,8 @@ a.card:hover{transform:translateY(-3px);border-color:var(--aline);box-shadow:0 1
 /* footer */
 .footer{background:var(--paper-2);border-top:1px solid var(--line);padding:60px 0 38px}
 .footer-grid{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:36px;max-width:var(--wrap);margin:0 auto;padding:0 26px}
-.footer-brand .brand{margin-bottom:13px}
+.footer-brand .brand{margin-bottom:13px;justify-content:flex-start}
+.footer-brand .brand .mark{height:26px;width:19.2px;flex:0 0 auto}
 .footer-brand p{color:var(--ink-2);font-size:.92rem;max-width:32ch}
 .footer h5{font-family:var(--mono);font-size:.73rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:0 0 14px;font-weight:500}
 .footer ul{list-style:none;padding:0;margin:0;display:grid;gap:9px}
