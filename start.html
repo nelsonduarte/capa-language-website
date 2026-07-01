@@ -72,7 +72,7 @@
     <h2>Three paths</h2>
     <p class="section-intro">The <strong>one-line installer</strong> if you just want <span class="ic">capa</span> on your PATH; the <strong>manual binary</strong> if you prefer to verify the asset yourself; <strong>from source</strong> if you intend to contribute.</p>
 
-    <h3 class="u19" id="install-a">Option A: one-line installer <span class="ic">recommended</span></h3>
+    <h3 class="u20" id="install-a">Option A: one-line installer <span class="ic">recommended</span></h3>
     <p>Downloads the latest pre-built binary into <span class="ic">~/.local/bin/capa</span> (Linux / macOS) or <span class="ic">%LOCALAPPDATA%\capa\capa.exe</span> (Windows). Open a new shell and <span class="ic">capa --version</span> should answer.</p>
     <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">Linux / macOS</span></div>
 <pre><code><span class="cm"># Linux / macOS</span>
@@ -115,7 +115,7 @@ $ python -m unittest discover tests   <span class="cm"># over 3,200 tests, a cou
 <section class="band">
   <div class="article">
     <span class="eyebrow">Packages</span>
-    <h2>Dependencies in <span class="u20">capa.toml</span></h2>
+    <h2>Dependencies in <span class="u21">capa.toml</span></h2>
     <p class="section-intro">Projects declare dependencies in a <span class="ic">capa.toml</span> at the root. The same file pins the source: a git URL with an exact tag, or a relative path. A signed <a href="https://github.com/nelsonduarte/capa-registry">registry index</a> maps short names to git sources and is GPG-verified before any name is trusted.</p>
     <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa.toml</span></div>
 <pre><code><span class="pu">[package]</span>
@@ -152,7 +152,7 @@ $ capa install        <span class="cm"># idempotent: rerun to refresh against ca
   </div>
 </section>
 
-<section class="u21" id="first">
+<section class="u22" id="first">
   <div class="article">
     <span class="eyebrow">Your first program</span>
     <h2>Hello, Capa</h2>
@@ -265,7 +265,7 @@ $ capa --run examples/grades.capa
     </ul></div>
   </div>
   <div class="footer-base">
-    <span>Built by Nelson Duarte &middot; v1.13.0 &middot; MIT or Apache-2.0</span>
+    <span>Built by Nelson Duarte &middot; v1.14.0 &middot; MIT or Apache-2.0</span>
     <span>&copy; 2026 Capa</span>
   </div>
 </footer>

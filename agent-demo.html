@@ -67,7 +67,7 @@
     <span class="eyebrow">The problem</span>
     <h2>Tool permissions today rest on convention</h2>
     <p class="section-intro">Mainstream agent harnesses (LangChain, OpenAI function calling, MCP servers) ship tools as arbitrary functions with no permission system. Whether a prompt injection that says <em>"now delete the home directory"</em> succeeds depends on whether some tool happens to reach <span class="ic">subprocess.run</span> or an unrestricted filesystem handle deep in its body. The blast radius is implicit, dynamic, and auditable only by reading every line of every tool.</p>
-    <div class="callout"><p class="u24">The demo replaces the convention with a type-system guarantee: a tool's capability surface <em>is</em> its signature, the agent loop's surface is the union of its tools' signatures, and the compiler refuses to type-check a call to any authority a function did not name.</p></div>
+    <div class="callout"><p class="u25">The demo replaces the convention with a type-system guarantee: a tool's capability surface <em>is</em> its signature, the agent loop's surface is the union of its tools' signatures, and the compiler refuses to type-check a call to any authority a function did not name.</p></div>
   </div>
 </section>
 
@@ -137,14 +137,14 @@ $ capa --run agent.capa -- "What's the weather in Lisbon today? \
     Use get_url with https://wttr.in/Lisbon?format=3"</code></pre></div>
     <p class="muted">The <span class="ic">get_url</span> allow-list is hard-coded in <span class="ic">agent.capa</span> (<span class="ic">wttr.in</span> and <span class="ic">api.github.com</span>). Point the model at any other host and the wrapper refuses before a request is made.</p>
 
-    <h3 class="u25">Honest limits (v0.1)</h3>
+    <h3 class="u26">Honest limits (v0.1)</h3>
     <ul class="bullets">
       <li><strong>Single user prompt per run.</strong> The loop already supports multi-turn; the entry point does not yet expose it.</li>
       <li><strong>Anthropic Messages API only.</strong> Adding another provider is one new <span class="ic">LlmClient</span> implementor.</li>
       <li><strong>One string input per tool.</strong> Multi-argument schemas would extend <span class="ic">dispatch_tool</span>'s JSON extraction.</li>
       <li><strong>Hard-coded host allow-list and no streaming.</strong> Production would source the list from configuration or a <span class="ic">restrict_to</span> call.</li>
     </ul>
-    <div class="nextgrid u22">
+    <div class="nextgrid u23">
       <a class="nextcard" href="https://github.com/nelsonduarte/capa_agent_demo"><h4>Read the repository <span class="arr">→</span></h4><p>Four <span class="ic">.capa</span> files: the loop, the attenuated wrappers, the LLM client, the tools.</p></a>
       <a class="nextcard" href="compare.html"><h4>How Capa compares <span class="arr">→</span></h4><p>Why convention-based tool permissions cannot give an auditor this property.</p></a>
     </div>
@@ -179,7 +179,7 @@ $ capa --run agent.capa -- "What's the weather in Lisbon today? \
     </ul></div>
   </div>
   <div class="footer-base">
-    <span>Built by Nelson Duarte &middot; v1.13.0 &middot; MIT or Apache-2.0</span>
+    <span>Built by Nelson Duarte &middot; v1.14.0 &middot; MIT or Apache-2.0</span>
     <span>&copy; 2026 Capa</span>
   </div>
 </footer>

@@ -132,7 +132,7 @@ main           <span class="pu">-&gt;</span> [<span class="cp">Stdio</span>, <sp
 <section>
   <div class="article">
     <span class="eyebrow">Track your progress</span>
-    <h2><span class="u20">capa migrate</span> reports it for you</h2>
+    <h2><span class="u21">capa migrate</span> reports it for you</h2>
     <p class="section-intro">You do not have to read manifests by eye. <span class="ic">capa migrate &lt;file.capa&gt;</span> reports the share of functions that no longer touch <span class="ic">Unsafe</span>, the removable <span class="ic">Unsafe</span> parameters, and the cheapest next candidates.</p>
     <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa migrate step2</span></div>
 <pre><code>Migration progress for examples/migrate_logfetcher_step2_mixed.capa
@@ -173,7 +173,7 @@ $ capa --check examples/migrate_logfetcher_step3_typed.capa
 $ capa --manifest examples/migrate_logfetcher_step3_typed.capa \
     | jq '.functions[] | {name, declared_capabilities}'</code></pre></div>
     <p class="muted">The full writeup is in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/migration.md">docs/migration.md</a>.</p>
-    <div class="nextgrid u22">
+    <div class="nextgrid u23">
       <a class="nextcard" href="start.html"><h4>Install and run <span class="arr">→</span></h4><p>Get <span class="ic">capa</span> on your PATH, then try the migration commands on the example files.</p></a>
       <a class="nextcard" href="learn/index.html"><h4>Tour the language <span class="arr">→</span></h4><p>The syntax you will be writing as you move functions out of Python.</p></a>
     </div>
@@ -208,7 +208,7 @@ $ capa --manifest examples/migrate_logfetcher_step3_typed.capa \
     </ul></div>
   </div>
   <div class="footer-base">
-    <span>Built by Nelson Duarte &middot; v1.13.0 &middot; MIT or Apache-2.0</span>
+    <span>Built by Nelson Duarte &middot; v1.14.0 &middot; MIT or Apache-2.0</span>
     <span>&copy; 2026 Capa</span>
   </div>
 </footer>

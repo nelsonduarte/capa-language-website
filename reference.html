@@ -235,6 +235,7 @@
           <tr><td><span class="ic">repl</span> / <span class="ic">test</span></td><td>REPL with caps pre-bound · discover and run <span class="ic">tests/test_*.capa</span>.</td></tr>
           <tr><td><span class="ic">--run</span> / <span class="ic">--transpile</span> / <span class="ic">--watch</span></td><td>Execute · print generated Python · re-run on change.</td></tr>
           <tr><td><span class="ic">--wasm</span> [<span class="ic">--component</span>]</td><td>Compile through CIR to WebAssembly; wrap as a Component Model component.</td></tr>
+          <tr><td><span class="ic">--wasi</span> <span class="u19">experimental</span></td><td>Emit a component for stock WASI Preview 2 runtimes (for example wasmtime) instead of the dedicated <span class="ic">capa:host</span>. Gives mitigation Levels 1 and 2 but not Level 3; dynamic paths need an operator grant <span class="ic">--preopen &lt;dir&gt;</span>. See the <a href="roadmap.html">roadmap</a>.</td></tr>
           <tr><td><span class="ic">--manifest</span></td><td>Capa-native JSON: per-function caps, attributes, Unsafe crossings, <span class="ic">args_flow</span>.</td></tr>
           <tr><td><span class="ic">--cyclonedx</span> / <span class="ic">--spdx</span></td><td>CycloneDX 1.5 / SPDX 2.3 SBOM with per-function capability metadata.</td></tr>
           <tr><td><span class="ic">--vex</span> / <span class="ic">--provenance</span></td><td>CycloneDX VEX per <span class="ic">@vex</span> · SLSA L1 provenance bound to the source SHA-256.</td></tr>
@@ -293,7 +294,7 @@
     </ul></div>
   </div>
   <div class="footer-base">
-    <span>Built by Nelson Duarte &middot; v1.13.0 &middot; MIT or Apache-2.0</span>
+    <span>Built by Nelson Duarte &middot; v1.14.0 &middot; MIT or Apache-2.0</span>
     <span>&copy; 2026 Capa</span>
   </div>
 </footer>

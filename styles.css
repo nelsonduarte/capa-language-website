@@ -599,41 +599,42 @@ a.card:hover{transform:translateY(-3px);border-color:var(--aline);box-shadow:0 1
 .u16{font-family:var(--serif);color:var(--soft);margin-right:.4em}
 .u17{padding-top:30px}
 .u18{scroll-margin-top:84px}
-.u19{scroll-margin-top:90px}
-.u20{font-family:var(--mono);font-size:.7em}
-.u21{scroll-margin-top:80px}
-.u22{margin-top:20px}
-.u23{font-family:var(--mono);font-size:1rem;color:var(--aink)}
-.u24{margin:0}
-.u25{margin-top:1.8em}
-.u26{display:flex;align-items:center;gap:.5em}
-.u27{font-family:var(--mono);font-size:.6rem;color:var(--ok);background:var(--ok-wash);border:1px solid var(--ok-line);border-radius:6px;padding:.2em .5em}
-.u28{margin:14px 0 0}
-.u29{font-family:var(--mono);font-size:.6rem;color:var(--bad);background:var(--bad-wash);border:1px solid var(--bad-line);border-radius:6px;padding:.2em .5em}
-.u30{color:var(--ok)}
-.u31{margin:12px 0 0}
-.u32{color:var(--ink-3)}
-.u33{display:flex;align-items:center;gap:20px}
-.u34{width:80px;height:80px;border-radius:14px;background:var(--code-bg);display:grid;place-items:center;flex-shrink:0}
-.u35{height:48px}
-.u36{width:80px;height:80px;border-radius:14px;background:var(--paper-2);border:1px solid var(--line);display:grid;place-items:center;flex-shrink:0}
-.u37{margin-top:14px}
-.u38{padding:0;overflow:hidden}
-.u39{height:78px;background:#6a4bd6}
-.u40{padding:14px 18px}
-.u41{font-family:var(--mono);font-size:.85rem;margin:2px 0 0}
-.u42{height:78px;background:#a885fa}
-.u43{height:78px;background:#faf9f5;border-bottom:1px solid var(--line)}
-.u44{height:78px;background:#f3f1e9;border-bottom:1px solid var(--line)}
-.u45{height:78px;background:#1c1b17}
-.u46{height:78px;background:#1d1830}
-.u47{height:78px;background:#3f9b6e}
-.u48{height:78px;background:#cf5b4e}
-.u49{height:78px;background:#e6e2d6}
-.u50{font-family:var(--serif);font-size:2rem;font-weight:500;margin:0}
-.u51{margin:14px 0 2px}
-.u52{font-family:var(--sans);font-size:2rem;font-weight:600;margin:0}
-.u53{font-family:var(--mono);font-size:2rem;margin:0}
-.u54{font-family:var(--mono);font-size:.82rem}
-.u55{font-size:1.5rem}
-.u56{font-size:1.5rem;margin-top:1.8em}
+.u19{font-family:var(--mono);font-size:.6rem;color:var(--accent);background:var(--wash);border:1px solid var(--aline);border-radius:6px;padding:.2em .5em}
+.u20{scroll-margin-top:90px}
+.u21{font-family:var(--mono);font-size:.7em}
+.u22{scroll-margin-top:80px}
+.u23{margin-top:20px}
+.u24{font-family:var(--mono);font-size:1rem;color:var(--aink)}
+.u25{margin:0}
+.u26{margin-top:1.8em}
+.u27{display:flex;align-items:center;gap:.5em}
+.u28{font-family:var(--mono);font-size:.6rem;color:var(--ok);background:var(--ok-wash);border:1px solid var(--ok-line);border-radius:6px;padding:.2em .5em}
+.u29{margin:14px 0 0}
+.u30{font-family:var(--mono);font-size:.6rem;color:var(--bad);background:var(--bad-wash);border:1px solid var(--bad-line);border-radius:6px;padding:.2em .5em}
+.u31{color:var(--ok)}
+.u32{margin:12px 0 0}
+.u33{color:var(--ink-3)}
+.u34{display:flex;align-items:center;gap:20px}
+.u35{width:80px;height:80px;border-radius:14px;background:var(--code-bg);display:grid;place-items:center;flex-shrink:0}
+.u36{height:48px}
+.u37{width:80px;height:80px;border-radius:14px;background:var(--paper-2);border:1px solid var(--line);display:grid;place-items:center;flex-shrink:0}
+.u38{margin-top:14px}
+.u39{padding:0;overflow:hidden}
+.u40{height:78px;background:#6a4bd6}
+.u41{padding:14px 18px}
+.u42{font-family:var(--mono);font-size:.85rem;margin:2px 0 0}
+.u43{height:78px;background:#a885fa}
+.u44{height:78px;background:#faf9f5;border-bottom:1px solid var(--line)}
+.u45{height:78px;background:#f3f1e9;border-bottom:1px solid var(--line)}
+.u46{height:78px;background:#1c1b17}
+.u47{height:78px;background:#1d1830}
+.u48{height:78px;background:#3f9b6e}
+.u49{height:78px;background:#cf5b4e}
+.u50{height:78px;background:#e6e2d6}
+.u51{font-family:var(--serif);font-size:2rem;font-weight:500;margin:0}
+.u52{margin:14px 0 2px}
+.u53{font-family:var(--sans);font-size:2rem;font-weight:600;margin:0}
+.u54{font-family:var(--mono);font-size:2rem;margin:0}
+.u55{font-family:var(--mono);font-size:.82rem}
+.u56{font-size:1.5rem}
+.u57{font-size:1.5rem;margin-top:1.8em}
