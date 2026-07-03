@@ -291,7 +291,8 @@ NAV_ITEMS = [("why","Why Capa","why.html"),("compare","Compare","compare.html"),
              ("learn","Learn","learn/index.html"),("reference","Reference","reference.html")]
 DROP_ITEMS = [("study","Study","study.html"),("migrating","Migrating","migrating.html"),
               ("regulatory","Regulatory","regulatory.html"),("agent","Agent demo","agent-demo.html"),
-              ("stdlib","Standard library","stdlib.html"),("community","Community","community.html")]
+              ("stdlib","Standard library","stdlib.html"),("community","Community","community.html"),
+              ("book","The book","book/Capa-The-Capability-Typed-Programming-Language.pdf")]
 
 def nav(active, P):
     links=""
