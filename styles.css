@@ -265,7 +265,7 @@ em{font-style:italic}
 .nav{position:sticky;top:0;z-index:60;background:rgba(250,249,245,.85);
   backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--line)}
 .nav-inner{max-width:1280px;margin:0 auto;padding:0 26px;height:66px;display:flex;align-items:center;gap:10px}
-.brand{display:flex;align-items:center;gap:.5em;font-family:var(--serif);font-size:1.34rem;color:var(--ink);font-weight:600}
+.brand{display:flex;align-items:center;gap:.4em;font-family:var(--serif);font-size:1.34rem;color:var(--ink);font-weight:600}
 .brand:hover{text-decoration:none;color:var(--ink)}
 .brand .mark{height:30px;width:auto}
 .nav-links{display:flex;align-items:center;gap:1px;margin-left:18px}

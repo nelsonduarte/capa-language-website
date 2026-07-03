@@ -83,7 +83,7 @@ em{font-style:italic}
 .nav{position:sticky;top:0;z-index:60;background:rgba(250,249,245,.85);
   backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--line)}
 .nav-inner{max-width:1280px;margin:0 auto;padding:0 26px;height:66px;display:flex;align-items:center;gap:10px}
-.brand{display:flex;align-items:center;gap:.5em;font-family:var(--serif);font-size:1.34rem;color:var(--ink);font-weight:600}
+.brand{display:flex;align-items:center;gap:.4em;font-family:var(--serif);font-size:1.34rem;color:var(--ink);font-weight:600}
 .brand:hover{text-decoration:none;color:var(--ink)}
 .brand .mark{height:30px;width:auto}
 .nav-links{display:flex;align-items:center;gap:1px;margin-left:18px}
@@ -304,7 +304,7 @@ def nav(active, P):
     roadcls=' class="active"' if active=="roadmap" else ''
     return f'''<header class="nav">
   <div class="nav-inner">
-    <a class="brand" href="{P}index.html"><svg class="mark"><use href="#capa-mark"/></svg> Capa</a>
+    <a class="brand" href="{P}index.html"><svg class="mark"><use href="#capa-mark"/></svg>Capa</a>
     <nav class="nav-links" id="navlinks">
       {links}<div class="has-drop">
         <button class="drop-btn" id="docsbtn" aria-haspopup="true" aria-expanded="false">Docs
@@ -326,7 +326,7 @@ def footer(P):
     return f'''<footer class="footer">
   <div class="footer-grid">
     <div class="footer-brand">
-      <a class="brand" href="{P}index.html"><svg class="mark mark-26"><use href="#capa-mark"/></svg> Capa</a>
+      <a class="brand" href="{P}index.html"><svg class="mark mark-26"><use href="#capa-mark"/></svg>Capa</a>
       <p>A capability-typed programming language. Every function declares the authorities it holds; the compiler checks the discipline statically.</p>
     </div>
     <div><h5>Pages</h5><ul>
@@ -350,7 +350,7 @@ def footer(P):
     </ul></div>
   </div>
   <div class="footer-base">
-    <span>Built by Nelson Duarte &middot; v1.14.0 &middot; MIT or Apache-2.0</span>
+    <span>Built by Nelson Duarte &middot; v1.15.1 &middot; MIT or Apache-2.0</span>
     <span>&copy; 2026 Capa</span>
   </div>
 </footer>'''
