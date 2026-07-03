@@ -85,7 +85,7 @@ em{font-style:italic}
 .nav-inner{max-width:1280px;margin:0 auto;padding:0 26px;height:66px;display:flex;align-items:center;gap:10px}
 .brand{display:flex;align-items:center;gap:.4em;font-family:var(--serif);font-size:1.34rem;color:var(--ink);font-weight:600}
 .brand:hover{text-decoration:none;color:var(--ink)}
-.brand .mark{height:30px;width:auto}
+.brand .mark{height:30px;width:22.1px;flex:0 0 auto}
 .nav-links{display:flex;align-items:center;gap:1px;margin-left:18px}
 .nav-links a,.drop-btn{color:var(--ink-2);font-size:.92rem;font-weight:500;font-family:var(--sans);
   padding:.46em .72em;border-radius:8px;background:none;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:.35em}
