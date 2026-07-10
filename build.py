@@ -391,7 +391,8 @@ MENU_JS = (
 # everything first-party, no inline script/style, no third parties.
 CSP = ("default-src 'self'; img-src 'self' data:; style-src 'self'; "
        "script-src 'self'; font-src 'self'; object-src 'none'; "
-       "base-uri 'self'; form-action 'self'")
+       "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; "
+       "upgrade-insecure-requests")
 
 # Production domain (parity with repos/capa-language-website). Used for absolute
 # URLs in canonical/OG/Twitter meta, the sitemap, robots.txt and CNAME.
