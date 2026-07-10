@@ -166,9 +166,11 @@ section{padding:60px 0}
 .grid{display:grid;gap:18px}
 .g2{grid-template-columns:1fr 1fr}
 .g3{grid-template-columns:repeat(3,1fr)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px;
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px;position:relative;
   transition:transform .15s,box-shadow .15s,border-color .15s}
-a.card:hover{transform:translateY(-3px);border-color:var(--aline);box-shadow:0 18px 44px -24px rgba(74,47,158,.4);text-decoration:none}
+a.card:hover,.card:has(.card-cover):hover{transform:translateY(-3px);border-color:var(--aline);box-shadow:0 18px 44px -24px rgba(74,47,158,.4);text-decoration:none}
+.card-cover{position:absolute;inset:0;border-radius:inherit;z-index:1}
+.card a:not(.card-cover){position:relative;z-index:2}
 .card h3{font-size:1.18rem}
 .card p{color:var(--ink-2);font-size:.96rem;margin:0}
 
