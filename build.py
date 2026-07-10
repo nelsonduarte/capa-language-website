@@ -4,18 +4,23 @@
 Cada página é auto-contida (CSS + logótipo embebidos)."""
 import os, re, sys, pathlib
 
-# Output goes to the repository root (SRC), which is what GitHub Pages serves
-# for capa-language.com (legacy "/" path on the deploy branch). Source fragments
-# and assets live next to the script (SRC), so the generated pages sit alongside
-# the build inputs in the repo root.
+# Por omissao a saida vai para SRC/dist e contem APENAS o site servido (paginas,
+# book/, assets, ficheiros de crawler). E o que o Cloudflare (Workers Static
+# Assets) publica, sem apanhar .git/, _bodies/, build.py, etc. Manter o root
+# limpo e o comportamento pretendido: correr `python build.py` nunca deve
+# recriar ficheiros gerados no root nem ressuscitar o CNAME.
 #
-# Com o modo --dist, a saida vai para SRC/dist e contem APENAS o site servido
-# (paginas, book/, assets, ficheiros de crawler). E o que o Cloudflare (Workers
-# Static Assets) publica, sem apanhar .git/, _bodies/, build.py, etc. Sem --dist
-# o comportamento e o mesmo de antes (build in-place no root para o GitHub Pages).
+# --dist e aceite como alias sem efeito do modo por omissao (o comando de build
+# do Cloudflare e `python build.py --dist`, tem de continuar a funcionar).
+#
+# Com --in-place a saida vai para o root (SRC), o velho comportamento: escreve as
+# paginas ao lado das entradas de build e emite o CNAME (para o GitHub Pages).
 SRC = pathlib.Path(__file__).resolve().parent
-DIST = "--dist" in sys.argv
-OUT = (SRC / "dist") if DIST else SRC
+IN_PLACE = "--in-place" in sys.argv
+# DIST == "estamos a construir para dist/" (o modo por omissao). Toda a logica a
+# jusante continua expressa em DIST, so o valor por omissao e que inverteu.
+DIST = not IN_PLACE
+OUT = SRC if IN_PLACE else (SRC / "dist")
 BODIES = SRC / "_bodies"
 FONTS = SRC / "fonts"
 
@@ -604,13 +609,14 @@ def emit_deploy():
     (OUT/"_headers").write_text(headers, encoding="utf-8")
 
 if __name__=="__main__":
-    # 0) modo --dist: recria dist/ do zero para nunca deixar ficheiros obsoletos.
+    # 0) modo por omissao: recria dist/ do zero para nunca deixar ficheiros
+    #    obsoletos. Com --in-place escrevemos no root e nao ha nada a recriar.
     if DIST:
         import shutil
         if OUT.exists():
             shutil.rmtree(OUT)
         OUT.mkdir(parents=True, exist_ok=True)
-        print(f"  modo --dist: {OUT.name}/ recriado (site servido isolado)")
+        print(f"  saida para {OUT.name}/ recriado (site servido isolado)")
 
     # 0) bodies first: load + strip inline styles so the generated classes exist
     #    before we write styles.css.
