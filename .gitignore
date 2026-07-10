@@ -2,3 +2,8 @@
 __pycache__/
 .DS_Store
 *.tmp
+
+# Cloudflare deploy: dist/ is rebuilt by `python build.py --dist`, .wrangler/ is
+# wrangler's local temp. Neither is committed; wrangler.jsonc IS committed.
+dist/
+.wrangler/

@@ -2,14 +2,20 @@
 # -*- coding: utf-8 -*-
 """Gera as páginas do site Capa a partir de fragmentos de corpo em _bodies/.
 Cada página é auto-contida (CSS + logótipo embebidos)."""
-import os, re, pathlib
+import os, re, sys, pathlib
 
 # Output goes to the repository root (SRC), which is what GitHub Pages serves
 # for capa-language.com (legacy "/" path on the deploy branch). Source fragments
 # and assets live next to the script (SRC), so the generated pages sit alongside
 # the build inputs in the repo root.
+#
+# Com o modo --dist, a saida vai para SRC/dist e contem APENAS o site servido
+# (paginas, book/, assets, ficheiros de crawler). E o que o Cloudflare (Workers
+# Static Assets) publica, sem apanhar .git/, _bodies/, build.py, etc. Sem --dist
+# o comportamento e o mesmo de antes (build in-place no root para o GitHub Pages).
 SRC = pathlib.Path(__file__).resolve().parent
-OUT = SRC
+DIST = "--dist" in sys.argv
+OUT = (SRC / "dist") if DIST else SRC
 BODIES = SRC / "_bodies"
 FONTS = SRC / "fonts"
 
@@ -558,13 +564,21 @@ def copy_static():
     for f in sorted(FONTS.iterdir()):
         if f.is_file() and f.name != "fonts.css":
             _copy(f, dst/f.name)
+    # book PDF: linked from the nav of every page. In-place ja vive em book/,
+    # por isso o guard salta o self-copy; em --dist copia o diretorio todo.
+    if (SRC/"book").resolve() != (OUT/"book").resolve():
+        shutil.copytree(SRC/"book", OUT/"book", dirs_exist_ok=True)
     return sorted(p.name for p in dst.glob("*.woff2"))
 
 def emit_deploy():
-    """Emit deploy parity files: CNAME, sitemap.xml, robots.txt."""
+    """Emit deploy parity files: CNAME, sitemap.xml, robots.txt, _headers.
+
+    Em --dist o CNAME e omitido: e so-GitHub-Pages; no Cloudflare o dominio
+    personalizado e configurado no dashboard, nao por um ficheiro CNAME."""
     OUT.mkdir(parents=True, exist_ok=True)
-    # custom domain for GitHub Pages
-    (OUT/"CNAME").write_text(DOMAIN + "\n", encoding="utf-8")
+    # custom domain for GitHub Pages (nao emitido em --dist / Cloudflare)
+    if not DIST:
+        (OUT/"CNAME").write_text(DOMAIN + "\n", encoding="utf-8")
     # sitemap with absolute URLs for every built page
     urls="".join(
         f"  <url><loc>{SITE}/{fn}</loc></url>\n" for fn,*_ in PAGES)
@@ -576,8 +590,25 @@ def emit_deploy():
     (OUT/"robots.txt").write_text(
         "User-agent: *\nAllow: /\nSitemap: " + SITE + "/sitemap.xml\n",
         encoding="utf-8")
+    # Cloudflare Pages _headers: serve the CSP as a real HTTP response header
+    # (stronger than the meta tag, which stays as a fallback). Reuse the single
+    # CSP constant so the header never drifts from the meta-tag value.
+    headers=("/*\n"
+             f"  Content-Security-Policy: {CSP}\n"
+             "  X-Content-Type-Options: nosniff\n"
+             "  Referrer-Policy: strict-origin-when-cross-origin\n"
+             "  Permissions-Policy: geolocation=(), microphone=(), camera=()\n")
+    (OUT/"_headers").write_text(headers, encoding="utf-8")
 
 if __name__=="__main__":
+    # 0) modo --dist: recria dist/ do zero para nunca deixar ficheiros obsoletos.
+    if DIST:
+        import shutil
+        if OUT.exists():
+            shutil.rmtree(OUT)
+        OUT.mkdir(parents=True, exist_ok=True)
+        print(f"  modo --dist: {OUT.name}/ recriado (site servido isolado)")
+
     # 0) bodies first: load + strip inline styles so the generated classes exist
     #    before we write styles.css.
     prepared=[]
@@ -594,7 +625,8 @@ if __name__=="__main__":
     woff=copy_static()
     print(f"  copiados {len(woff)} ficheiros de fonte + menu.js + logo")
     emit_deploy()
-    print("  emitidos CNAME, sitemap.xml, robots.txt")
+    print("  emitidos " + ("sitemap.xml, robots.txt, _headers (sem CNAME)"
+                           if DIST else "CNAME, sitemap.xml, robots.txt, _headers"))
 
     # 2) stylesheet: self-hosted @font-face, base CSS, page additions, then the
     #    classes generated from former inline styles.
