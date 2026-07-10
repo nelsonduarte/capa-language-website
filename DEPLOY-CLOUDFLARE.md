@@ -48,6 +48,16 @@ writes to the repo root and the deploy would again serve `.git/` and the
 source. `wrangler.jsonc` (committed) tells wrangler to upload `dist/`, so there
 is no separate "output directory" to set.
 
+## Automatic deployments (the Git connection)
+
+Builds fire on push only while the project is connected to the Git account.
+In Settings -> Build, the banner "This project is disconnected from your Git
+account" means pushes will not trigger builds; reconnect via Manage (or
+Disconnect and reconnect the repo). Reconnecting does not retroactively build
+commits already pushed while it was disconnected, so trigger one build
+manually (Deployments -> Create deployment / Retry, or push a new commit)
+after reconnecting. Production branch is main, build watch paths are `*`.
+
 ## Cutover, step by step (no downtime)
 
 Content is identical on both hosts during the overlap, so there is no bad
