@@ -67,15 +67,14 @@
       <div class="hero-meta">
         <span>v1.15.1</span><span class="d">·</span>
         <span>MIT or Apache-2.0</span><span class="d">·</span>
-        <span>over 3,500 tests</span><span class="d">·</span>
+        <span>over 4,000 tests</span><span class="d">·</span>
         <span>hand-written compiler in Python</span>
       </div>
     </div>
     <div class="code">
       <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">summarise.capa</span></div>
-<pre><code><span class="cm"># the signature IS the contract</span>
-<span class="k">fun</span> <span class="fn">summarise</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">fs:</span> <span class="cp">Fs</span>, <span class="pu">path:</span> <span class="ty">String</span>)
-    <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
+<pre><code><span class="cm">// the signature IS the contract</span>
+<span class="k">fun</span> <span class="fn">summarise</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">fs:</span> <span class="cp">Fs</span>, <span class="pu">path:</span> <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
     <span class="k">let</span> body = fs.<span class="fn">read</span>(path)?
     <span class="k">let</span> first = <span class="k">match</span> body.<span class="fn">split</span>(<span class="st">"\n"</span>).<span class="fn">get</span>(<span class="nu">0</span>)
         <span class="ty">Some</span>(line) <span class="pu">-&gt;</span> line
@@ -146,10 +145,9 @@
         </div>
         <div class="code">
           <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">summarise.capa</span></div>
-<pre><code><span class="k">fun</span> <span class="fn">summarise</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">fs:</span> <span class="cp">Fs</span>, <span class="pu">path:</span> <span class="ty">String</span>)
-    <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
+<pre><code><span class="k">fun</span> <span class="fn">summarise</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">fs:</span> <span class="cp">Fs</span>, <span class="pu">path:</span> <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
     <span class="k">let</span> body = fs.<span class="fn">read</span>(path)?
-    stdio.<span class="fn">println</span>(<span class="st">"read ${body.len()} bytes"</span>)
+    stdio.<span class="fn">println</span>(<span class="st">"read ${body.length()} bytes"</span>)
     <span class="k">return</span> <span class="ty">Ok</span>(())</code></pre>
         </div>
       </div>
@@ -260,6 +258,11 @@
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_configbroker</h3>
         <p>Capability-secured config and secrets resolver. Secrets are provably kept out of logs, and its network reach is attenuated to a single host.</p>
         <span class="badge">capability-scoped</span>
+      </a>
+      <a class="card repo" href="https://github.com/nelsonduarte/capa_ci_pipeline">
+        <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_ci_pipeline</h3>
+        <p>A CI/release orchestrator built as a multi-package product. Four untrusted third-party actions run as sandbox-confined typed foreign Wasm components; the pure core holds no authority; the whole product's capability surface composes into one SBOM. A compromised build action that silently gains <span class="ic">Net</span> is caught twice over: by the signed authority diff and by an organization exclusion policy.</p>
+        <span class="badge">supply-chain product</span>
       </a>
     </div>
   </div>

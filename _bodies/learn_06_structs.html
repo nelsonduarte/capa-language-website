@@ -115,9 +115,9 @@
         <span class="ty">Rectangle</span>((w, h)) -&gt; <span class="k">return</span> w * h</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: non-exhaustive match: missing variant 'Square'
+<pre><code>error: non-exhaustive match on 'Shape': missing variants Square (add '_ -&gt; ...' to handle remaining cases)
    2 |     match shape
-                ^</code></pre></div>
+           ^</code></pre></div>
 
     <p>This is one of the most useful guarantees in the language: when you add a new variant to a sum, every <span class="ic">match</span> on that sum that did not have a wildcard becomes a compile error until you handle the new case. Refactors that would silently miss a branch in Python become impossible.</p>
   </div>
@@ -159,8 +159,8 @@
     stdio.<span class="fn">println</span>(<span class="st">"${p.x}"</span>)</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: struct literal 'Point': missing field 'y'
-   5 |     let p = Point { x: 3 }
+<pre><code>error: struct 'Point': missing fields y
+   7 |     let p = Point { x: 3 }
                    ^</code></pre></div>
 
     <p>Every field of the struct must appear in the literal. No defaults; if you want one, write a constructor function that fills the missing fields.</p>

@@ -163,7 +163,7 @@
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
-denied: NetRestricted: attacker.com is not in the allowed host set</code></pre></div>
+denied: Net capability does not permit access to host 'attacker.com': current restrictions: ['api.example.com']</code></pre></div>
 
     <p>No request is made; the runtime returns an <span class="ic">Err</span> the program handles like any other failure. <em>Fail-closed</em>: a denied call never reaches the network.</p>
 

@@ -98,7 +98,8 @@
 <pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
     <span class="k">let</span> xs = [1, 2, 3, 4]
     <span class="k">let</span> doubled = xs.<span class="fn">map</span>(<span class="k">fun</span> (n: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span> =&gt; n * 2)
-    stdio.<span class="fn">println</span>(<span class="st">"${doubled}"</span>)     <span class="cm">// [2, 4, 6, 8]</span></code></pre></div>
+    <span class="k">for</span> x <span class="k">in</span> doubled
+        stdio.<span class="fn">println</span>(<span class="st">"${x}"</span>)   <span class="cm">// prints 2, 4, 6, 8 (one per line)</span></code></pre></div>
 
     <p><span class="ic">filter</span> keeps elements for which a predicate returns <span class="ic">true</span>:</p>
 
@@ -190,8 +191,7 @@
 <pre><code><span class="k">let</span> mixed = [1, 2, <span class="st">"three"</span>]</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: list literal: elements must have the same type;
-       got Int and String
+<pre><code>error: list literal: element has type String, expected Int
    1 | let mixed = [1, 2, "three"]
                           ^</code></pre></div>
 
@@ -206,10 +206,9 @@
     stdio.<span class="fn">println</span>(<span class="st">"${n + 1}"</span>)</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: '+': expected Int + Int or Float + Float or String + String,
-       got Option&lt;Int&gt; + Int
-   3 |     stdio.println("${n + 1}")
-                          ^</code></pre></div>
+<pre><code>error: operator '+': incompatible operand types Option&lt;Int&gt; and Int
+   4 |     stdio.println("${n + 1}")
+                            ^</code></pre></div>
 
     <p><span class="ic">xs.get(0)</span> is an <span class="ic">Option&lt;Int&gt;</span>, not an <span class="ic">Int</span>. To use the value you either pattern-match on <span class="ic">Some(n) / None</span> (chapter 6) or apply the <span class="ic">?</span> operator (chapter 7).</p>
   </div>

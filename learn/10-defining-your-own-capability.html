@@ -167,11 +167,9 @@
 }</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: type 'Holder' has a capability field 'net' but does not
-       implement any user-defined capability; capabilities cannot
-       appear as struct fields outside the cap-bearing pattern
-   1 | type Holder {
-              ^</code></pre></div>
+<pre><code>error: capability 'Net' cannot appear in struct field 'net'; capabilities only flow through function parameters
+   2 |     net: Net
+           ^</code></pre></div>
 
     <p>Either remove the cap field or pair the struct with an <span class="ic">impl SomeCap for Holder</span>. The cap-bearing relaxation is opt-in: you have to declare what capability the struct embodies before you are allowed to wrap a built-in inside it.</p>
 
@@ -183,9 +181,9 @@
         <span class="k">return</span> <span class="ty">Ok</span>(())</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: impl SendEmail for SmtpMailer: method 'send' has the wrong
-       signature; expected (self, String, String, String) -&gt;
-       Result&lt;Unit, IoError&gt;, got (self, String) -&gt; Result&lt;Unit, IoError&gt;</code></pre></div>
+<pre><code>error: impl method 'send' for trait 'SendEmail': expected signature fun(String, String, String) -&gt; Result&lt;(), IoError&gt;, got fun(String) -&gt; Result&lt;(), IoError&gt;
+   2 |     fun send(self, to: String) -&gt; Result&lt;Unit, IoError&gt;
+           ^</code></pre></div>
 
     <p>The implementor's method signature must match the capability declaration exactly: same arity, same parameter types, same return type. Extra helper methods on the struct are fine; the contract is just that the declared method is there with the right shape.</p>
 

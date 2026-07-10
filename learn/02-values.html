@@ -141,12 +141,10 @@ counter = <span class="st">"one"</span>          <span class="cm">// error: expe
 <pre><code>$ capa --run hello.capa
 Hello, Capa! n is 42.</code></pre></div>
 
-    <p>The expression inside <span class="ic">${...}</span> can be any expression that produces a value: <span class="ic">"${1 + 1}"</span> prints <span class="ic">2</span>. The conversion to string is automatic for every primitive type and for any type that has a <span class="ic">__str__</span> in the runtime (most user types do).</p>
-
-    <p>If you actually want the four characters <span class="ic">${ }</span> in your output, double the dollar: <span class="ic">"$${"</span> prints <span class="ic">${</span>.</p>
+    <p>The expression inside <span class="ic">${...}</span> can be any expression that produces a value: <span class="ic">"${1 + 1}"</span> prints <span class="ic">2</span>. The conversion to string is automatic for every primitive type. User-defined structs and sum types are <em>not</em> converted automatically: interpolating one is a compile error until you give the type a <span class="ic">to_string(self) -&gt; String</span> method.</p>
 
     <div class="callout">
-        <p><strong>Raw strings.</strong> Prefix a string with <span class="ic">r</span> to disable both escapes and interpolation: <span class="ic">r"C:\path\to\file"</span> contains the literal backslashes. Useful for regular expressions and Windows paths.</p>
+        <p><strong>Raw strings.</strong> Prefix a string with <span class="ic">r</span> to make backslashes literal (it disables escape sequences); interpolation with <span class="ic">${...}</span> still applies. <span class="ic">r"C:\path\to\file"</span> contains the literal backslashes. Useful for regular expressions and Windows paths.</p>
     </div>
   </div>
 </section>
@@ -165,8 +163,7 @@ Hello, Capa! n is 42.</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
-hello.capa:2:18: error: '+': expected Int + Int or Float + Float or String + String,
-                        got Int + String
+hello.capa:2:18: error: operator '+': incompatible operand types Int and String
    2 |     let result = 42 + "oops"
                         ^</code></pre></div>
 

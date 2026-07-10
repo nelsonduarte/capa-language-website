@@ -83,7 +83,7 @@ report by token ending 77c2
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --manifest report.capa
 {
-  "capa_version": "1.2.0",
+  "capa_version": "1.15.1",
   "schema_version": 1,
   "filename": "report.capa",
   "functions": [
@@ -114,7 +114,9 @@ report by token ending 77c2
     "functions_with_attributes": 1,
     "functions_crossing_unsafe": 0,
     "declassification_sites": 1,
-    "protocol_states": 0
+    "protocol_states": 0,
+    "foreign_components": 0,
+    "functions_calling_foreign_components": 0
   }
 }</code></pre></div>
 
@@ -259,7 +261,7 @@ report by token ending 77c2
     "buildDefinition": {
       "buildType": "https://capa-language.com/build/transpile-to-python/v1",
       "externalParameters": { "source": "report.capa" },
-      "internalParameters": { "capaVersion": "1.2.0",
+      "internalParameters": { "capaVersion": "1.15.1",
                               "target": "python&gt;=3.10" },
       ...
     },
@@ -288,6 +290,175 @@ report by token ending 77c2
     </table>
 
     <p>None of these required a scanner, an agent, or a form. The discipline you learned in chapters 8 through 13 put the information in the type system; the five flags serialise it.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Scaling up: from one file to a whole product</h2>
+
+    <p>The five artefacts above describe one file. But you do not ship a file, you ship a <em>product</em>: a root package wired over a tree of dependencies, some third-party, some not even written in Capa. The same discipline scales, and four more flags carry it up that tree. To keep this concrete, the rest of the chapter switches from <span class="ic">report.capa</span> to the flagship demo, <a href="https://github.com/nelsonduarte/capa_ci_pipeline">capa_ci_pipeline</a>: a build orchestrator that runs four untrusted third-party "actions" (fetch, parse, build, publish) as sandbox-confined foreign Wasm components. Every command and output below was run against it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>The signable manifest: <span class="ic">--manifest-digest</span></h2>
+
+    <p>Start with one refinement of Artefact 1. <span class="ic">capa --manifest</span> is for reading. <span class="ic">capa --manifest-digest</span> is the same content in canonical form, wrapped so it can be signed. It sorts every key (the <span class="ic">capa-jcs-sorted-v1</span> canonicalisation), drops nothing, and appends a <span class="ic">content_integrity</span> envelope:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --manifest-digest report.capa
+{"capa_version":"1.15.1", ... ,
+ "content_integrity":{
+   "canonicalization":"capa-jcs-sorted-v1",
+   "digest":{"algorithm":"sha256",
+             "value":"c8679d4dc1c511f4bf39ddf9304083c695d91edd30818944c05f040bdca487e8"},
+   "signature":{"algorithm":null,"key_id":null,"value":null}},
+ "filename":"report.capa", ... ,"schema_version":1, ... }</code></pre></div>
+
+    <p>(The compiler emits this as a single canonical line; it is reflowed here, and the function bodies are elided.) The <span class="ic">digest</span> is a SHA-256 over the canonical bytes with the <span class="ic">content_integrity</span> key removed: recompute it the same way and you have proven the manifest is exactly this one. The <span class="ic">signature</span> slot is empty by construction. The compiler holds no keys and never signs in-band (SLSA Build L1); it emits the digest an external signer signs. Every product-level artefact below carries this same envelope, so each is <em>signable</em>, not signed.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>The composed product SBOM: <span class="ic">--compose-sbom</span></h2>
+
+    <p><span class="ic">capa --compose-sbom</span> re-introduces the package boundary the loader flattens away and rolls each function's capabilities up the dependency graph, attributing them <em>per package</em>. On the demo, under the Wasm-sandbox posture:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --compose-sbom --wasm main.capa
+{
+  ...
+  "enforcement_posture": "wasm-sandbox",
+  "composed": {
+    "authority_unknown": false,
+    "capabilities": ["Fs", "Net", "Stdio"],
+    ...
+  },
+  "packages": [
+    { "name": "capa_ci_pipeline", "composed_capabilities": ["Fs", "Net", "Stdio"], ... },
+    { "name": "build_action",     "composed_capabilities": ["Fs"],  ... },
+    { "name": "fetch_action",     "composed_capabilities": ["Net"], ... },
+    { "name": "parse_action",     "composed_capabilities": [],      ... },
+    { "name": "pipeline_core",    "composed_capabilities": [],      ... },
+    { "name": "publish_action",   "composed_capabilities": ["Net"], ... }
+  ],
+  ...
+}</code></pre></div>
+
+    <p>(Reflowed and abbreviated from the single canonical line; each package object also carries <span class="ic">attributed_capabilities</span> and a reason string.) The attribution is <em>precise</em>, not a module-wide union: fetch and publish compose to <span class="ic">Net</span>, build to <span class="ic">Fs</span>, the parser to nothing, and the pure <span class="ic">pipeline_core</span> to nothing. That precision is the point. A coarse roll-up that credited every action the product's whole <span class="ic">{Fs, Net, Stdio}</span> would be sound but useless; the precise composed graph is what lets a policy forbid <span class="ic">Net</span> on the parser specifically.</p>
+
+    <p>The composed value lives in a small lattice: capability sets, plus one distinguished TOP element, "authority unknown". A dependency the compiler cannot read (a native library, an absent <span class="ic">capa.toml</span>, a package that crosses <span class="ic">Unsafe</span>) composes as TOP, and TOP is absorbing: one unknown anywhere marks the whole roll-up <span class="ic">authority_unknown: true</span>, and it is never treated as the empty set. That is the property no scanner has. A dependency scanner handed a subtree it cannot read attributes it nothing, and <em>nothing</em> reads as <em>clean</em>: an SBOM that is dishonestly clean in exactly the dangerous direction. Here the gap is a first-class verdict. The demo ships <span class="ic">negatives/native_action</span>, whose dependency carries a <span class="ic">capa.toml</span> but no Capa source; composing it yields <span class="ic">authority_unknown: true</span>. (The same boundary is why the default, non-<span class="ic">--wasm</span> posture composes the four foreign actions as TOP too; only <span class="ic">--wasm</span> makes them bounded, which the last section explains.)</p>
+
+    <p>The per-package gate that reads this SBOM is <span class="ic">capa --check-capabilities</span>: each package that declares a <span class="ic">[capabilities]</span> ceiling in its <span class="ic">capa.toml</span> must compose within it, and an authority-unknown package fails closed. Wrap <span class="ic">report.capa</span> in a package that declares its ceiling:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa.toml</span></div>
+<pre><code>[package]
+name = "report"
+version = "1.0.0"
+
+[capabilities]
+max = ["Stdio", "Fs", "Env"]</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --check-capabilities report.capa
+capa: --check-capabilities: OK - every declared capability ceiling holds.</code></pre></div>
+
+    <p>Tighten the ceiling to forbid <span class="ic">Env</span> and the gate names the breach and exits non-zero:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --check-capabilities report.capa
+capa: --check-capabilities: FAILED - 1 ceiling violation(s):
+  - package 'report' declares max=['Fs', 'Stdio'] but its own code introduces 'Env'</code></pre></div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Signed authority diffs: <span class="ic">--capability-diff</span></h2>
+
+    <p>A composed SBOM is a snapshot. The supply-chain risk is the <em>delta</em> between releases: the node-ipc 2022 pattern, where a package that was benign yesterday silently gains authority in an update. <span class="ic">capa --capability-diff old.json new.json</span> is that changelog. The demo's <span class="ic">v2/</span> overlay is one release later with a compromised build action, whose <span class="ic">run_build</span> quietly gains <span class="ic">Net</span> (a build step that legitimately holds <span class="ic">Fs</span> can now read the checkout <em>and</em> ship it out). Diff the before and after manifests, failing the build on any widening:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --capability-diff build_action.v1.json build_action.v2.json --fail-on-widening
+{
+  ...
+  "functions": [
+    { "name": "run_build",
+      "added": ["Net"],
+      "guarantee_lost": ["Net"],
+      "removed": [],
+      "classification": "widening" }
+  ],
+  "summary": { "widenings": 1, "narrowings": 0, ... },
+  "from_digest": { "algorithm": "sha256", "value": "8a4dab94..." },
+  "to_digest":   { "algorithm": "sha256", "value": "34abc8d3..." },
+  "content_integrity": { "digest": { "value": "5052f04c..." },
+                         "signature": { "value": null } }
+}
+capa: --capability-diff: FAILED --fail-on-widening: 1 widening(s)</code></pre></div>
+
+    <p>(JSON reflowed and abbreviated; the gate line is the last one, on stderr, and the process exits 1.) Two set differences make the case. <span class="ic">run_build</span>'s reachable set <em>gained</em> <span class="ic">Net</span> (<span class="ic">added: ["Net"]</span>), and its exclusion proof for <span class="ic">Net</span> is <em>gone</em> (<span class="ic">guarantee_lost: ["Net"]</span>), so the delta is classified a <span class="ic">widening</span>. Functions are matched by their stable <span class="ic">(container, name)</span> identity, never by source position, so a function that only moved lines produces no entry. The changelog records both inputs' digests (<span class="ic">from_digest</span> / <span class="ic">to_digest</span>) so it is provably about those two exact artefacts, and it carries the same empty-slot envelope, so the changelog is itself signable.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Compliance policies: <span class="ic">--check-policies</span> and <span class="ic">--conformance-report</span></h2>
+
+    <p>A diff needs a previous release to compare against. A policy needs only a rule. An organization writes a product-level <span class="ic">capa-policy.toml</span>, owned by the security team and distinct from any per-package ceiling, from a fixed, enumerated set of predicate kinds: <span class="ic">exclusion</span>, <span class="ic">product-subset</span>, <span class="ic">purity</span>, <span class="ic">forbid-capability</span>, <span class="ic">forbid-dependency</span>, and <span class="ic">no-unresolved-dependencies</span> (an unknown kind is a hard parse error, never a silently-ignored rule). The demo's file declares four: the core library is pure, the parse action must not hold <span class="ic">Net</span> (the confined-parser rule), the build action must not hold <span class="ic">Net</span> and <span class="ic">Fs</span> together (the exfil vector), and product authority stays within <span class="ic">{Net, Fs, Stdio}</span>. On the clean product every rule holds:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --check-policies --wasm main.capa
+capa: --check-policies: OK - every declared compliance policy holds.</code></pre></div>
+
+    <p><span class="ic">capa --conformance-report --wasm main.capa</span> emits the same result as signable evidence: a canonical report with <span class="ic">pass: true</span>, one entry per policy, and the content-integrity envelope. Now run the gate on the same compromised build action from the diff:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ cd v2 &amp;&amp; capa --check-policies --wasm main.capa
+capa: --check-policies: FAILED - 1 policy(ies), 1 violation(s):
+  policy 'build-no-net-and-fs' (kind exclusion):
+    - [violation] package 'build_action' holds all of ['Fs', 'Net'] simultaneously (composed capabilities), which policy 'build-no-net-and-fs' forbids</code></pre></div>
+
+    <p>One change, caught twice, by two independent controls on the same SBOM. The diff caught it as a release-over-release <em>widening</em> with no policy file present; the policy catches it as a <em>standing-rule violation</em> with no previous release needed. A regression that evaded one (a first release with no baseline, or a widening the org had not thought to forbid) is caught by the other. And the fail-closed discipline carries into the verdicts. Point the gate at the native-dependency negative and the <span class="ic">product-subset</span> policy returns a distinct <span class="ic">authority_unknown</span> verdict, not a pass:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ cd negatives/native_action &amp;&amp; capa --check-policies --wasm main.capa
+capa: --check-policies: FAILED - 1 policy(ies), 1 violation(s):
+  policy 'product-authority' (kind product-subset):
+    - [authority_unknown] the product's composed authority is UNKNOWN: 'legacy_action' of 'native_prod' (package has a capa.toml but no Capa source (native / non-Capa dependency; its authority cannot be derived)) (via native_prod); a product-subset policy cannot be proven over an unanalyzable subtree. Set allow_unknown = true to waive.</code></pre></div>
+
+    <p>"Part of this product is unanalyzable, so the policy is unverifiable" is a different verdict from "this product reaches a forbidden capability", and neither reads as clean. The compliance gate distinguishes them.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Confining foreign code: <span class="ic">extern component</span></h2>
+
+    <p>One question remains. Those four actions are untrusted, separately-compiled Wasm. What stops a hostile one from doing more than it declares, and what turned its TOP node into a bounded node above? Each action is declared as a typed foreign component:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
+<pre><code><span class="k">extern component</span> <span class="ty">Fetch</span> <span class="k">from</span> <span class="st">"fetch.wasm"</span>
+    <span class="k">fun</span> <span class="fn">fetch</span>(net: <span class="cp">Net</span>, url: <span class="ty">String</span>) -&gt; <span class="ty">String</span></code></pre></div>
+
+    <p>Under <span class="ic">--wasm</span> the host instantiates the child in a fresh store, behind a Component-Model linker that binds <em>only</em> the capability interfaces the call grants. A child that imports anything else cannot be linked and is refused before its first instruction runs. That is what turns a foreign action's TOP node into a bounded node in the composed SBOM: the <span class="ic">wasm-sandbox</span> posture is a physically enforced bound, not just an audit claim. The pipeline runs, each stage confined to the one capability it declares:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --wasm --run main.capa
+== stage: fetch ==
+  fetched: ok:app-1.2.3.tar
+== stage: parse ==
+  spec: #ok:app-1.2.3.tar
+== stage: build ==
+  artifact: ok:#ok:app-1.2.3.tar
+== stage: publish ==
+  published: ok:ok:#ok:app-1.2.3.tar
+pipeline ok: true</code></pre></div>
+
+    <p>The demo's first negative proves the boundary. <span class="ic">negatives/ungranted_cap</span> ships a parser that looks honest but secretly imports <span class="ic">capa:host/net</span>; its declaration grants it no capability, so the sandbox refuses to instantiate it, and it never runs:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ cd negatives/ungranted_cap &amp;&amp; capa --wasm --run prog.capa
+capa: foreign component Parse.parse: instantiation denied -- the component imports a capability interface the call did not grant (granted: none). Underlying: component imports instance `capa:host/net`, but a matching implementation was not found in the linker</code></pre></div>
+
+    <p>Two honest limits. The confinement is for the capability <em>set</em>: <span class="ic">Unsafe</span>, the Python-only FFI escape, can never be a foreign-component parameter and stays TOP under every posture. And this is a boundary, not an analysis of the foreign code: Capa marks where its guarantee ends, it does not read inside the <span class="ic">.wasm</span>. For the whole worked example, all four actions, the policies, the release diff, and the three guarantee-proving negatives, read the <a href="https://github.com/nelsonduarte/capa_ci_pipeline">capa_ci_pipeline</a> demo end to end.</p>
   </div>
 </section>
 

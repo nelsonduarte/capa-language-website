@@ -35,6 +35,11 @@
         <tr><td>SPDX 2.3 SBOM</td><td><span class="ic">--spdx</span></td><td>Same metadata in SPDX <span class="ic">annotations[]</span> shape, Linux Foundation alignment.</td></tr>
         <tr><td>CycloneDX VEX</td><td><span class="ic">--vex</span></td><td>Per-function exploitability claims from <span class="ic">@vex(...)</span> attributes.</td></tr>
         <tr><td>SLSA L1 provenance</td><td><span class="ic">--provenance</span></td><td>in-toto Statement v1 + SLSA Provenance v1.0 predicate, source SHA-256.</td></tr>
+        <tr><td>Composed product SBOM</td><td><span class="ic">--compose-sbom</span></td><td>Per-function facts rolled up the dependency tree into a per-product capability surface; an unanalyzable subtree (native, unvendored, <span class="ic">Unsafe</span>-crossing) composes as a distinguished authority-unknown top and fails closed.</td></tr>
+        <tr><td>Capability ceiling gate</td><td><span class="ic">--check-capabilities</span></td><td>CI gate: every package verified against its declared <span class="ic">capa.toml [capabilities]</span> ceiling; exits non-zero on any violation or on an authority-unknown subtree.</td></tr>
+        <tr><td>Signed authority diff</td><td><span class="ic">--capability-diff</span></td><td>Canonical, signable release-over-release changelog of capability widening / narrowing; <span class="ic">--fail-on-widening</span> gates on any authority increase.</td></tr>
+        <tr><td>Compliance policies</td><td><span class="ic">--check-policies</span></td><td>Organization <span class="ic">capa-policy.toml</span> over the composed graph (exclusion, product-subset, purity, forbid-capability, forbid-dependency, no-unresolved-dependencies), fail-closed on authority-unknown; <span class="ic">--conformance-report</span> emits signable evidence.</td></tr>
+        <tr><td>Canonical manifest</td><td><span class="ic">--manifest-digest</span></td><td>Byte-stable, content-addressable manifest wrapped in a content-integrity envelope: a sha256 over the canonical bytes with an empty detached-signature slot for an external signer.</td></tr>
         <tr><td>Audit pipeline</td><td><span class="ic">sbom_capability_audit</span></td><td>SBOM vs policy diff, with structural rules.</td></tr>
         <tr><td>SBOM diff tool</td><td><span class="ic">sbom_diff</span></td><td>Two SBOMs in; per-function widening / narrowing / added / removed out.</td></tr>
         <tr><td>Machine-checked soundness</td><td><span class="ic">proofs/</span></td><td>λcap calculus with four Agda-checked theorems plus a noninterference proof for IFC.</td></tr>
@@ -80,6 +85,24 @@
           <td><span class="cl">Arts. 28-30</span><span class="lv lv-p">partial</span></td>
           <td><span class="cl">PS.2/PS.3</span><span class="lv lv-p">partial</span></td>
           <td><span class="cl">Domain 6</span><span class="lv lv-d">direct</span></td></tr>
+        <tr><td>Composed product SBOM</td>
+          <td><span class="cl">I-II(1)</span><span class="lv lv-d">direct</span></td>
+          <td><span class="cl">21(2)(d)</span><span class="lv lv-d">direct</span></td>
+          <td><span class="cl">Arts. 28-30</span><span class="lv lv-d">direct</span></td>
+          <td><span class="cl">PS.3</span><span class="lv lv-d">direct</span></td>
+          <td><span class="cl">Domain 2</span><span class="lv lv-d">direct</span></td></tr>
+        <tr><td>Signed authority diff</td>
+          <td><span class="cl">I-II(2)</span><span class="lv lv-p">partial</span></td>
+          <td><span class="cl">21(2)(d)</span><span class="lv lv-d">direct</span></td>
+          <td><span class="cl">Arts. 28-30</span><span class="lv lv-d">direct</span></td>
+          <td><span class="cl">RV.1</span><span class="lv lv-p">partial</span></td>
+          <td><span class="cl">Domain 2</span><span class="lv lv-p">partial</span></td></tr>
+        <tr><td>Compliance policies</td>
+          <td><span class="cl">I-II(1)</span><span class="lv lv-i">indirect</span></td>
+          <td><span class="cl">21(2)(d)</span><span class="lv lv-d">direct</span></td>
+          <td><span class="cl">Arts. 28-30</span><span class="lv lv-d">direct</span></td>
+          <td><span class="cl">PO.5</span><span class="lv lv-i">indirect</span></td>
+          <td><span class="cl">Domain 1</span><span class="lv lv-p">partial</span></td></tr>
         <tr><td>Audit pipeline</td>
           <td><span class="cl">I-II(1)</span><span class="lv lv-i">indirect</span></td>
           <td><span class="cl">21(2)(d)</span><span class="lv lv-d">direct</span></td>
@@ -113,6 +136,7 @@
 $ SOURCE_DATE_EPOCH=1609459200 capa --cyclonedx app.capa &gt; b.json
 $ diff a.json b.json   <span class="cm"># empty: byte-for-byte identical</span></code></pre></div>
     <p>This makes "recompile and compare byte-for-byte" a concrete check an auditor can run: strong evidence for the CRA build-integrity and NIS2 supplier-assessment clauses, where a verifier needs to confirm an artefact came from the source it claims.</p>
+    <p>The governance artefacts go one step further and carry their own content address. <span class="ic">--manifest-digest</span> (and, on the same substrate, <span class="ic">--compose-sbom</span>, <span class="ic">--capability-diff</span> and <span class="ic">--conformance-report</span>) serialise the manifest in a byte-stable, key-sorted canonical form with no timestamps at all, then wrap it in a content-integrity envelope: a sha256 over the canonical bytes plus an empty detached-signature slot. The digest is reproducible across machines and working directories, and it is exactly the value an external signer signs. The compiler holds no keys and never signs in-band (SLSA L1), so "signable by construction" is a property of the artefact, not a claim about a signing step the compiler took.</p>
   </div>
 </section>
 
@@ -135,8 +159,8 @@ $ diff a.json b.json   <span class="cm"># empty: byte-for-byte identical</span><
   <div class="article">
     <span class="eyebrow">The operator side</span>
     <h2>NIS2 and DORA</h2>
-    <p><strong>NIS2</strong> (transposition deadline 17 October 2024) is the operator-side counterpart. Article 21(2)(d) is the heart of its supply-chain ask: an essential or important entity has to assess the security of its direct suppliers. A Capa-using supplier's SBOM gives that operator a per-function authority surface; the diff tool detects supplier widening across releases; the audit pipeline verifies declarations against an internal policy. Incident reporting (Art. 23) and board-level accountability (Art. 20) sit outside what a compiler can affect.</p>
-    <p><strong>DORA</strong> (applies since 17 January 2025) binds financial entities plus critical ICT third-party providers. Article 8 (identification of ICT-supported functions and assets) is served directly by the SBOMs; Articles 28-30 (ICT third-party risk) by the audit pipeline and SBOM diff, with provenance supporting due-diligence. The business-continuity bulk of DORA and resilience testing (Arts. 24-27) are out of a language's reach.</p>
+    <p><strong>NIS2</strong> (transposition deadline 17 October 2024) is the operator-side counterpart. Article 21(2)(d) is the heart of its supply-chain ask: an essential or important entity has to assess the security of its direct suppliers. A Capa-using supplier's SBOM gives that operator a per-function authority surface; the composed product SBOM (<span class="ic">--compose-sbom</span>) rolls it up the whole dependency tree and fails closed on an unanalyzable subtree; <span class="ic">--capability-diff</span> detects supplier widening across releases; and organization compliance policies (<span class="ic">--check-policies</span>) verify the composed graph against a declared <span class="ic">capa-policy.toml</span>. Incident reporting (Art. 23) and board-level accountability (Art. 20) sit outside what a compiler can affect.</p>
+    <p><strong>DORA</strong> (applies since 17 January 2025) binds financial entities plus critical ICT third-party providers. Article 8 (identification of ICT-supported functions and assets) is served directly by the SBOMs; Articles 28-30 (ICT third-party risk) by the composed product SBOM and its ceiling gate (<span class="ic">--check-capabilities</span>), the signed authority diff, and the organization compliance policies, with provenance supporting due-diligence. The business-continuity bulk of DORA and resilience testing (Arts. 24-27) are out of a language's reach.</p>
   </div>
 </section>
 
@@ -165,6 +189,7 @@ $ diff a.json b.json   <span class="cm"># empty: byte-for-byte identical</span><
       <a class="card" href="https://github.com/nelsonduarte/capa_governance_pack"><h3 style="font-family:var(--mono);font-size:1rem;color:var(--aink)">capa_governance_pack</h3><p>An evidence-pack generator written in Capa: turns machine-readable artefacts into a regulator-readable Markdown audit pack plus a JSON attestation a GRC platform can ingest.</p></a>
       <a class="card" href="https://github.com/nelsonduarte/capa_supplygate"><h3 style="font-family:var(--mono);font-size:1rem;color:var(--aink)">capa_supplygate</h3><p>A supply-chain conformity gate: SBOM plus OSV plus policy resolve to a pass/fail decision, and the tool emits its own capability SBOM alongside the verdict.</p></a>
       <a class="card" href="https://github.com/nelsonduarte/capa_licenseaudit"><h3 style="font-family:var(--mono);font-size:1rem;color:var(--aink)">capa_licenseaudit</h3><p>A monorepo license and vulnerability auditor: an auditor that only reads, enforced by a read-only capability it can never exceed.</p></a>
+      <a class="card" href="https://github.com/nelsonduarte/capa_ci_pipeline"><h3 style="font-family:var(--mono);font-size:1rem;color:var(--aink)">capa_ci_pipeline</h3><p>A CI/release orchestrator, built as a multi-package product, that dogfoods all four supply-chain controls end to end: the composed product SBOM, organization compliance policies (<span class="ic">--check-policies</span>), signed authority diffs (<span class="ic">--fail-on-widening</span>), and four untrusted third-party actions run as sandbox-confined typed foreign Wasm components. The natural home for <span class="ic">--check-capabilities</span> and <span class="ic">--fail-on-widening</span> as a CI gate.</p></a>
     </div>
   </div>
 </section>

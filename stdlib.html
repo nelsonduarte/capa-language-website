@@ -225,6 +225,23 @@
     <span class="k">match</span> <span class="fn">fetch</span>(api)
         <span class="ty">Ok</span>(body) <span class="pu">-&gt;</span> stdio.<span class="fn">println</span>(body)
         <span class="ty">Err</span>(e)   <span class="pu">-&gt;</span> stdio.<span class="fn">eprintln</span>(<span class="st">"${e}"</span>)</code></pre></div>
+      <h3><span class="ic">Db</span></h3>
+      <p>SQLite-backed database with path-prefix attenuation (mirrors <span class="ic">Fs</span>). <span class="ic">query</span> returns the rows as a JSON-encoded array of arrays of strings, so the wire shape is a single form; callers parse with <span class="ic">parse_json</span> and project columns explicitly.</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">exec(path, sql)</span></td><td><span class="ic">Result&lt;(), IoError&gt;</span>, runs DDL / DML (multiple <span class="ic">;</span>-separated statements supported)</td></tr>
+          <tr><td><span class="ic">query(path, sql)</span></td><td><span class="ic">Result&lt;String, IoError&gt;</span>, JSON-encoded rows</td></tr>
+          <tr><td><span class="ic">restrict_to(prefix)</span> / <span class="ic">allows(path)</span></td><td>Attenuated <span class="ic">Db</span> (monotonic path prefix) · query without I/O</td></tr>
+        </tbody>
+      </table>
+      <h3><span class="ic">Proc</span></h3>
+      <p>Sandboxed subprocess execution with basename-prefix attenuation. <span class="ic">exec</span> takes the command and a JSON-encoded argv tail (for example <span class="ic">["status", "--short"]</span>); stdout is returned as a <span class="ic">String</span>. <span class="ic">allows</span> checks the basename on a suffix boundary (<span class="ic">restrict_to("git")</span> admits <span class="ic">git</span> and <span class="ic">git-lfs</span> but not <span class="ic">gitlab</span>).</p>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">exec(cmd, args_json)</span></td><td><span class="ic">Result&lt;String, IoError&gt;</span>, the process stdout</td></tr>
+          <tr><td><span class="ic">restrict_to(cmd_prefix)</span> / <span class="ic">allows(cmd)</span></td><td>Attenuated <span class="ic">Proc</span> (basename prefix) · query without spawning</td></tr>
+        </tbody>
+      </table>
       <h3>User-defined capabilities</h3>
       <p>Libraries declare their own capabilities with the <span class="ic">capability</span> keyword; any type that <span class="ic">impl</span>s it becomes a valid implementor. A cap-bearing struct may hold built-in caps as fields. Only call / method-call right-hand sides produce fresh capability instances that can be bound; a plain alias <span class="ic">let dup = mailer</span> is rejected.</p>
       <div class="code">

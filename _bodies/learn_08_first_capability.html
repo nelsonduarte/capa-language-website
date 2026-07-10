@@ -42,7 +42,7 @@
     <ul>
         <li><span class="ic">Stdio</span> &middot; standard output and input. <span class="ic">println</span>, <span class="ic">print</span>, <span class="ic">eprintln</span>, <span class="ic">read_line</span>.</li>
         <li><span class="ic">Fs</span> &middot; the filesystem. <span class="ic">read</span>, <span class="ic">write</span>, <span class="ic">exists</span>, <span class="ic">list_dir</span>.</li>
-        <li><span class="ic">Net</span> &middot; the network. <span class="ic">get</span> (HTTP).</li>
+        <li><span class="ic">Net</span> &middot; the network. <span class="ic">get</span>, <span class="ic">post</span> (HTTP).</li>
         <li><span class="ic">Env</span> &middot; environment variables. <span class="ic">get</span>, <span class="ic">args</span>.</li>
         <li><span class="ic">Proc</span> &middot; subprocesses. Spawning and running external programs.</li>
         <li><span class="ic">Clock</span> &middot; wall-clock time. <span class="ic">now_secs</span>, <span class="ic">sleep</span>.</li>
@@ -129,9 +129,12 @@
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
 <pre><code>error: undefined name 'fs'
    2 |     let contents = fs.read("hello.txt")
-                          ^</code></pre></div>
+                          ^
+error: capability parameter 'stdio' is declared but never used; prefix the name with '_' to silence this check
+   1 | fun main(stdio: Stdio)
+                ^</code></pre></div>
 
-    <p>The name <span class="ic">fs</span> is not in scope. Add it to <span class="ic">main</span>'s parameters: <span class="ic">fun main(stdio: Stdio, fs: Fs)</span>.</p>
+    <p>The name <span class="ic">fs</span> is not in scope. Add it to <span class="ic">main</span>'s parameters: <span class="ic">fun main(stdio: Stdio, fs: Fs)</span>. This fragment also trips the chapter-1 "declared but never used" rule for <span class="ic">stdio</span>, since it never prints; the two errors are independent.</p>
 
     <p>Second: trying to alias a capability.</p>
 
@@ -141,10 +144,9 @@
     dup.<span class="fn">println</span>(<span class="st">"hi"</span>)</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: 'stdio' is a capability and cannot be bound to a 'let'
-       (capabilities flow through function parameters only)
+<pre><code>error: capability 'Stdio' cannot appear in a 'let' binding; capabilities only flow through function parameters
    2 |     let dup = stdio
-                     ^</code></pre></div>
+           ^</code></pre></div>
 
     <p>If you want a copy with narrower authority, use <span class="ic">restrict_to</span> (chapter 9). If you want to pass the capability into a helper function, do so directly: <span class="ic">helper(stdio)</span> instead of binding-then-passing.</p>
 

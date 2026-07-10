@@ -35,7 +35,7 @@
 <pre><code><span class="cm">// Line comment</span>
 <span class="cm">/// Doc comment (attaches to the next declaration)</span>
 <span class="cm">/** Block doc comment (same role) */</span></code></pre></div>
-      <p><strong>Keywords:</strong> <span class="ic">fun let var if then elif else match while for in break continue return import const type trait impl capability true false and or not consume self Self</span>. Reserved for future use: <span class="ic">async await yield defer where mut</span>.</p>
+      <p><strong>Keywords:</strong> <span class="ic">fun let var if then elif else match while for in break continue return import as const type trait impl capability pub true false and or not consume self Self extern typestate linear become</span>. Reserved for future use: <span class="ic">async await yield defer where mut</span>.</p>
       <table class="tbl">
         <thead><tr><th>Type</th><th>Examples</th></tr></thead>
         <tbody>
@@ -62,6 +62,17 @@
 <span class="k">fun</span> <span class="fn">first</span>&lt;<span class="ty">T</span>&gt;(<span class="pu">xs:</span> <span class="ty">List</span>&lt;<span class="ty">T</span>&gt;) <span class="pu">-&gt;</span> <span class="ty">Option</span>&lt;<span class="ty">T</span>&gt;
     <span class="k">return</span> xs.<span class="fn">first</span>()</code></pre></div>
       <p>Variants without a payload are <em>constants</em>, used without <span class="ic">()</span>. <span class="ic">Ok</span>, <span class="ic">Err</span>, <span class="ic">Some</span>, <span class="ic">None</span> are reserved. Generics use local inference, so the caller rarely supplies explicit args. Cross-statement inference: <span class="ic">let xs = []</span> is <span class="ic">List&lt;TyVar&gt;</span> and the first use pins the type. <span class="ic">TyUnknown</span> and <span class="ic">TyVar</span> are compatible with any type.</p>
+      <h3 id="linear" style="scroll-margin-top:84px">Linear types</h3>
+      <p>A <span class="ic">linear type</span> is a must-consume struct: a value of it has to be used (consumed) exactly once. It cannot be silently dropped or aliased into two live copies, the same ownership discipline capabilities enjoy, applied to ordinary data. Use it for a resource whose closing or handing-off must not be forgotten (a handle, a receipt, a one-shot token).</p>
+      <div class="code">
+<pre><code><span class="k">linear</span> <span class="k">type</span> <span class="ty">Ticket</span> { <span class="pu">id:</span> <span class="ty">Int</span> }</code></pre></div>
+      <h3 id="typestate" style="scroll-margin-top:84px">Typestates</h3>
+      <p>A <span class="ic">typestate</span> declaration names a type together with the finite set of named <em>states</em> a value of it moves through, one per indented line; the optional <span class="ic">{ … }</span> block is the data every state carries. A transition is written <span class="ic">become(value, State)</span>, where the target is a bare state name. This lets the type track, for example, a claim lifecycle (<span class="ic">Created → Connected → Closed</span>) so an operation valid only in one state cannot be reached from another.</p>
+      <div class="code">
+<pre><code><span class="k">typestate</span> <span class="ty">Socket</span> { <span class="pu">fd:</span> <span class="ty">Int</span> }
+    <span class="ty">Created</span>
+    <span class="ty">Connected</span>
+    <span class="ty">Closed</span></code></pre></div>
 
       <h2 id="stmts"><span class="nx">3</span>Statements</h2>
       <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">bindings &amp; control flow</span></div>
@@ -131,6 +142,11 @@
           <tr><td><span class="ic">Random</span></td><td><span class="ic">with_seed(seed)</span></td><td>Deterministic sequence</td></tr>
         </tbody>
       </table>
+      <h3 id="foreign" style="scroll-margin-top:84px">Foreign components</h3>
+      <p>An <span class="ic">extern component</span> declaration types an external WebAssembly Component-Model component and the methods called across the boundary. <span class="ic">component</span> and <span class="ic">from</span> are contextual (they stay usable as ordinary identifiers); only <span class="ic">extern</span> is reserved. Each call is capability-checked at the boundary exactly like an ordinary function, and at runtime the Wasm sandbox confines the component to precisely the capability set its signatures declare. <span class="ic">Unsafe</span> cannot be a foreign-component parameter (the compiler rejects it at <span class="ic">--check</span>): the Python-only FFI escape hatch can never reach a sandboxed component. A resource ceiling (CPU and memory) is applied per call with <span class="ic">--foreign-fuel</span> / <span class="ic">--foreign-memory-cap</span>.</p>
+      <div class="code">
+<pre><code><span class="k">extern</span> <span class="k">component</span> <span class="ty">Bureau</span> <span class="k">from</span> <span class="st">"vendor/bureau.wasm"</span>
+    <span class="k">fun</span> <span class="fn">submit</span>(<span class="pu">net:</span> <span class="cp">Net</span>, <span class="pu">payload:</span> <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">String</span></code></pre></div>
 
       <h2 id="ifc"><span class="nx">7</span>Information-flow control</h2>
       <p>A two-point lattice: <span class="ic">@public</span> (default) below <span class="ic">@secret</span>. A label attaches to a type expression, so it can appear on parameters, bindings, return types and struct fields. A value's label is the <em>join</em> of every label flowing into it (operators, interpolation, field reads, indexing, <span class="ic">?</span>). <span class="ic">env.get</span> is secret by default; <span class="ic">fs.read</span> is intentionally not.</p>
@@ -169,9 +185,11 @@
           <tr><td><span class="ic">@deprecated</span></td><td>reason, since, use, removed_in</td><td>Mark an API as superseded.</td></tr>
           <tr><td><span class="ic">@audited</span></td><td>date, by, scope, notes</td><td>Record a manual security audit.</td></tr>
           <tr><td><span class="ic">@vex</span></td><td>cve, status, justification, detail</td><td>Per-function CycloneDX VEX exploitability claim.</td></tr>
+          <tr><td><span class="ic">@strict_ifc</span></td><td>(none)</td><td>Opt this function into fail-closed information-flow checking: a secret-reaches-public-sink flow becomes a hard error instead of a warning, and implicit flows are caught.</td></tr>
+          <tr><td><span class="ic">@constant_time</span></td><td>(none)</td><td>Require this function to be constant-time: the analyzer rejects any control-flow decision or index that depends on a <span class="ic">@secret</span> value (CWE-208 timing leaks).</td></tr>
         </tbody>
       </table>
-      <p class="muted"><span class="ic">@vex status</span> accepts the CycloneDX vocabulary (<span class="ic">not_affected</span>, <span class="ic">exploitable</span>, <span class="ic">in_triage</span>, <span class="ic">resolved</span>, <span class="ic">false_positive</span>).</p>
+      <p class="muted"><span class="ic">@vex status</span> accepts the CycloneDX vocabulary (<span class="ic">not_affected</span>, <span class="ic">affected</span>, <span class="ic">fixed</span>, <span class="ic">in_triage</span>, <span class="ic">false_positive</span>, <span class="ic">exploitable</span>, <span class="ic">resolved</span>, <span class="ic">resolved_with_pedigree</span>).</p>
 
       <h2 id="cli"><span class="nx">11</span>Compiler CLI</h2>
       <table class="tbl">
@@ -184,6 +202,30 @@
           <tr><td><span class="ic">--manifest</span></td><td>Capa-native JSON: per-function caps, attributes, Unsafe crossings, <span class="ic">args_flow</span>.</td></tr>
           <tr><td><span class="ic">--cyclonedx</span> / <span class="ic">--spdx</span></td><td>CycloneDX 1.5 / SPDX 2.3 SBOM with per-function capability metadata.</td></tr>
           <tr><td><span class="ic">--vex</span> / <span class="ic">--provenance</span></td><td>CycloneDX VEX per <span class="ic">@vex</span> · SLSA L1 provenance bound to the source SHA-256.</td></tr>
+        </tbody>
+      </table>
+      <h3 id="supply-chain" style="scroll-margin-top:84px">Supply-chain and governance</h3>
+      <p>These operate over a project (they need a <span class="ic">capa.toml</span> root) and are byte-reproducible; the signable ones wrap their output in a <span class="ic">content_integrity</span> envelope carrying a sha256 digest, and the compiler holds no keys.</p>
+      <table class="tbl">
+        <thead><tr><th>Flag</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ic">--manifest-digest</span></td><td>The canonical, content-addressable manifest: the same data as <span class="ic">--manifest</span>, serialised key-sorted and wrapped with a sha256 <span class="ic">content_integrity</span> envelope. Byte-reproducible across runs and machines.</td></tr>
+          <tr><td><span class="ic">--compose-sbom</span></td><td>The composed capability SBOM for the whole product: attribute each function to its owning package, walk the dependency DAG, and roll the capability surface up bottom-up. An unanalyzable subtree composes as a visible authority-UNKNOWN element that dominates the join.</td></tr>
+          <tr><td><span class="ic">--check-capabilities</span></td><td>CI gate. Compose the product SBOM and verify every package against its declared <span class="ic">capa.toml</span> [capabilities] ceiling; exit non-zero on a violation, naming the offending capability and the dependency edge. An authority-UNKNOWN subtree fails closed unless <span class="ic">allow_unknown = true</span>.</td></tr>
+          <tr><td><span class="ic">--check-policies</span></td><td>CI gate. Compose the product SBOM and verify it against the organization compliance policies in the product-level <span class="ic">capa-policy.toml</span>; exit non-zero on any policy failure with a per-violation message.</td></tr>
+          <tr><td><span class="ic">--conformance-report</span></td><td>Emit the signed conformance report: evaluate every declared <span class="ic">capa-policy.toml</span> policy over the composed capability graph and record the per-policy pass/fail results in a <span class="ic">content_integrity</span> envelope.</td></tr>
+          <tr><td><span class="ic">--capability-diff &lt;old&gt; &lt;new&gt;</span></td><td>Emit a signed authority changelog between two capability artifacts: per exported function and for the product, which capabilities were gained (widening) or lost (narrowing), and any operator-grant / authority-unknown transition. Functions match by stable identity, so a line move produces no entry. Takes no <span class="ic">.capa</span> file.</td></tr>
+          <tr><td><span class="ic">--fail-on-widening</span></td><td>CI gate for <span class="ic">--capability-diff</span>. Exit non-zero when the changelog contains any widening (authority gained, a guarantee lost, or an operator grant added) or an authority-UNKNOWN transition. A pure narrowing or no-change exits 0.</td></tr>
+        </tbody>
+      </table>
+      <h3 id="ceilings" style="scroll-margin-top:84px">Sandbox and resource ceilings</h3>
+      <table class="tbl">
+        <thead><tr><th>Flag</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ic">--allow-host &lt;host&gt;[:get|:post]</span></td><td>With <span class="ic">--wasi</span>, an operator-declared Net grant letting the component reach <span class="ic">&lt;host&gt;</span> (the Net analogue of <span class="ic">--preopen</span>), unblocking a dynamic, argv-derived URL the compiler otherwise rejects fail-closed. Repeatable; <span class="ic">:get</span> grants read only, <span class="ic">:post</span> write only, no suffix both. Recorded in the SBOM as operator-declared.</td></tr>
+          <tr><td><span class="ic">--wasm-memory-cap &lt;pages&gt;</span></td><td>With <span class="ic">--wasm</span>, cap the emitted linear memory at this many 64 KiB pages; the allocator then traps at a deterministic ceiling instead of a host-dependent OOM point. Default 256 pages (16 MiB); 0 skips the cap.</td></tr>
+          <tr><td><span class="ic">--foreign-fuel &lt;N&gt;</span></td><td>With <span class="ic">--wasm --run</span>, bound the CPU an untrusted foreign component may burn per call to N fuel units (~1 per Wasm instruction). A spin then traps cleanly instead of hanging the host. Default 1e9; 0 skips the bound.</td></tr>
+          <tr><td><span class="ic">--foreign-memory-cap &lt;MiB&gt;</span></td><td>With <span class="ic">--wasm --run</span>, cap the linear memory an untrusted foreign component may grow to, in MiB. A runaway self-allocation is refused instead of OOM-ing the host. Default 256 MiB; 0 skips the bound.</td></tr>
         </tbody>
       </table>
 

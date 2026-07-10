@@ -102,10 +102,9 @@
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
-hello.capa:1:5: error: function 'double': declared return type 'Int',
-                       but the body can fall through without returning a value
+hello.capa:1:5: error: function 'double' declares return type but not every path ends in `return`; the function will fall through and return None at runtime
    1 | fun double(n: Int) -> Int
-         ^</code></pre></div>
+           ^</code></pre></div>
 
     <p>The analyzer reads every path through the body. If any path can reach the end of the function without a <span class="ic">return</span>, and the declared return type is not <span class="ic">Unit</span>, you get this error. Add <span class="ic">return r</span> on its own line at the end.</p>
 
@@ -117,9 +116,9 @@ hello.capa:1:5: error: function 'double': declared return type 'Int',
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
-hello.capa:2:12: error: return: expected Int, got String
+hello.capa:2:5: error: return: expected Int, got String
    2 |     return "twice that"
-                  ^</code></pre></div>
+           ^</code></pre></div>
 
     <p>The return value's type must match the declared one exactly. There are no implicit conversions.</p>
   </div>

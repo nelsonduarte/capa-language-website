@@ -119,8 +119,7 @@
     <span class="k">return</span> text</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: '?' can only propagate to a function returning Result&lt;_, E&gt;
-       or Option&lt;_&gt;; this function returns String
+<pre><code>error: `?` can only be used in a function or lambda that returns Result or Option; the enclosing function returns String
    2 |     let text = fs.read("config.txt")?
                       ^</code></pre></div>
 
@@ -134,8 +133,7 @@
     <span class="k">let</span> doubled = xs.<span class="fn">first</span>() * 2</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
-<pre><code>error: '*': expected Int * Int or Float * Float,
-       got Option&lt;Int&gt; * Int</code></pre></div>
+<pre><code>error: operator '*': incompatible operand types Option&lt;Int&gt; and Int</code></pre></div>
 
     <p>Pattern match on the <span class="ic">Option</span>, use <span class="ic">.unwrap_or(default)</span>, or apply <span class="ic">?</span> when the enclosing function returns a compatible type.</p>
   </div>

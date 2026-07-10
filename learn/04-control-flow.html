@@ -190,10 +190,9 @@ liftoff</code></pre></div>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
-hello.capa:2:13: error: if-expr: branches must have the same type;
-                        got Int (then) vs String (else)
+hello.capa:2:33: error: if-expression: branches have incompatible types: then is Int, else is String
    2 |     let x = if true then 1 else "two"
-                   ^</code></pre></div>
+                                       ^</code></pre></div>
 
     <p>The <span class="ic">then</span> branch is <span class="ic">Int</span>, the <span class="ic">else</span> branch is <span class="ic">String</span>. There is no unifying type for both, so the analyzer rejects. If you want the result to be a <span class="ic">String</span> either way, write the <span class="ic">1</span> as <span class="ic">"1"</span>.</p>
 
@@ -205,7 +204,7 @@ hello.capa:2:13: error: if-expr: branches must have the same type;
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
-hello.capa:2:5: error: 'break' is only valid inside a loop
+hello.capa:2:5: error: break outside of a loop
    2 |     break
            ^</code></pre></div>
 

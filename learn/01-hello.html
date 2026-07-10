@@ -132,10 +132,9 @@ hello.capa:2:5: error: undefined name 'stdio'
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --run hello.capa
-hello.capa:1:14: error: capability parameter 'stdio' is declared but never used;
-                       prefix the name with '_' to silence this check
+hello.capa:1:10: error: capability parameter 'stdio' is declared but never used; prefix the name with '_' to silence this check
    1 | fun main(stdio: Stdio)
-                  ^</code></pre></div>
+                ^</code></pre></div>
 
     <p>If you ask for a capability, you are committing to use it. A function that takes <span class="ic">Stdio</span> but never prints anything is suspicious. If you have a legitimate reason (maybe you are stubbing out a function under construction), prefix the parameter with <span class="ic">_</span>: <span class="ic">_stdio: Stdio</span>.</p>
   </div>

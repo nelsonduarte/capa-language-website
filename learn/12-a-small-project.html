@@ -203,13 +203,13 @@ Passed: 2/3</code></pre></div>
     <p>The capability manifest for this program tells you what it can do:</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
-<pre><code>$ capa --manifest main.capa | grep declared_capabilities
-      "declared_capabilities": ["Fs"],
-      "declared_capabilities": ["Fs", "Stdio"],
-      "declared_capabilities": [],
-      "declared_capabilities": []</code></pre></div>
+<pre><code>$ capa --manifest main.capa | python -c "import sys, json; [print(f['name'], f['declared_capabilities']) for f in json.load(sys.stdin)['functions']]"
+parse_line []
+render []
+load_students ['Fs']
+main ['Fs', 'Stdio']</code></pre></div>
 
-    <p><span class="ic">parse_line</span> and <span class="ic">render</span> are listed last: they declare nothing. They are provably incapable of touching the filesystem, the network, or any other system resource. A reviewer looking at the SBOM learns that the parsing and reporting logic is sandboxed from authority by construction, not by convention.</p>
+    <p><span class="ic">parse_line</span> and <span class="ic">render</span> declare nothing: their capability sets are empty. They are provably incapable of touching the filesystem, the network, or any other system resource. A reviewer looking at the SBOM learns that the parsing and reporting logic is sandboxed from authority by construction, not by convention.</p>
   </div>
 </section>
 
