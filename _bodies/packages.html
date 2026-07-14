@@ -1,0 +1,112 @@
+<!--
+  packages.html - the registry / package-discovery page.
+
+  HAND-MAINTAINED, static. Its package list is copied verbatim from the
+  capa-registry index.json (name, description, latest version, git URL).
+  When that index changes (a package added, removed, or a new `latest`
+  tag published), update the table below to match. A future build step
+  could generate this page from index.json; for now it is by hand.
+
+  Source of truth:
+  https://github.com/nelsonduarte/capa-registry/blob/main/index.json
+  Snapshot: registry index updated 2026-06-14 (8 packages).
+-->
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Packages</span>
+    <h1>The curated registry</h1>
+    <p class="lead">Installable libraries written in Capa, fetched by name with <span class="ic">capa add</span>. These are separate from the <a href="stdlib.html">standard library</a>, which is built into the language and needs no install. This registry is small and curated: every package below is currently first-party, maintained by the same author as the compiler.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Registry vs standard library</span>
+    <h2>What lives here</h2>
+    <p class="section-intro">The <a href="stdlib.html">standard library</a> is the set of built-in types, functions and capabilities available in any program with no imports. The registry is the opposite end: external libraries, each in its own git repository, that a project pulls in explicitly. You add one with</p>
+    <div class="code">
+<pre><code>$ capa add capa_http</code></pre></div>
+    <p>which resolves the short name through the registry index, writes a <span class="ic">[dependencies.capa_http]</span> block into your <span class="ic">capa.toml</span>, and runs the install. Browse the index from the command line with <span class="ic">capa search</span> (no term lists everything).</p>
+    <div class="note">This is a <strong>curated</strong> registry, not an open package ecosystem. It is small, and every package here is first-party today. There is no self-service publishing: a package is added by opening a pull request against the <a href="https://github.com/nelsonduarte/capa-registry">capa-registry</a> repository. Treat the list below as the whole registry, not a sample of a larger one.</div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">Available packages</span>
+    <h2>Eight packages</h2>
+    <p class="section-intro">Name, description and latest version are taken verbatim from the <a href="https://github.com/nelsonduarte/capa-registry/blob/main/index.json">registry index</a>. The package name links to its source repository.</p>
+    <table class="tbl">
+      <thead><tr><th>Package</th><th>Latest</th><th>Install</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_cli"><span class="ic">capa_cli</span></a></td>
+          <td><span class="ic">v0.1.2</span></td>
+          <td><span class="ic">capa add capa_cli</span></td>
+          <td>Command-line argument parsing: flags, positionals, subcommands.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_csv"><span class="ic">capa_csv</span></a></td>
+          <td><span class="ic">v0.1.1</span></td>
+          <td><span class="ic">capa add capa_csv</span></td>
+          <td>RFC 4180 CSV parser, header view, and writer in pure Capa; zero capabilities.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_datetime"><span class="ic">capa_datetime</span></a></td>
+          <td><span class="ic">v0.1.2</span></td>
+          <td><span class="ic">capa add capa_datetime</span></td>
+          <td>Date and time values plus formatting; pure, no Clock capability required to format.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_hash"><span class="ic">capa_hash</span></a></td>
+          <td><span class="ic">v0.1.2</span></td>
+          <td><span class="ic">capa add capa_hash</span></td>
+          <td>SHA-256, SHA-224 and HMAC-SHA256 in pure Capa; zero capabilities, plus constant-time tag/MAC comparison.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_http"><span class="ic">capa_http</span></a></td>
+          <td><span class="ic">v0.1.3</span></td>
+          <td><span class="ic">capa add capa_http</span></td>
+          <td>HTTP client over the Net capability; urllib-backed request and response handling.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_log"><span class="ic">capa_log</span></a></td>
+          <td><span class="ic">v0.1.2</span></td>
+          <td><span class="ic">capa add capa_log</span></td>
+          <td>Structured logging with levels and formatters over the Stdio capability.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_sbom"><span class="ic">capa_sbom</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_sbom</span></td>
+          <td>SBOM parsing for CycloneDX and SPDX JSON with capa:* capability queries; zero capabilities.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_test"><span class="ic">capa_test</span></a></td>
+          <td><span class="ic">v0.1.1</span></td>
+          <td><span class="ic">capa add capa_test</span></td>
+          <td>A tiny assertion library for the capa test runner; Stdio-only, no other capabilities.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Trust model</span>
+    <h2>How a name is resolved and verified</h2>
+    <p class="section-intro">The registry index does two jobs: it maps a short name to a git URL, and it pins the GPG key that the package's release tags are signed with. Both are protected.</p>
+    <ul class="bullets">
+      <li><strong>The index is GPG-signed.</strong> <span class="ic">capa add &lt;name&gt;</span> fetches <span class="ic">index.json</span> and its detached signature <span class="ic">index.json.asc</span>, and verifies the exact index bytes against a root-key fingerprint that ships baked into the toolchain, out of band from the index. Verification is fail-closed: an index that is missing its signature, carries a signature that does not verify, or is signed under the wrong key is refused before any entry is trusted. The only opt-out, <span class="ic">CAPA_REGISTRY_ALLOW_UNSIGNED=1</span>, applies solely to an index that carries no signature at all (air-gapped or self-hosted mirrors); it never rescues a signature that is present but invalid.</li>
+      <li><strong>The git tag is signature-verified on install.</strong> Resolving the name also yields the package's <span class="ic">verify_key</span>. The install flow then checks that the pinned git tag is signed by that key, so a compromised account that moves a tag to an attacker commit is caught.</li>
+      <li><strong>The resolved SHA is locked.</strong> The install records the exact commit in <span class="ic">capa.lock</span>, so a later retag of the same version is detected.</li>
+    </ul>
+    <p><span class="ic">capa add &lt;name&gt;</span> defaults the pin to the index's <span class="ic">latest</span> tag. The fully explicit form skips the index and names everything itself, which is how you add a package that is not in the registry:</p>
+    <div class="code">
+<pre><code>$ capa add capa_http --git https://github.com/nelsonduarte/capa_http \
+      --tag v0.1.3 --verify-key 6C1D222D491FB88031E041A536CFB426101AA24B</code></pre></div>
+    <p class="muted">For the full flow, the signed-index design, and the per-package layers, see the <a href="https://github.com/nelsonduarte/capa-registry">capa-registry</a> repository.</p>
+  </div>
+</section>

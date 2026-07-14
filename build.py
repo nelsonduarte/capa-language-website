@@ -304,7 +304,8 @@ NAV_ITEMS = [("why","Why Capa","why.html"),("compare","Compare","compare.html"),
              ("learn","Learn","learn/index.html"),("reference","Reference","reference.html")]
 DROP_ITEMS = [("study","Study","study.html"),("migrating","Migrating","migrating.html"),
               ("regulatory","Regulatory","regulatory.html"),("agent","Agent demo","agent-demo.html"),
-              ("stdlib","Standard library","stdlib.html"),("community","Community","community.html"),
+              ("stdlib","Standard library","stdlib.html"),("packages","Packages","packages.html"),
+              ("community","Community","community.html"),
               ("book","The book","book/Capa-The-Capability-Typed-Programming-Language.pdf")]
 
 def nav(active, P):
@@ -349,7 +350,8 @@ def footer(P):
     </ul></div>
     <div><h5>Documentation</h5><ul>
       <li><a href="{P}start.html">Getting started</a></li><li><a href="{P}reference.html">Reference</a></li>
-      <li><a href="{P}stdlib.html">Standard library</a></li><li><a href="{P}migrating.html">Migrating</a></li>
+      <li><a href="{P}stdlib.html">Standard library</a></li><li><a href="{P}packages.html">Packages</a></li>
+      <li><a href="{P}migrating.html">Migrating</a></li>
     </ul></div>
     <div><h5>Specification</h5><ul>
       <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">Positioning</a></li>
@@ -547,6 +549,7 @@ PAGES=[
  ("agent-demo.html","Agent demo | Capa","A worked example where the per-function capability bound is the security argument for an LLM agent.","agent","agent_demo.html",0),
  ("roadmap.html","Roadmap | Capa","What is done, what is next, and what is explicitly out of scope for Capa.","roadmap","roadmap.html",0),
  ("stdlib.html","Standard library | Capa","The Capa standard library: modules, capabilities and core types.","stdlib","stdlib.html",0),
+ ("packages.html","Packages | Capa","The Capa package registry: curated, first-party libraries installed by name with capa add over a GPG-signed index.","packages","packages.html",0),
  ("community.html","Community | Capa","How to get involved with Capa.","community","community.html",0),
  ("brand.html","Brand assets | Capa","The Capa logo, colours and usage guidelines.","brand","brand.html",0),
  ("privacy.html","Privacy | Capa","The Capa website privacy policy.","privacy","privacy.html",0),
