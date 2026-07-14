@@ -9,7 +9,7 @@
 
   Source of truth:
   https://github.com/nelsonduarte/capa-registry/blob/main/index.json
-  Snapshot: registry index updated 2026-07-14 (9 packages).
+  Snapshot: registry index updated 2026-07-14 (11 packages).
 -->
 <section class="phero">
   <div class="phero-glow"></div>
@@ -35,7 +35,7 @@
 <section class="band">
   <div class="article">
     <span class="eyebrow">Available packages</span>
-    <h2>Nine packages</h2>
+    <h2>Eleven packages</h2>
     <p class="section-intro">Name, description and latest version are taken verbatim from the <a href="https://github.com/nelsonduarte/capa-registry/blob/main/index.json">registry index</a>. The package name links to its source repository.</p>
     <table class="tbl">
       <thead><tr><th>Package</th><th>Latest</th><th>Install</th><th>Description</th></tr></thead>
@@ -77,6 +77,12 @@
           <td>HTTP client over the Net capability; urllib-backed request and response handling.</td>
         </tr>
         <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_jwt"><span class="ic">capa_jwt</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_jwt</span></td>
+          <td>HS256 JSON Web Tokens (JWS/JWT) in pure Capa; sign and verify with zero capabilities, algorithm-confusion defense, and constant-time signature checks.</td>
+        </tr>
+        <tr>
           <td><a href="https://github.com/nelsonduarte/capa_log"><span class="ic">capa_log</span></a></td>
           <td><span class="ic">v0.1.2</span></td>
           <td><span class="ic">capa add capa_log</span></td>
@@ -93,6 +99,12 @@
           <td><span class="ic">v0.1.1</span></td>
           <td><span class="ic">capa add capa_test</span></td>
           <td>A tiny assertion library for the capa test runner; Stdio-only, no other capabilities.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_uuid"><span class="ic">capa_uuid</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_uuid</span></td>
+          <td>UUID v4 and v7 generation and validation in Capa with a minimal capability surface (v4 needs only Random, v7 Random+Clock, validation is pure).</td>
         </tr>
       </tbody>
     </table>
