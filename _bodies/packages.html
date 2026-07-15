@@ -9,7 +9,7 @@
 
   Source of truth:
   https://github.com/nelsonduarte/capa-registry/blob/main/index.json
-  Snapshot: registry index updated 2026-07-14 (11 packages).
+  Snapshot: registry index updated 2026-07-15 (14 packages).
 -->
 <section class="phero">
   <div class="phero-glow"></div>
@@ -35,7 +35,7 @@
 <section class="band">
   <div class="article">
     <span class="eyebrow">Available packages</span>
-    <h2>Eleven packages</h2>
+    <h2>Fourteen packages</h2>
     <p class="section-intro">Name, description and latest version are taken verbatim from the <a href="https://github.com/nelsonduarte/capa-registry/blob/main/index.json">registry index</a>. The package name links to its source repository.</p>
     <table class="tbl">
       <thead><tr><th>Package</th><th>Latest</th><th>Install</th><th>Description</th></tr></thead>
@@ -71,6 +71,12 @@
           <td>SHA-256, SHA-224 and HMAC-SHA256 in pure Capa; zero capabilities, plus constant-time tag/MAC comparison.</td>
         </tr>
         <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_hex"><span class="ic">capa_hex</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_hex</span></td>
+          <td>Hex/base16 encoding and strict decoding in pure Capa; zero capabilities, accepts upper-, lower- and mixed-case input on decode.</td>
+        </tr>
+        <tr>
           <td><a href="https://github.com/nelsonduarte/capa_http"><span class="ic">capa_http</span></a></td>
           <td><span class="ic">v0.1.3</span></td>
           <td><span class="ic">capa add capa_http</span></td>
@@ -89,6 +95,12 @@
           <td>Structured logging with levels and formatters over the Stdio capability.</td>
         </tr>
         <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_pbkdf2"><span class="ic">capa_pbkdf2</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_pbkdf2</span></td>
+          <td>PBKDF2-HMAC-SHA256 password-based key derivation in pure Capa; zero capabilities, composes capa_hash, with a constant-time verify.</td>
+        </tr>
+        <tr>
           <td><a href="https://github.com/nelsonduarte/capa_sbom"><span class="ic">capa_sbom</span></a></td>
           <td><span class="ic">v0.1.0</span></td>
           <td><span class="ic">capa add capa_sbom</span></td>
@@ -99,6 +111,12 @@
           <td><span class="ic">v0.1.1</span></td>
           <td><span class="ic">capa add capa_test</span></td>
           <td>A tiny assertion library for the capa test runner; Stdio-only, no other capabilities.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_url"><span class="ic">capa_url</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_url</span></td>
+          <td>RFC 3986 URL parsing, building, percent-encoding and query strings in pure Capa; zero capabilities.</td>
         </tr>
         <tr>
           <td><a href="https://github.com/nelsonduarte/capa_uuid"><span class="ic">capa_uuid</span></a></td>
