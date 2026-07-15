@@ -9,7 +9,7 @@
 
   Source of truth:
   https://github.com/nelsonduarte/capa-registry/blob/main/index.json
-  Snapshot: registry index updated 2026-07-15 (14 packages).
+  Snapshot: registry index updated 2026-07-15 (17 packages).
 -->
 <section class="phero">
   <div class="phero-glow"></div>
@@ -35,7 +35,7 @@
 <section class="band">
   <div class="article">
     <span class="eyebrow">Available packages</span>
-    <h2>Fourteen packages</h2>
+    <h2>Seventeen packages</h2>
     <p class="section-intro">Name, description and latest version are taken verbatim from the <a href="https://github.com/nelsonduarte/capa-registry/blob/main/index.json">registry index</a>. The package name links to its source repository.</p>
     <table class="tbl">
       <thead><tr><th>Package</th><th>Latest</th><th>Install</th><th>Description</th></tr></thead>
@@ -63,6 +63,12 @@
           <td><span class="ic">v0.1.2</span></td>
           <td><span class="ic">capa add capa_datetime</span></td>
           <td>Date and time values plus formatting; pure, no Clock capability required to format.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_decimal"><span class="ic">capa_decimal</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_decimal</span></td>
+          <td>Exact fixed-point decimal arithmetic for money in pure Capa, BigDecimal-style (no negative zero, plain-notation output); zero capabilities.</td>
         </tr>
         <tr>
           <td><a href="https://github.com/nelsonduarte/capa_hash"><span class="ic">capa_hash</span></a></td>
@@ -113,6 +119,12 @@
           <td>A tiny assertion library for the capa test runner; Stdio-only, no other capabilities.</td>
         </tr>
         <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_toml"><span class="ic">capa_toml</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_toml</span></td>
+          <td>TOML v1.0.0 configuration parser (read-only) in pure Capa; zero capabilities.</td>
+        </tr>
+        <tr>
           <td><a href="https://github.com/nelsonduarte/capa_url"><span class="ic">capa_url</span></a></td>
           <td><span class="ic">v0.1.0</span></td>
           <td><span class="ic">capa add capa_url</span></td>
@@ -123,6 +135,12 @@
           <td><span class="ic">v0.1.0</span></td>
           <td><span class="ic">capa add capa_uuid</span></td>
           <td>UUID v4 and v7 generation and validation in Capa with a minimal capability surface (v4 needs only Random, v7 Random+Clock, validation is pure).</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_validate"><span class="ic">capa_validate</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_validate</span></td>
+          <td>Composable structural input validation for strings and numbers in pure Capa; zero capabilities, with the email and URL checks being structural heuristics.</td>
         </tr>
       </tbody>
     </table>
