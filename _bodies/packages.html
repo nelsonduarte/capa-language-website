@@ -9,7 +9,7 @@
 
   Source of truth:
   https://github.com/nelsonduarte/capa-registry/blob/main/index.json
-  Snapshot: registry index updated 2026-07-15 (17 packages).
+  Snapshot: registry index updated 2026-07-19 (18 packages).
 -->
 <section class="phero">
   <div class="phero-glow"></div>
@@ -35,7 +35,7 @@
 <section class="band">
   <div class="article">
     <span class="eyebrow">Available packages</span>
-    <h2>Seventeen packages</h2>
+    <h2>Eighteen packages</h2>
     <p class="section-intro">Name, description and latest version are taken verbatim from the <a href="https://github.com/nelsonduarte/capa-registry/blob/main/index.json">registry index</a>. The package name links to its source repository.</p>
     <table class="tbl">
       <thead><tr><th>Package</th><th>Latest</th><th>Install</th><th>Description</th></tr></thead>
@@ -111,6 +111,12 @@
           <td><span class="ic">v0.1.0</span></td>
           <td><span class="ic">capa add capa_sbom</span></td>
           <td>SBOM parsing for CycloneDX and SPDX JSON with capa:* capability queries; zero capabilities.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/nelsonduarte/capa_server"><span class="ic">capa_server</span></a></td>
+          <td><span class="ic">v0.1.0</span></td>
+          <td><span class="ic">capa add capa_server</span></td>
+          <td>A strict, fail-closed HTTP/1.1 server library written in Capa over the Serve capability; ambiguous framing is rejected rather than guessed at, because disagreement between two parsers is what request smuggling exploits, and only 3 of its 79 functions touch a capability at all (the parser and the response writer are pure). Python backend only, because Serve is; no chunked encoding, no keep-alive, no TLS, one connection at a time.</td>
         </tr>
         <tr>
           <td><a href="https://github.com/nelsonduarte/capa_test"><span class="ic">capa_test</span></a></td>

@@ -187,6 +187,39 @@
           <tr><td><span class="ic">restrict_to(cmd_prefix)</span> / <span class="ic">allows(cmd)</span></td><td>Attenuated <span class="ic">Proc</span> (basename prefix) · query without spawning</td></tr>
         </tbody>
       </table>
+      <h3><span class="ic">Serve</span></h3>
+      <p>Authority to listen on a TCP address and do I/O on inbound connections. Every other capability reaches out; <span class="ic">Serve</span> is the one that is reached. It is deliberately <em>connection-level</em>, not HTTP-level: the trusted runtime binds, accepts and moves bytes, so protocol parsing is ordinary Capa code in a library (see <a href="packages.html"><span class="ic">capa_server</span></a>) rather than trusted-runtime code.</p>
+      <div class="note"><strong>Python backend only.</strong> <span class="ic">Serve</span> is not available on the Wasm backends, and this is a permanent stance rather than a backlog item: binding a listening socket needs <span class="ic">wasi:sockets</span>, which is neither vendored in the compiler nor reachable from the wasmtime bindings the Wasm hosts are built on. Both <span class="ic">capa --wasm</span> and <span class="ic">capa --wit</span> refuse a program whose signatures reach <span class="ic">Serve</span>, before any lowering, and each lists every offending site. Use <span class="ic">capa --run</span> / <span class="ic">capa --check</span> for those functions. This is the same treatment <span class="ic">Unsafe</span> gets.</div>
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="ic">restrict_to(spec)</span> / <span class="ic">allows(addr, port)</span></td><td>Attenuated, <em>un-bound</em> <span class="ic">Serve</span> over (bind address, port) · query without I/O</td></tr>
+          <tr><td><span class="ic">listen(addr, port)</span> / <span class="ic">local_port()</span></td><td><span class="ic">Result&lt;(), IoError&gt;</span> (denied before any socket exists) · <span class="ic">Result&lt;Int, IoError&gt;</span>, the port actually bound</td></tr>
+          <tr><td><span class="ic">accept()</span></td><td><span class="ic">Result&lt;Int, IoError&gt;</span>, a connection id (ids start at 1)</td></tr>
+          <tr><td><span class="ic">recv(conn, max_bytes)</span> / <span class="ic">send(conn, bytes)</span></td><td><span class="ic">Result&lt;List&lt;Int&gt;, IoError&gt;</span>, an empty list is EOF · <span class="ic">Result&lt;(), IoError&gt;</span>, each byte masked with <span class="ic">&amp; 0xFF</span></td></tr>
+          <tr><td><span class="ic">close(conn)</span> / <span class="ic">stop()</span></td><td>Close one connection · close the listener and any open connection</td></tr>
+        </tbody>
+      </table>
+      <p>A spec is <span class="ic">"addr:port"</span>, <span class="ic">"addr:lo-hi"</span> or <span class="ic">"addr:*"</span>, with <span class="ic">"*"</span> also accepted as the address. Rules <em>accumulate</em>: a bind must satisfy every rule taken so far, so <span class="ic">restrict_to</span> only ever narrows and <span class="ic">restrict_to("*:*")</span> on an already-narrowed capability restores nothing. A spec that does not parse denies everything, because silently ignoring a typo would widen authority. Enforcement runs before the syscall, so a denied address or port is never bound, not even transiently.</p>
+      <p>The model is <strong>sequential</strong>: one open connection at a time, no threads and no async. A second <span class="ic">accept</span> while a connection is open returns <span class="ic">Err</span> telling the caller to close first. <span class="ic">accept</span>, <span class="ic">recv</span> and <span class="ic">send</span> are bounded at 30 seconds and return <span class="ic">Err</span> on expiry rather than hanging. Honest limits: IPv4 only, addresses matched by exact string equality (<span class="ic">"127.0.0.1"</span> and <span class="ic">"localhost"</span> are different rules), and the check runs on the port you <em>request</em>, so a rule admitting port <span class="ic">0</span> admits an arbitrary ephemeral port. On an <span class="ic">Err</span> from <span class="ic">send</span> the number of bytes already transmitted is <strong>unspecified</strong>: close the connection rather than retry.</p>
+      <p><span class="ic">recv</span> is the language's one inbound information-flow <em>source</em> and its bytes are <span class="ic">@public</span>; <span class="ic">send</span> is a public sink on its payload argument only. The lattice models <strong>confidentiality</strong>, not integrity or taint: <span class="ic">@public</span> on an attacker-controlled request asserts only that it is not a secret whose disclosure the analysis must prevent, and asserts nothing about it being trustworthy or safe to act on. See the <a href="reference.html#ifc">information-flow section</a>.</p>
+      <div class="code">
+<pre><code><span class="k">fun</span> <span class="fn">echo_once</span>(<span class="pu">serve:</span> <span class="cp">Serve</span>, <span class="pu">conn:</span> <span class="ty">Int</span>) <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
+    <span class="k">let</span> request = serve.<span class="fn">recv</span>(conn, <span class="nu">1024</span>)?
+    <span class="k">return</span> serve.<span class="fn">send</span>(conn, request)
+
+<span class="k">fun</span> <span class="fn">main</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">serve:</span> <span class="cp">Serve</span>)
+    <span class="k">let</span> local = serve.<span class="fn">restrict_to</span>(<span class="st">"127.0.0.1:8080"</span>)
+    <span class="k">match</span> local.<span class="fn">listen</span>(<span class="st">"127.0.0.1"</span>, <span class="nu">8080</span>)
+        <span class="ty">Ok</span>(_) <span class="pu">-&gt;</span> <span class="k">match</span> local.<span class="fn">accept</span>()
+            <span class="ty">Ok</span>(conn) <span class="pu">-&gt;</span>
+                <span class="k">match</span> <span class="fn">echo_once</span>(local, conn)
+                    <span class="ty">Ok</span>(_) <span class="pu">-&gt;</span> stdio.<span class="fn">println</span>(<span class="st">"echoed"</span>)
+                    <span class="ty">Err</span>(e) <span class="pu">-&gt;</span> stdio.<span class="fn">eprintln</span>(<span class="st">"${e}"</span>)
+                <span class="k">let</span> _ = local.<span class="fn">close</span>(conn)
+                <span class="k">let</span> _ = local.<span class="fn">stop</span>()
+            <span class="ty">Err</span>(e) <span class="pu">-&gt;</span> stdio.<span class="fn">eprintln</span>(<span class="st">"${e}"</span>)
+        <span class="ty">Err</span>(e) <span class="pu">-&gt;</span> stdio.<span class="fn">eprintln</span>(<span class="st">"${e}"</span>)</code></pre></div>
+
       <h3>User-defined capabilities</h3>
       <p>Libraries declare their own capabilities with the <span class="ic">capability</span> keyword; any type that <span class="ic">impl</span>s it becomes a valid implementor. A cap-bearing struct may hold built-in caps as fields. Only call / method-call right-hand sides produce fresh capability instances that can be bound; a plain alias <span class="ic">let dup = mailer</span> is rejected.</p>
       <div class="code">

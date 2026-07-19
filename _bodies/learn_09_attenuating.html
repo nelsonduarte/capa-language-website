@@ -28,19 +28,22 @@
 </section>
 
 <section class="band">
-  <div class="article"><h2>The five attenuators</h2>
+  <div class="article"><h2>The attenuators</h2>
 
-    <p>Each of the five non-<span class="ic">Stdio</span> non-<span class="ic">Unsafe</span> built-in capabilities has its own <span class="ic">restrict_to</span>:</p>
+    <p>Every built-in capability except <span class="ic">Stdio</span> and <span class="ic">Unsafe</span> has its own attenuator:</p>
 
     <ul>
         <li><span class="ic">net.restrict_to(host)</span> &middot; only reach this exact host.</li>
         <li><span class="ic">fs.restrict_to(prefix)</span> &middot; only paths under this prefix.</li>
+        <li><span class="ic">db.restrict_to(prefix)</span> &middot; only database files under this prefix.</li>
+        <li><span class="ic">proc.restrict_to(cmd)</span> &middot; only commands whose basename starts with this.</li>
+        <li><span class="ic">serve.restrict_to("addr:port")</span> &middot; only bind this address and port.</li>
         <li><span class="ic">env.restrict_to_keys([keys])</span> &middot; only these environment variable names.</li>
         <li><span class="ic">clock.restrict_to_after(t)</span> &middot; only return times after <span class="ic">t</span>.</li>
         <li><span class="ic">random.with_seed(seed)</span> &middot; deterministic from this seed.</li>
     </ul>
 
-    <p>The first four <em>narrow</em>: they reduce what the capability can do. The last <em>determinises</em>: a seeded <span class="ic">Random</span> still has the full method surface, but the sequence it produces is fixed. The five together let you say, in code, exactly what a downstream function is allowed to touch.</p>
+    <p>All but the last <em>narrow</em>: they reduce what the capability can do. <span class="ic">with_seed</span> <em>determinises</em>: a seeded <span class="ic">Random</span> still has the full method surface, but the sequence it produces is fixed. Together they let you say, in code, exactly what a downstream function is allowed to touch.</p>
   </div>
 </section>
 
@@ -125,7 +128,7 @@ denied: Net capability does not permit access to host 'attacker.com': current re
 
     <p>You understand the two halves of Capa's capability discipline: the type-level part (a capability must be in the function's signature to be in scope) and the value-level part (a capability can be narrowed before being passed on, monotonically and fail-closed).</p>
 
-    <p>The next chapter scales the idea up: instead of using only the nine built-in capabilities, you define your own. <span class="ic">capability SendEmail</span> turns a library's contract into a value of a type that the discipline applies to uniformly.</p>
+    <p>The next chapter scales the idea up: instead of using only the ten built-in capabilities, you define your own. <span class="ic">capability SendEmail</span> turns a library's contract into a value of a type that the discipline applies to uniformly.</p>
   </div>
 </section>
 

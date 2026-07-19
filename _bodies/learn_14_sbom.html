@@ -83,7 +83,7 @@ report by token ending 77c2
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --manifest report.capa
 {
-  "capa_version": "1.16.0",
+  "capa_version": "1.17.0",
   "schema_version": 1,
   "filename": "report.capa",
   "functions": [
@@ -94,7 +94,7 @@ report by token ending 77c2
       "declared_capabilities": ["Stdio", "Fs", "Env"],
       "transitively_reachable_capabilities": ["Env", "Fs", "Stdio"],
       "provably_excluded_capabilities": [
-        "Clock", "Db", "Net", "Proc", "Random", "Unsafe"
+        "Clock", "Db", "Net", "Proc", "Random", "Serve", "Unsafe"
       ],
       "has_unsafe": false,
       ...
@@ -261,7 +261,7 @@ report by token ending 77c2
     "buildDefinition": {
       "buildType": "https://capa-language.com/build/transpile-to-python/v1",
       "externalParameters": { "source": "report.capa" },
-      "internalParameters": { "capaVersion": "1.16.0",
+      "internalParameters": { "capaVersion": "1.17.0",
                               "target": "python&gt;=3.10" },
       ...
     },
@@ -307,11 +307,11 @@ report by token ending 77c2
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --manifest-digest report.capa
-{"capa_version":"1.16.0", ... ,
+{"capa_version":"1.17.0", ... ,
  "content_integrity":{
    "canonicalization":"capa-jcs-sorted-v1",
    "digest":{"algorithm":"sha256",
-             "value":"c8679d4dc1c511f4bf39ddf9304083c695d91edd30818944c05f040bdca487e8"},
+             "value":"a133ef38620c08afe2d2dbb7247ddd8aa5fb59deaf1ded19bfe36d447acbc785"},
    "signature":{"algorithm":null,"key_id":null,"value":null}},
  "filename":"report.capa", ... ,"schema_version":1, ... }</code></pre></div>
 

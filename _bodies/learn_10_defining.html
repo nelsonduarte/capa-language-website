@@ -13,7 +13,7 @@
 <section>
   <div class="article"><h2>The motivation</h2>
 
-    <p>The nine built-in capabilities cover IO. They do not cover everything you might want to express as a capability. A library that sends email through SMTP, publishes to a message queue, or signs JWTs has a real authority surface that the type system today only sees as "<span class="ic">Net</span> + maybe <span class="ic">Fs</span>". From a caller's point of view that is too coarse.</p>
+    <p>The ten built-in capabilities cover IO. They do not cover everything you might want to express as a capability. A library that sends email through SMTP, publishes to a message queue, or signs JWTs has a real authority surface that the type system today only sees as "<span class="ic">Net</span> + maybe <span class="ic">Fs</span>". From a caller's point of view that is too coarse.</p>
 
     <p>Capa lets a library define a new capability that is just as real as <span class="ic">Net</span> or <span class="ic">Fs</span>. The discipline applies the same way: any function that wants to send email has to receive a <span class="ic">SendEmail</span> value as a parameter.</p>
   </div>

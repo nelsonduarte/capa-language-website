@@ -37,7 +37,7 @@
 <section class="band">
   <div class="article"><h2>The full set of built-in capabilities</h2>
 
-    <p>Nine capability types are baked into the language:</p>
+    <p>Ten capability types are baked into the language:</p>
 
     <ul>
         <li><span class="ic">Stdio</span> &middot; standard output and input. <span class="ic">println</span>, <span class="ic">print</span>, <span class="ic">eprintln</span>, <span class="ic">read_line</span>.</li>
@@ -48,8 +48,11 @@
         <li><span class="ic">Clock</span> &middot; wall-clock time. <span class="ic">now_secs</span>, <span class="ic">sleep</span>.</li>
         <li><span class="ic">Random</span> &middot; non-deterministic randomness. <span class="ic">float_unit</span>, <span class="ic">int_range</span>, <span class="ic">with_seed</span>.</li>
         <li><span class="ic">Db</span> &middot; database access. Queries against a connected database.</li>
+        <li><span class="ic">Serve</span> &middot; inbound connections. <span class="ic">listen</span>, <span class="ic">accept</span>, <span class="ic">recv</span>, <span class="ic">send</span>, <span class="ic">close</span>.</li>
         <li><span class="ic">Unsafe</span> &middot; the escape hatch. Anything that crosses into Python interop.</li>
     </ul>
+
+    <p><span class="ic">Serve</span> is the odd one out, and deliberately so: every other capability <em>reaches out</em>, while <span class="ic">Serve</span> is the one that is <em>reached</em>. It is also the one capability that does not run on the Wasm backends. Binding a listening socket needs <span class="ic">wasi:sockets</span>, which is neither vendored in the compiler nor reachable from the wasmtime bindings the Wasm hosts are built on, so <span class="ic">capa --wasm</span> and <span class="ic">capa --wit</span> refuse any program whose signatures reach it, naming every offending function. Use the Python backend (<span class="ic">capa --run</span> / <span class="ic">capa --check</span>) for those.</p>
 
     <p>Any function that needs one of these declares it as a parameter:</p>
 

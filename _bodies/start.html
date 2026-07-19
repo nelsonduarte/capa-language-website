@@ -80,7 +80,7 @@ $ capa install        <span class="cm"># idempotent: rerun to refresh against ca
     <p class="muted">The <span class="ic">capa.lock</span> pins the resolved git SHA plus a SHA-256 of the fetched tarball, so installs are bit-reproducible. When a dependency carries a <span class="ic">verify_key</span>, <span class="ic">capa install</span> verifies the GPG tag signature or Sigstore SLSA attestation before unpacking. Full guide in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md">docs/packages.md</a>.</p>
 
     <h3>Seed libraries</h3>
-    <p>The signed registry currently lists eight libraries. Each declares its own capability surface, visible in the SBOM before you read its code. A library marked <em>none</em> is provably pure.</p>
+    <p>The signed registry lists eighteen libraries; the original seed set of eight is below, and the <a href="packages.html">packages page</a> has the full list. Each declares its own capability surface, visible in the SBOM before you read its code. A library marked <em>none</em> is provably pure.</p>
     <table class="tbl">
       <thead><tr><th>Package</th><th>What it does</th><th>Capability</th></tr></thead>
       <tbody>

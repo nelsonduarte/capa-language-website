@@ -40,6 +40,14 @@ warning: information-flow: a @secret value reaches Stdio.println
   <div class="article"><h2>Secret by default at the source</h2>
 
     <p>Environment variables are where API keys, tokens, and credentials live, so <span class="ic">Env.get</span> is a <em>secret source</em>: its result is <span class="ic">@secret</span> automatically. The value pulled out of the <span class="ic">Some</span> arm inherits that label, and printing it is what raised the warning. You did not have to mark anything; the headline leak is caught out of the box.</p>
+
+    <p>It is the <em>only</em> secret source: no other built-in method produces <span class="ic">@secret</span> data without an annotation. There is one other built-in source, and it is <span class="ic">@public</span>: <span class="ic">Serve.recv</span>, the bytes of an inbound request.</p>
+
+    <h3>The lattice models confidentiality, not integrity</h3>
+
+    <p><span class="ic">@public</span> on the result of <span class="ic">Serve.recv</span> asserts only one thing: this is not a secret whose disclosure the analysis must prevent. It asserts <strong>nothing</strong> about the data being trustworthy, well-formed, or safe to act on, and an inbound request is attacker-controlled. Validate it exactly as you would in any other language.</p>
+
+    <p>Labelling inbound data <span class="ic">@secret</span> would put an integrity property into a confidentiality lattice, and the immediate effect would be that echoing a request back to the client that sent it, the most ordinary thing a server does, is reported as a violation. Integrity and taint tracking would be a second lattice, not a relabelling of this one, and Capa does not have one.</p>
   </div>
 </section>
 
@@ -80,6 +88,7 @@ warning: information-flow: a @secret value reaches Stdio.println
         <li><span class="ic">Net.get</span>, <span class="ic">Net.post</span></li>
         <li><span class="ic">Fs.write</span></li>
         <li><span class="ic">Db.exec</span>, <span class="ic">Db.query</span></li>
+        <li><span class="ic">Serve.send</span> (the payload argument only, not the connection id, which the runtime issued rather than the program)</li>
     </ul>
 
     <p>A <span class="ic">@secret</span> value reaching any of them is an information-flow violation. By default it is a warning, so existing code keeps compiling while labelled code surfaces its disclosures. To make it a hard error, opt the function into strict mode:</p>
