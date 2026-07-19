@@ -109,7 +109,8 @@
             <p><strong>No aliasing.</strong> A capability cannot be bound to a <span class="ic">let</span>. <span class="ic">let copy = stdio</span> is a compile error. If you could alias a cap, code could squirrel it away in a global and bypass the signature-as-contract.</p>
         </li>
         <li>
-            <p><strong>No returning, no storing.</strong> A built-in capability cannot be returned from a function, stored as a struct field, or captured by a lambda. Authority flows downward through parameters; it cannot flow upward or sideways. (User-defined capabilities, chapter 10, relax this for the wrapper pattern; built-ins do not.)</p>
+            <p><strong>No returning, no storing.</strong> A built-in capability cannot be returned from a function or stored as a struct field. Authority flows downward through parameters; it cannot flow upward or sideways. (User-defined capabilities, chapter 10, relax this for the wrapper pattern; built-ins do not.)</p>
+            <p class="muted">A lambda <em>can</em> capture a capability, and that is a real limit worth knowing. A closure of type <span class="ic">Fun(Request) -&gt; Response</span> can hold a captured <span class="ic">Net</span> and its type will not say so. What the closure cannot do is <em>consume</em> a captured capability, since it may run more than once. The guarantee that survives is the one below: the capability had to be declared by the enclosing function to be captured at all, so it still appears in that function's manifest. Catching it is then a job for <span class="ic">capa --manifest</span> or a package capability ceiling, not for the type of the closure.</p>
         </li>
         <li>
             <p><strong>Must be used.</strong> A function that declares a capability parameter and never invokes a method on it is a compile error. The signature is a contract; declaring a cap you do not use is a misleading contract.</p>

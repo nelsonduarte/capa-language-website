@@ -89,6 +89,7 @@ warning: information-flow: a @secret value reaches Stdio.println
         <li><span class="ic">Fs.write</span></li>
         <li><span class="ic">Db.exec</span>, <span class="ic">Db.query</span></li>
         <li><span class="ic">Serve.send</span> (the payload argument only, not the connection id, which the runtime issued rather than the program)</li>
+        <li><span class="ic">panic</span>, whose message goes to stderr. It is the one sink that needs no capability, which is exactly why it is easy to forget: a function that holds nothing at all can still disclose through a panic message. Only the built-in applies; a user-defined function named <span class="ic">panic</span> shadows it and is handled by the ordinary cross-function analysis.</li>
     </ul>
 
     <p>A <span class="ic">@secret</span> value reaching any of them is an information-flow violation. By default it is a warning, so existing code keeps compiling while labelled code surfaces its disclosures. To make it a hard error, opt the function into strict mode:</p>
