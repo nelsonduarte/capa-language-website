@@ -87,7 +87,7 @@
     <span class="k">let</span> add = <span class="k">fun</span> (a: <span class="ty">Int</span>, b: <span class="ty">Int</span>) -&gt; <span class="ty">Int</span> =&gt; a + b
     stdio.<span class="fn">println</span>(<span class="st">"${add(3, 4)}"</span>)         <span class="cm">// 7</span></code></pre></div>
 
-    <p>Lambdas have one important limit: they cannot capture capabilities from the outer scope. This is part of the capability discipline (you cannot smuggle authority through a closure). We come back to this in chapter 8.</p>
+    <p>A lambda <em>can</em> capture a capability from the outer scope, and calling a method on a captured capability compiles. What it cannot do is <em>consume</em> a captured capability (or a captured <span class="ic">linear</span> value), because a closure may be invoked more than once and a consumable value may be consumed only once. So a closure is not a hole in the discipline, but it is not a barrier either: authority that rides into a closure had to be declared by the enclosing function first, which is where the manifest reads it. Chapter 8 has the full set of rules.</p>
   </div>
 </section>
 
