@@ -83,7 +83,7 @@ report by token ending 77c2
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --manifest report.capa
 {
-  "capa_version": "1.17.0",
+  "capa_version": "1.19.0",
   "schema_version": 1,
   "filename": "report.capa",
   "functions": [
@@ -261,7 +261,7 @@ report by token ending 77c2
     "buildDefinition": {
       "buildType": "https://capa-language.com/build/transpile-to-python/v1",
       "externalParameters": { "source": "report.capa" },
-      "internalParameters": { "capaVersion": "1.17.0",
+      "internalParameters": { "capaVersion": "1.19.0",
                               "target": "python&gt;=3.10" },
       ...
     },
@@ -307,11 +307,11 @@ report by token ending 77c2
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --manifest-digest report.capa
-{"capa_version":"1.17.0", ... ,
+{"capa_version":"1.19.0", ... ,
  "content_integrity":{
    "canonicalization":"capa-jcs-sorted-v1",
    "digest":{"algorithm":"sha256",
-             "value":"a133ef38620c08afe2d2dbb7247ddd8aa5fb59deaf1ded19bfe36d447acbc785"},
+             "value":"6e0965e7a982da2749710656729f861616a36c408412420a6a3a8b899b411fce"},
    "signature":{"algorithm":null,"key_id":null,"value":null}},
  "filename":"report.capa", ... ,"schema_version":1, ... }</code></pre></div>
 
@@ -369,6 +369,8 @@ capa: --check-capabilities: OK - every declared capability ceiling holds.</code>
 <pre><code>$ capa --check-capabilities report.capa
 capa: --check-capabilities: FAILED - 1 ceiling violation(s):
   - package 'report' declares max=['Fs', 'Stdio'] but its own code introduces 'Env'</code></pre></div>
+
+    <div class="note"><strong>What the gate actually verifies.</strong> The verdict is computed over the module graph the compiler read for the entry file you gave it, not over every file a package ships. A package can therefore declare <span class="ic">pure = true</span> and still contain a module holding <span class="ic">Fs</span>, and the gate will report <span class="ic">OK</span> if nothing on the checked entry point imports it. Measured on <span class="ic">1.19.0</span>: a dependency declaring <span class="ic">pure = true</span> with an unimported <span class="ic">fs.write</span> module passes; add an import of that module and the same gate prints <span class="ic">FAILED - 1 ceiling violation(s)</span> and exits 1. Read a green <span class="ic">--check-capabilities</span> as "every ceiling holds for the code reachable from this entry point", and run it over each entry point you ship.</div>
   </div>
 </section>
 

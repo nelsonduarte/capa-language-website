@@ -3,7 +3,7 @@
   <div class="wrap">
     <span class="eyebrow">Learn &middot; Chapter 13 of 14</span>
     <h1>Information-flow control</h1>
-    <p class="lead">Capabilities decide which effects a function may use. Information-flow control decides where its data may go. This chapter is the second axis: mark a value <span class="ic">@secret</span> and the compiler proves it cannot reach a log line or a network call unless you let it through an audited bridge.</p>
+    <p class="lead">Capabilities decide which effects a function may use. Information-flow control decides where its data may go. This chapter is the second axis: mark a value <span class="ic">@secret</span> and the compiler tells you when it reaches a log line or a network call without going through an audited bridge. By default that is a warning; under <span class="ic">@strict_ifc</span> it is an error. The check has real limits, and this chapter names them.</p>
     <div class="phero-actions">
       <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
     </div>
@@ -74,7 +74,9 @@ warning: information-flow: a @secret value reaches Stdio.println
 <pre><code><span class="k">let</span> tagged = <span class="st">"key=${card_number}"</span>   <span class="cm">// @secret: interpolation carries it</span>
 <span class="k">let</span> first6 = card_number.<span class="fn">substring</span>(<span class="nu">0</span>, <span class="nu">6</span>)   <span class="cm">// @secret: derived from a secret</span></code></pre></div>
 
-    <p>It also follows data into and out of containers: a secret put in a struct, list, tuple, or a mutable <span class="ic">Map</span> / <span class="ic">Set</span> / <span class="ic">List</span>, or iterated over in a <span class="ic">for</span> loop, stays secret. You cannot launder it by stashing it somewhere and reading it back.</p>
+    <p>Inside one function body it also follows data into and out of containers: a secret put in a struct, list, tuple, or a mutable <span class="ic">Map</span> / <span class="ic">Set</span> / <span class="ic">List</span>, or iterated over in a <span class="ic">for</span> loop, stays secret. Stashing it somewhere and reading it back in the same body does not launder it.</p>
+
+    <div class="note"><strong>The limit, stated plainly.</strong> Label tracking is <em>intra-procedural</em>. If a <em>called</em> function mutates a container you own, the label does not come back with the value, even when the callee's parameter is declared <span class="ic">@secret</span>. Measured on <span class="ic">1.19.0</span>: <span class="ic">fun stash(bag: List&lt;String&gt;, s: @secret String)</span> whose body is <span class="ic">bag.push(s)</span>, called from a <span class="ic">@strict_ifc</span> function that then prints <span class="ic">bag.get(0)</span>, produces no diagnostic at all; writing <span class="ic">bag.push(key)</span> inline in that same function is an error. Do not treat a clean IFC run as proof that no secret escapes through a container a callee wrote into.</div>
   </div>
 </section>
 

@@ -10,7 +10,7 @@
         <a class="btn btn-ghost" href="why.html">Why Capa</a>
       </div>
       <div class="hero-meta">
-        <span>v1.17.0</span><span class="d">·</span>
+        <span>v1.19.0</span><span class="d">·</span>
         <span>MIT or Apache-2.0</span><span class="d">·</span>
         <span>over 4,000 tests</span><span class="d">·</span>
         <span>hand-written compiler in Python</span>
@@ -146,13 +146,14 @@
         <div class="seq-head">
           <span class="eyebrow">Information-flow control</span>
           <h3>Where your data can go</h3>
-          <p>Annotate a value <span class="ic">@secret</span> and the compiler propagates the label, then rejects any secret that reaches a public sink. <span class="ic">env.get</span> is secret by default. The one auditable bridge is <span class="ic">declassify(value, reason: "…")</span>; every use is recorded in the SBOM as <strong>declassification_sites</strong>, so the proof ships with the manifest, not in a code-review thread.</p>
+          <p>Annotate a value <span class="ic">@secret</span> and the compiler propagates the label, then flags any secret that reaches a public sink: a <strong>warning</strong> by default, a hard error under <span class="ic">@strict_ifc()</span>. <span class="ic">env.get</span> is secret by default. The one auditable bridge is <span class="ic">declassify(value, reason: "…")</span>; every use is recorded in the SBOM as <strong>declassification_sites</strong>, so the disclosure ships with the manifest, not in a code-review thread. <a href="why.html#ifc-limits">What the check does and does not catch</a>.</p>
         </div>
         <div class="code">
           <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">leak.capa</span></div>
-<pre><code><span class="k">fun</span> <span class="fn">main</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">env:</span> <span class="cp">Env</span>)
-    <span class="k">let</span> key = env.<span class="fn">get</span>(<span class="st">"API_KEY"</span>)  <span class="cm"># @secret</span>
-    stdio.<span class="fn">println</span>(key)  <span class="cm"># rejected: secret → public sink</span></code></pre>
+<pre><code><span class="cp">@strict_ifc</span>()
+<span class="k">fun</span> <span class="fn">main</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>, <span class="pu">env:</span> <span class="cp">Env</span>)
+    <span class="k">let</span> key = env.<span class="fn">get</span>(<span class="st">"API_KEY"</span>).<span class="fn">unwrap_or</span>(<span class="st">""</span>)  <span class="cm"># @secret</span>
+    stdio.<span class="fn">println</span>(key)  <span class="cm"># error: secret → public sink</span></code></pre>
         </div>
       </div>
     </div>
@@ -202,12 +203,12 @@
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_dataguard">
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_dataguard</h3>
-        <p>Data-governance pipeline. Information-flow control proves by construction that PII never reaches a public sink: every path to output runs through an audited <span class="ic">declassify</span>.</p>
+        <p>Data-governance pipeline. Every path from PII to output runs through an audited <span class="ic">declassify</span>, and the compiler-rejected negative shows what happens when one does not.</p>
         <span class="badge">IFC governance</span>
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_configbroker">
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_configbroker</h3>
-        <p>Capability-secured config and secrets resolver. Secrets are provably kept out of logs, and its network reach is attenuated to a single host.</p>
+        <p>Capability-secured config and secrets resolver. Secrets reach a log line only through an audited <span class="ic">declassify</span>, and its network reach is attenuated to a single host.</p>
         <span class="badge">capability-scoped</span>
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_ci_pipeline">
@@ -229,9 +230,10 @@
       <a class="btn btn-primary" href="start.html" style="margin-top:4px">Get started</a>
     </div>
     <div>
-      <span class="eyebrow">Release · 1.17.0</span>
+      <span class="eyebrow">Release · 1.19.0</span>
       <h2 style="font-size:2.1rem">Stable and on SemVer</h2>
       <p>The first stable release shipped on <strong>2026-06-03</strong> as 1.0.0. Minor releases since added byte-reproducible SBOMs and attestations via <span class="ic">SOURCE_DATE_EPOCH</span>, the <span class="ic">capa test</span> runner, selective import, and a security-hardening line that closed further soundness and supply-chain findings.</p>
+      <p><strong>1.19.0</strong> (2026-07-20) makes two previously-succeeding builds fail on purpose. A <span class="ic">capa.toml</span> the compiler cannot parse is now a refusal (<span class="ic">capa: broken capa.toml: …</span>, exit 2) instead of a warning followed by a build that ignored the file, and the <span class="ic">capa = "&gt;=X.Y.Z"</span> compiler floor is enforced for the first time after being parsed and ignored since 2026-05-19. <a href="start.html#floor">What that means for your project</a>. <strong>1.18.0</strong> attached SLSA build provenance to the release binaries and the install scripts; <strong>1.18.1</strong> fixed <span class="ic">capa test</span> under a released binary and closed a fail-open in <span class="ic">capa install</span>.</p>
       <p class="muted">Surfaces listed in <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> follow SemVer. The full inventory is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> and on the <a href="roadmap.html">roadmap</a>.</p>
     </div>
   </div>

@@ -366,7 +366,7 @@ def footer(P):
     </ul></div>
   </div>
   <div class="footer-base">
-    <span>Built by Nelson Duarte &middot; v1.15.1 &middot; MIT or Apache-2.0</span>
+    <span>Built by Nelson Duarte &middot; v1.19.0 &middot; MIT or Apache-2.0</span>
     <span>&copy; 2026 Capa</span>
   </div>
 </footer>'''
