@@ -3,6 +3,7 @@
 """Gera as páginas do site Capa a partir de fragmentos de corpo em _bodies/.
 Cada página é auto-contida (CSS + logótipo embebidos)."""
 import os, re, sys, pathlib
+import html.parser
 
 # Por omissao a saida vai para SRC/dist e contem APENAS o site servido (paginas,
 # book/, assets, ficheiros de crawler). E o que o Cloudflare (Workers Static
@@ -353,6 +354,81 @@ def nav(active, P):
   </div>
 </header>'''
 
+# Elementos sem conteudo: nunca entram na pilha. Inclui os do SVG inline
+# (path/use/stop), que aparecem no logotipo e nos icones dos cartoes.
+VOID_TAGS = frozenset((
+    "area", "base", "br", "col", "embed", "hr", "img", "input", "link",
+    "meta", "param", "source", "track", "wbr",
+    "path", "use", "stop", "circle", "rect", "line", "polygon", "polyline",
+))
+
+# Conteudo interactivo nao pode aninhar-se. A regra do parser HTML5 e que um
+# <a> aberto dentro de outro <a> faz o parser fechar o de fora ANTES (o
+# "adoption agency algorithm"), reparentando tudo o que vem a seguir. As tags
+# ficam equilibradas, por isso uma contagem de abre/fecha nao ve nada: foi
+# assim que um <a> de nota de rodape dentro de um cartao (que E um <a>) partiu
+# a grelha da homepage em caixas sobrepostas, com o texto rasgado no link.
+INTERACTIVE_TAGS = frozenset(("a", "button"))
+
+
+class _StructureCheck(html.parser.HTMLParser):
+    """Verifica UMA pagina gerada: tags equilibradas + nao aninhamento.
+
+    Corre sobre o OUTPUT, nao sobre o fragmento, para cobrir tambem o
+    template (nav, rodape) e a junta entre os dois.
+    """
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.stack = []
+        self.problems = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in VOID_TAGS:
+            return
+        if tag in INTERACTIVE_TAGS:
+            for open_tag, line in self.stack:
+                if open_tag == tag:
+                    self.problems.append(
+                        f"linha {self.getpos()[0]}: <{tag}> dentro de outro "
+                        f"<{tag}> (aberto na linha {line}). O parser fecha o "
+                        f"de fora antes deste e reparenta o resto; as tags "
+                        f"ficam equilibradas e a pagina sai partida na mesma."
+                    )
+                    break
+        self.stack.append((tag, self.getpos()[0]))
+
+    def handle_endtag(self, tag):
+        if tag in VOID_TAGS:
+            return
+        for i in range(len(self.stack) - 1, -1, -1):
+            if self.stack[i][0] == tag:
+                still_open = [t for t, _ in self.stack[i + 1:]]
+                if still_open:
+                    self.problems.append(
+                        f"linha {self.getpos()[0]}: </{tag}> fecha por cima de "
+                        f"{still_open}, que ficaram abertos."
+                    )
+                del self.stack[i:]
+                return
+        self.problems.append(
+            f"linha {self.getpos()[0]}: </{tag}> sem <{tag}> aberto."
+        )
+
+
+def check_page_structure(filename, html_text, problems):
+    """Acumula os defeitos de estrutura de uma pagina gerada em ``problems``."""
+    checker = _StructureCheck()
+    checker.feed(html_text)
+    checker.close()
+    for problem in checker.problems:
+        problems.append(f"{filename}: {problem}")
+    for tag, line in checker.stack:
+        problems.append(
+            f"{filename}: <{tag}> aberto na linha {line} nunca fecha."
+        )
+
+
 def check_version_literals(frag, body, problems):
     """Recolhe (nao levanta) os problemas de versao de UM fragmento.
 
@@ -604,7 +680,7 @@ def page(filename, title, desc, active, body, depth=0):
     out=OUT/filename
     out.parent.mkdir(parents=True,exist_ok=True)
     out.write_text(html,encoding="utf-8")
-    return len(html)
+    return len(html), html
 
 # Configuração das páginas: (ficheiro, título, descrição, chave-ativa, fragmento, profundidade)
 PAGES=[
@@ -751,8 +827,17 @@ if __name__=="__main__":
 
     # 3) gera as páginas
     built=0
+    structure_problems=[]
     for fn,title,desc,active,body,depth in prepared:
-        n=page(fn,title,desc,active,body,depth)
+        n,html_text=page(fn,title,desc,active,body,depth)
+        check_page_structure(fn, html_text, structure_problems)
         print(f"  build {fn:26} {n:6} bytes")
         built+=1
+    if structure_problems:
+        sep = "\n  - "
+        raise SystemExit(
+            f"build.py: estrutura HTML invalida em "
+            f"{len(structure_problems)} sitio(s):{sep}"
+            + sep.join(structure_problems)
+        )
     print(f"feito: {built} páginas")
