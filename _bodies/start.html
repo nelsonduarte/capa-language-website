@@ -80,11 +80,12 @@ $ capa install        <span class="cm"># idempotent: rerun to refresh against ca
     <p class="muted">The <span class="ic">capa.lock</span> pins the resolved git SHA plus a SHA-256 of the fetched tarball, so installs are bit-reproducible. When a dependency carries a <span class="ic">verify_key</span>, <span class="ic">capa install</span> verifies the GPG tag signature or Sigstore SLSA attestation before unpacking. Since <strong>1.18.1</strong>, a <em>missing</em> <span class="ic">gh</span> on your PATH is an error rather than a warning for such a dependency: the verifier being absent no longer downgrades to "install it anyway". <span class="ic">CAPA_ALLOW_MISSING_GH=1</span> overrides, and names on stderr every dependency it let through. Full guide in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/packages.md">docs/packages.md</a>.</p>
 
     <h3 id="floor" style="scroll-margin-top:84px">The compiler floor, and a manifest that will not parse</h3>
+  <!-- historical-version: nomeia a release em que o facto aconteceu -->
     <p>The <span class="ic">capa</span> key above is the oldest compiler the project says it can be built with. <strong>Since 1.19.0 it is enforced.</strong> Before that it was parsed and ignored, so a floor had never been tested against a running compiler; if your project declares a floor above the compiler you are running, you now get a refusal where you used to get a build:</p>
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --check main.capa
 capa: /path/capa.toml: this project declares capa = '&gt;=99.0.0', but the
-compiler running the build is 1.19.0.
+compiler running the build is {{CAPA_VERSION}}.
 $ echo $?
 1</code></pre></div>
     <p>The policy splits by <strong>root versus dependency</strong>. The root manifest's floor is a hard error (exit 1). A <em>dependency</em>'s floor is a warning naming the package, because you cannot satisfy it by editing a manifest you own; that warning is raised by the commands that compose the dependency graph (<span class="ic">--check-capabilities</span>, <span class="ic">--compose-sbom</span>, <span class="ic">--check-policies</span>), not by a plain <span class="ic">--check</span>. A missing <span class="ic">capa</span> key constrains nothing. <span class="ic">CAPA_IGNORE_CAPA_FLOOR=1</span> downgrades the refusal to a warning that reprints, in full, the refusal it overrode. Before reaching for it, check whether the floor or the compiler is the thing that is out of date.</p>

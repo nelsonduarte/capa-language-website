@@ -98,6 +98,7 @@ Next, consider hardening (fewest bridge calls first):
     <ul class="bullets">
       <li><strong>Capa's built-in capability surface is narrow.</strong> If your Python uses <span class="ic">requests</span> with custom headers, gRPC, or sqlite3, that function stays on the <span class="ic">Unsafe</span> side. The story bottoms out at what the standard library covers.</li>
       <li><strong>The Python file is not safer because of the migration.</strong> It still has ambient authority; the Capa side is the audit surface. When migration completes, you delete the Python file.</li>
+  <!-- recheck-at-release: defeito medido; repetir a medicao a cada release -->
       <li><strong>Runtime.</strong> The default backend transpiles to Python (1.00x to 1.45x overhead). The Wasm Component Model backend is also functional, but <span class="ic">Unsafe</span> is rejected at Wasm emit time, so the all-<span class="ic">Unsafe</span> stages run on Python; the typed end state runs on either. The two backends are <em>not</em> guaranteed to agree: on <span class="ic">1.19.0</span> a program can answer a capability question differently under <span class="ic">--wasm</span>, with both runs exiting 0, so treat the Python backend as the reference (<a href="roadmap.html">roadmap</a>).</li>
       <li><strong>Stop sooner if you like.</strong> If one function genuinely needs a Python library Capa has no built-in for, leave that one with <span class="ic">Unsafe</span>: it becomes a precise audit signal pointing at the one place that needs human review.</li>
     </ul>

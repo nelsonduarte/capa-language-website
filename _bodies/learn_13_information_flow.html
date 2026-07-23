@@ -76,6 +76,7 @@ warning: information-flow: a @secret value reaches Stdio.println
 
     <p>Inside one function body it also follows data into and out of containers: a secret put in a struct, list, tuple, or a mutable <span class="ic">Map</span> / <span class="ic">Set</span> / <span class="ic">List</span>, or iterated over in a <span class="ic">for</span> loop, stays secret. Stashing it somewhere and reading it back in the same body does not launder it.</p>
 
+  <!-- recheck-at-release: defeito medido; repetir a medicao a cada release -->
     <div class="note"><strong>The limit, stated plainly.</strong> Label tracking is <em>intra-procedural</em>. If a <em>called</em> function mutates a container you own, the label does not come back with the value, even when the callee's parameter is declared <span class="ic">@secret</span>. Measured on <span class="ic">1.19.0</span>: <span class="ic">fun stash(bag: List&lt;String&gt;, s: @secret String)</span> whose body is <span class="ic">bag.push(s)</span>, called from a <span class="ic">@strict_ifc</span> function that then prints <span class="ic">bag.get(0)</span>, produces no diagnostic at all; writing <span class="ic">bag.push(key)</span> inline in that same function is an error. Do not treat a clean IFC run as proof that no secret escapes through a container a callee wrote into.</div>
   </div>
 </section>

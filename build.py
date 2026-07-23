@@ -24,6 +24,22 @@ OUT = SRC if IN_PLACE else (SRC / "dist")
 BODIES = SRC / "_bodies"
 FONTS = SRC / "fonts"
 
+# ---------------------------------------------------------------------------
+# A UNICA fonte de verdade para "a versao actual do compilador".
+#
+# Todo o sitio que mostre a versao CORRENTE escreve o token {{CAPA_VERSION}} no
+# fragmento (ou usa esta constante, no caso do rodape); o build substitui. Uma
+# release passa a ser uma linha alterada aqui.
+#
+# ATENCAO: mencoes HISTORICAS ("landed in 1.2.0", "since 1.18.0 the binaries
+# carry provenance", "assets from 1.17.0 and earlier") sao literais de
+# proposito e NAO levam token: continuam verdadeiras depois do proximo bump.
+#
+# check_version_literals() aborta o build se o literal da versao corrente
+# aparecer num fragmento, que e como uma segunda copia se instalava sozinha.
+CAPA_VERSION = "1.19.0"
+VERSION_TOKEN = "{{CAPA_VERSION}}"
+
 CSS = r"""
 :root{
   --paper:#faf9f5; --paper-2:#f3f1e9; --paper-3:#ece9de; --card:#fff;
@@ -337,6 +353,71 @@ def nav(active, P):
   </div>
 </header>'''
 
+def check_version_literals(frag, body):
+    """Aborta se um fragmento tiver o literal da versao corrente.
+
+    O rodape tinha ficado em v1.15.1 enquanto o corpo dizia 1.17.0 porque cada
+    sitio guardava a sua propria copia. Uma copia nova so entra por aqui, e o
+    build recusa-a: escreve-se {{CAPA_VERSION}} e o build substitui. Mencoes
+    historicas de OUTRAS versoes ("landed in 1.2.0") nao sao tocadas.
+    """
+    # Excepcao unica e declarada: um artefacto cujo CONTEUDO depende da versao
+    # (o sha256 do --manifest-digest) nao pode ser gerado por substituicao de
+    # token, so por reexecucao do compilador. O fragmento declara para que
+    # versao foi gerado e o build recusa-se a servir um par dessincronizado.
+    stamps = re.findall(r"<!--\s*digest-generated-for:\s*([0-9.]+)\s*-->", body)
+    for stamp in stamps:
+        if stamp != CAPA_VERSION:
+            raise SystemExit(
+                f"build.py: {frag} declara digest-generated-for: {stamp}, mas "
+                f"CAPA_VERSION e {CAPA_VERSION}. O sha256 do --manifest-digest "
+                f"cobre o campo capa_version, por isso mudou. Regenerar o "
+                f"digest e actualizar o marcador."
+            )
+    # Um defeito MEDIDO ("na 1.19.0 os dois backends respondem ao contrario")
+    # nao e nem corrente nem historico: e uma observacao datada que tem de ser
+    # RE-MEDIDA a cada release, porque a proxima pode te-la corrigido e um bump
+    # automatico passaria a afirmar um defeito que ja nao existe. Marca-se com
+    # <!-- recheck-at-release --> e o build aborta assim que a versao nomeada
+    # deixar de ser a corrente, obrigando alguem a repetir a medicao.
+    lines = body.splitlines()
+    for i, line in enumerate(lines):
+        prev = lines[i - 1] if i else ""
+        if "recheck-at-release" not in line and "recheck-at-release" not in prev:
+            continue
+        named = re.findall(r"\b\d+\.\d+\.\d+\b", line)
+        if named and CAPA_VERSION not in named:
+            raise SystemExit(
+                f"build.py: {frag}:{i + 1} descreve um defeito medido em "
+                f"{named[0]}, mas CAPA_VERSION e {CAPA_VERSION}. Repetir a "
+                f"medicao nesta versao e actualizar (ou remover) a frase; nao "
+                f"basta trocar o numero."
+            )
+
+    # Uma nota de release ("1.19.0 (2026-07-20) passou a recusar X") nomeia a
+    # versao em que o facto aconteceu e continua verdadeira depois do proximo
+    # bump, mesmo quando essa versao e por acaso a corrente. Marca-se com
+    # <!-- historical-version --> na propria linha ou na anterior.
+    def _exempt(i, line):
+        prev = lines[i - 1] if i else ""
+        for mark in ("digest-generated-for", "historical-version",
+                     "recheck-at-release"):
+            if mark in line or mark in prev:
+                return True
+        return False
+
+    hits = [i + 1 for i, line in enumerate(lines)
+            if CAPA_VERSION in line and not _exempt(i, line)]
+    if not hits:
+        return
+    raise SystemExit(
+        f"build.py: {frag} tem o literal {CAPA_VERSION!r} nas linhas "
+        f"{', '.join(map(str, hits))}. Uma afirmacao sobre a versao CORRENTE "
+        f"escreve-se {VERSION_TOKEN}; se a frase for historica (\"landed "
+        f"in X\"), nomeia a versao em que o facto aconteceu, nao a corrente."
+    )
+
+
 def footer(P):
     return f'''<footer class="footer">
   <div class="footer-grid">
@@ -366,7 +447,7 @@ def footer(P):
     </ul></div>
   </div>
   <div class="footer-base">
-    <span>Built by Nelson Duarte &middot; v1.19.0 &middot; MIT or Apache-2.0</span>
+    <span>Built by Nelson Duarte &middot; v{CAPA_VERSION} &middot; MIT or Apache-2.0</span>
     <span>&copy; 2026 Capa</span>
   </div>
 </footer>'''
@@ -630,6 +711,8 @@ if __name__=="__main__":
             print(f"  (falta corpo) {frag} -> ignorado")
             continue
         body=fp.read_text(encoding="utf-8")
+        check_version_literals(frag, body)
+        body=body.replace(VERSION_TOKEN, CAPA_VERSION)
         body=merge_style_classes(extract_inline_styles(body))
         prepared.append((fn,title,desc,active,body,depth))
 

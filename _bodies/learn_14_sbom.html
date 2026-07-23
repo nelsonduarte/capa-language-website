@@ -83,7 +83,7 @@ report by token ending 77c2
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --manifest report.capa
 {
-  "capa_version": "1.19.0",
+  "capa_version": "{{CAPA_VERSION}}",
   "schema_version": 1,
   "filename": "report.capa",
   "functions": [
@@ -261,7 +261,7 @@ report by token ending 77c2
     "buildDefinition": {
       "buildType": "https://capa-language.com/build/transpile-to-python/v1",
       "externalParameters": { "source": "report.capa" },
-      "internalParameters": { "capaVersion": "1.19.0",
+      "internalParameters": { "capaVersion": "{{CAPA_VERSION}}",
                               "target": "python&gt;=3.10" },
       ...
     },
@@ -306,8 +306,13 @@ report by token ending 77c2
     <p>Start with one refinement of Artefact 1. <span class="ic">capa --manifest</span> is for reading. <span class="ic">capa --manifest-digest</span> is the same content in canonical form, wrapped so it can be signed. It sorts every key (the <span class="ic">capa-jcs-sorted-v1</span> canonicalisation), drops nothing, and appends a <span class="ic">content_integrity</span> envelope:</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<!-- digest-generated-for: 1.19.0 -->
+<!-- O sha256 abaixo e calculado SOBRE o manifesto, que contem capa_version:
+     muda a cada release. Ao subir CAPA_VERSION, regenerar com
+     `capa --manifest-digest report.capa` sobre o report.capa deste capitulo e
+     actualizar este marcador. O build aborta enquanto os dois divergirem. -->
 <pre><code>$ capa --manifest-digest report.capa
-{"capa_version":"1.19.0", ... ,
+{"capa_version":"{{CAPA_VERSION}}", ... ,
  "content_integrity":{
    "canonicalization":"capa-jcs-sorted-v1",
    "digest":{"algorithm":"sha256",
@@ -370,6 +375,7 @@ capa: --check-capabilities: OK - every declared capability ceiling holds.</code>
 capa: --check-capabilities: FAILED - 1 ceiling violation(s):
   - package 'report' declares max=['Fs', 'Stdio'] but its own code introduces 'Env'</code></pre></div>
 
+  <!-- recheck-at-release: defeito medido; repetir a medicao a cada release -->
     <div class="note"><strong>What the gate actually verifies.</strong> The verdict is computed over the module graph the compiler read for the entry file you gave it, not over every file a package ships. A package can therefore declare <span class="ic">pure = true</span> and still contain a module holding <span class="ic">Fs</span>, and the gate will report <span class="ic">OK</span> if nothing on the checked entry point imports it. Measured on <span class="ic">1.19.0</span>: a dependency declaring <span class="ic">pure = true</span> with an unimported <span class="ic">fs.write</span> module passes; add an import of that module and the same gate prints <span class="ic">FAILED - 1 ceiling violation(s)</span> and exits 1. Read a green <span class="ic">--check-capabilities</span> as "every ceiling holds for the code reachable from this entry point", and run it over each entry point you ship.</div>
   </div>
 </section>

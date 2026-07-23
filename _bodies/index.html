@@ -10,7 +10,7 @@
         <a class="btn btn-ghost" href="why.html">Why Capa</a>
       </div>
       <div class="hero-meta">
-        <span>v1.19.0</span><span class="d">·</span>
+        <span>v{{CAPA_VERSION}}</span><span class="d">·</span>
         <span>MIT or Apache-2.0</span><span class="d">·</span>
         <span>over 4,000 tests</span><span class="d">·</span>
         <span>hand-written compiler in Python</span>
@@ -230,9 +230,10 @@
       <a class="btn btn-primary" href="start.html" style="margin-top:4px">Get started</a>
     </div>
     <div>
-      <span class="eyebrow">Release · 1.19.0</span>
+      <span class="eyebrow">Release · {{CAPA_VERSION}}</span>
       <h2 style="font-size:2.1rem">Stable and on SemVer</h2>
       <p>The first stable release shipped on <strong>2026-06-03</strong> as 1.0.0. Minor releases since added byte-reproducible SBOMs and attestations via <span class="ic">SOURCE_DATE_EPOCH</span>, the <span class="ic">capa test</span> runner, selective import, and a security-hardening line that closed further soundness and supply-chain findings.</p>
+      <!-- historical-version: esta nota nomeia a release em que o facto aconteceu -->
       <p><strong>1.19.0</strong> (2026-07-20) makes two previously-succeeding builds fail on purpose. A <span class="ic">capa.toml</span> the compiler cannot parse is now a refusal (<span class="ic">capa: broken capa.toml: …</span>, exit 2) instead of a warning followed by a build that ignored the file, and the <span class="ic">capa = "&gt;=X.Y.Z"</span> compiler floor is enforced for the first time after being parsed and ignored since 2026-05-19. <a href="start.html#floor">What that means for your project</a>. <strong>1.18.0</strong> attached SLSA build provenance to the release binaries and the install scripts; <strong>1.18.1</strong> fixed <span class="ic">capa test</span> under a released binary and closed a fail-open in <span class="ic">capa install</span>.</p>
       <p class="muted">Surfaces listed in <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> follow SemVer. The full inventory is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> and on the <a href="roadmap.html">roadmap</a>.</p>
     </div>
