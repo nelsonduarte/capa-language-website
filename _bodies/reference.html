@@ -135,7 +135,8 @@
       <table class="tbl">
         <thead><tr><th>Capability</th><th>Attenuator</th><th>Semantics</th></tr></thead>
         <tbody>
-          <tr><td><span class="ic">Net</span></td><td><span class="ic">restrict_to(host)</span></td><td>Allowed host set, monotonic intersection</td></tr>
+          <!-- recheck-at-release: defeito medido; repetir a medicao a cada release -->
+          <tr><td><span class="ic">Net</span></td><td><span class="ic">restrict_to(host)</span></td><td>Allowed host set, monotonic intersection. Bounds the host a request may be <em>addressed</em> to; on <span class="ic">1.19.0</span> a <span class="ic">3xx</span> redirect from a permitted host is followed without re-checking the set (Python and <span class="ic">capa:host</span>; not <span class="ic">--wasi</span>). See <a href="learn/09-attenuating-capabilities.html#net-redirects">the redirect caveat</a>.</td></tr>
           <tr><td><span class="ic">Fs</span></td><td><span class="ic">restrict_to(prefix)</span></td><td>Allowed path prefix, monotonic</td></tr>
           <tr><td><span class="ic">Env</span></td><td><span class="ic">restrict_to_keys(keys)</span></td><td>Allowed key set, monotonic intersection</td></tr>
           <tr><td><span class="ic">Clock</span></td><td><span class="ic">restrict_to_after(t)</span></td><td>Active only after timestamp</td></tr>

@@ -353,8 +353,12 @@ def nav(active, P):
   </div>
 </header>'''
 
-def check_version_literals(frag, body):
-    """Aborta se um fragmento tiver o literal da versao corrente.
+def check_version_literals(frag, body, problems):
+    """Recolhe (nao levanta) os problemas de versao de UM fragmento.
+
+    Acumula em ``problems`` para que o build os reporte TODOS de uma vez. Uma
+    release toca em varios ficheiros; falhar no primeiro transformava a
+    verificacao num jogo de apanha, um rebuild por frase.
 
     O rodape tinha ficado em v1.15.1 enquanto o corpo dizia 1.17.0 porque cada
     sitio guardava a sua propria copia. Uma copia nova so entra por aqui, e o
@@ -368,8 +372,8 @@ def check_version_literals(frag, body):
     stamps = re.findall(r"<!--\s*digest-generated-for:\s*([0-9.]+)\s*-->", body)
     for stamp in stamps:
         if stamp != CAPA_VERSION:
-            raise SystemExit(
-                f"build.py: {frag} declara digest-generated-for: {stamp}, mas "
+            problems.append(
+                f"{frag}: declara digest-generated-for: {stamp}, mas "
                 f"CAPA_VERSION e {CAPA_VERSION}. O sha256 do --manifest-digest "
                 f"cobre o campo capa_version, por isso mudou. Regenerar o "
                 f"digest e actualizar o marcador."
@@ -387,11 +391,11 @@ def check_version_literals(frag, body):
             continue
         named = re.findall(r"\b\d+\.\d+\.\d+\b", line)
         if named and CAPA_VERSION not in named:
-            raise SystemExit(
-                f"build.py: {frag}:{i + 1} descreve um defeito medido em "
-                f"{named[0]}, mas CAPA_VERSION e {CAPA_VERSION}. Repetir a "
-                f"medicao nesta versao e actualizar (ou remover) a frase; nao "
-                f"basta trocar o numero."
+            problems.append(
+                f"{frag}:{i + 1}: descreve um defeito medido em {named[0]}, "
+                f"mas CAPA_VERSION e {CAPA_VERSION}. Repetir a medicao nesta "
+                f"versao e actualizar (ou remover) a frase; nao basta trocar "
+                f"o numero."
             )
 
     # Uma nota de release ("1.19.0 (2026-07-20) passou a recusar X") nomeia a
@@ -408,14 +412,14 @@ def check_version_literals(frag, body):
 
     hits = [i + 1 for i, line in enumerate(lines)
             if CAPA_VERSION in line and not _exempt(i, line)]
-    if not hits:
-        return
-    raise SystemExit(
-        f"build.py: {frag} tem o literal {CAPA_VERSION!r} nas linhas "
-        f"{', '.join(map(str, hits))}. Uma afirmacao sobre a versao CORRENTE "
-        f"escreve-se {VERSION_TOKEN}; se a frase for historica (\"landed "
-        f"in X\"), nomeia a versao em que o facto aconteceu, nao a corrente."
-    )
+    if hits:
+        problems.append(
+            f"{frag}: tem o literal {CAPA_VERSION!r} nas linhas "
+            f"{', '.join(map(str, hits))}. Uma afirmacao sobre a versao "
+            f"CORRENTE escreve-se {VERSION_TOKEN}; se a frase for historica "
+            f"(\"landed in X\"), nomeia a versao em que o facto aconteceu, "
+            f"nao a corrente."
+        )
 
 
 def footer(P):
@@ -705,16 +709,23 @@ if __name__=="__main__":
     # 0) bodies first: load + strip inline styles so the generated classes exist
     #    before we write styles.css.
     prepared=[]
+    version_problems=[]
     for fn,title,desc,active,frag,depth in PAGES:
         fp=BODIES/frag
         if not fp.exists():
             print(f"  (falta corpo) {frag} -> ignorado")
             continue
         body=fp.read_text(encoding="utf-8")
-        check_version_literals(frag, body)
+        check_version_literals(frag, body, version_problems)
         body=body.replace(VERSION_TOKEN, CAPA_VERSION)
         body=merge_style_classes(extract_inline_styles(body))
         prepared.append((fn,title,desc,active,body,depth))
+    if version_problems:
+        sep = "\n  - "
+        raise SystemExit(
+            f"build.py: versao desalinhada em {len(version_problems)} "
+            f"sitio(s):{sep}" + sep.join(version_problems)
+        )
 
     # 1) static assets (logo, menu.js, fonts) + deploy parity files
     woff=copy_static()

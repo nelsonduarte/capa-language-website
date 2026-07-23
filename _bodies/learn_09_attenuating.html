@@ -33,7 +33,7 @@
     <p>Every built-in capability except <span class="ic">Stdio</span> and <span class="ic">Unsafe</span> has its own attenuator:</p>
 
     <ul>
-        <li><span class="ic">net.restrict_to(host)</span> &middot; only reach this exact host.</li>
+        <li><span class="ic">net.restrict_to(host)</span> &middot; only address this exact host. See the <a href="#net-redirects">redirect caveat</a> below: what the request <em>reaches</em> is not currently bounded by this set.</li>
         <li><span class="ic">fs.restrict_to(prefix)</span> &middot; only paths under this prefix.</li>
         <li><span class="ic">db.restrict_to(prefix)</span> &middot; only database files under this prefix.</li>
         <li><span class="ic">proc.restrict_to(cmd)</span> &middot; only commands whose basename starts with this.</li>
@@ -93,7 +93,17 @@
 
     <p>The implementation: a narrowed <span class="ic">Net</span> carries an internal "allowed hosts" set. <span class="ic">restrict_to</span> on a narrowed cap takes the <em>intersection</em> of the existing set with the newly requested host. Intersections only shrink. There is no method that grows the set. The fresh, unrestricted <span class="ic">Net</span> that <span class="ic">main</span> receives represents the universal allow-list; every narrowing only constrains it.</p>
 
-    <p>Monotonic narrowing is a structural property: any chain of <span class="ic">restrict_to</span> calls always ends at something at least as narrow as where it started. A library given a narrowed cap cannot escape, no matter what it does internally.</p>
+    <p>Monotonic narrowing is a structural property: any chain of <span class="ic">restrict_to</span> calls always ends at something at least as narrow as where it started. There is no method that grows the set, so a library handed a narrowed capability cannot widen it, no matter what it does internally.</p>
+
+    <h3 id="net-redirects" style="scroll-margin-top:84px">The redirect caveat, and what it does and does not break</h3>
+  <!-- recheck-at-release: defeito medido; repetir a medicao a cada release -->
+    <div class="note"><strong>On <span class="ic">1.19.0</span>, an HTTP redirect can currently steer a request to a host the capability does not allow.</strong> <span class="ic">Net.get</span> and <span class="ic">Net.post</span> check <span class="ic">allows(host)</span> against the host in the URL you passed, and then hand the request to a client that follows <span class="ic">3xx</span> redirects without re-checking the new host. A permitted host answering <span class="ic">302 Location: http://localhost:18082/…</span> therefore gets the request delivered to <span class="ic">localhost</span>, while <span class="ic">allows("localhost")</span> on the same capability still answers <span class="ic">false</span>. Measured on the Python backend and on the <span class="ic">capa:host</span> Wasm bridge, which routes through the same code. <strong><span class="ic">--wasi</span> is not affected</strong>: that mode deliberately does not follow redirects and fails closed on a <span class="ic">3xx</span>, which the compiler's own <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/design/wasi_mode.md">WASI design note</a> gives anti-SSRF as the reason for.</div>
+
+    <p>Two things are worth separating here, because only one of them is broken.</p>
+
+    <p><strong>The algebra holds.</strong> The allowed-host set only ever shrinks, and nothing reachable from Capa code widens it. That was attacked directly and did not move. The same monotonic attenuation on <span class="ic">Fs</span>, <span class="ic">Db</span>, <span class="ic">Proc</span> and <span class="ic">Serve</span> was attacked and held. <span class="ic">restrict_to</span> is not theatre.</p>
+
+    <p><strong>The enforcement point is too early.</strong> What fails is that <span class="ic">Net</span> checks the set once, against the address you named, rather than against every host the request actually contacts. So read a narrowed <span class="ic">Net</span> today as a bound on <em>which host your program may address</em>, not yet as a bound on <em>which host the bytes may reach</em>. Until this is closed, do not rely on <span class="ic">net.restrict_to</span> alone as an SSRF or egress control; put the boundary somewhere that sees the redirect too, or run that path under <span class="ic">--wasi</span>.</p>
   </div>
 </section>
 

@@ -80,14 +80,14 @@ $ capa install
 $ export ANTHROPIC_API_KEY=sk-ant-...
 $ capa --run agent.capa -- "What's the weather in Lisbon today? \
     Use get_url with https://wttr.in/Lisbon?format=3"</code></pre></div>
-    <p class="muted">The <span class="ic">get_url</span> allow-list is hard-coded in <span class="ic">agent.capa</span> (<span class="ic">wttr.in</span> and <span class="ic">api.github.com</span>). Point the model at any other host and the wrapper refuses before a request is made.</p>
+    <p class="muted">The <span class="ic">get_url</span> allow-list is hard-coded in <span class="ic">agent.capa</span> (<span class="ic">wttr.in</span> and <span class="ic">api.github.com</span>). Point the model at any other host and the wrapper refuses before a request is made. What the allow-list bounds is the URL the model asks for; it does not bound where an allow-listed host may <em>redirect</em> that request, which is the <a href="learn/09-attenuating-capabilities.html#net-redirects">open caveat on <span class="ic">Net</span></a>.</p>
 
     <h3 style="margin-top:1.8em">Honest limits (v0.1)</h3>
     <ul class="bullets">
       <li><strong>Single user prompt per run.</strong> The loop already supports multi-turn; the entry point does not yet expose it.</li>
       <li><strong>Anthropic Messages API only.</strong> Adding another provider is one new <span class="ic">LlmClient</span> implementor.</li>
       <li><strong>One string input per tool.</strong> Multi-argument schemas would extend <span class="ic">dispatch_tool</span>'s JSON extraction.</li>
-      <li><strong>Hard-coded host allow-list and no streaming.</strong> Production would source the list from configuration or a <span class="ic">restrict_to</span> call.</li>
+      <li><strong>Hard-coded host allow-list and no streaming.</strong> Production would source the list from configuration or a <span class="ic">restrict_to</span> call. Note that <span class="ic">restrict_to</span> would not currently be the stronger of the two against a redirect: see <a href="learn/09-attenuating-capabilities.html#net-redirects">the caveat</a>.</li>
     </ul>
     <div class="nextgrid" style="margin-top:20px">
       <a class="nextcard" href="https://github.com/nelsonduarte/capa_agent_demo"><h4>Read the repository <span class="arr">→</span></h4><p>Four <span class="ic">.capa</span> files: the loop, the attenuated wrappers, the LLM client, the tools.</p></a>
