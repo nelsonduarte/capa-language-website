@@ -38,7 +38,7 @@ FONTS = SRC / "fonts"
 #
 # check_version_literals() aborta o build se o literal da versao corrente
 # aparecer num fragmento, que e como uma segunda copia se instalava sozinha.
-CAPA_VERSION = "1.19.0"
+CAPA_VERSION = "1.25.0"
 VERSION_TOKEN = "{{CAPA_VERSION}}"
 
 CSS = r"""

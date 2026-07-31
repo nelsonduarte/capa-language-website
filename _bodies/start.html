@@ -3,9 +3,9 @@
   <div class="wrap">
     <span class="eyebrow">Get started</span>
     <h1>From zero to a running program in five minutes</h1>
-    <p class="lead">Capa is a Python 3.10+ package that transpiles <span class="ic">.capa</span> source into Python and executes it with a small runtime. Three ways to install; pick one.</p>
+    <p class="lead">Capa is a Python 3.10+ package that transpiles <span class="ic">.capa</span> source into Python and executes it with a small runtime. Four ways to install; pick one.</p>
     <div class="phero-actions">
-      <a class="btn btn-primary" href="#install-a">One-line installer</a>
+      <a class="btn btn-primary" href="#install-a">Install with pip</a>
       <a class="btn btn-ghost" href="#first">Your first program</a>
     </div>
   </div>
@@ -14,10 +14,17 @@
 <section>
   <div class="article">
     <span class="eyebrow">Install</span>
-    <h2>Three paths</h2>
-    <p class="section-intro">The <strong>one-line installer</strong> if you just want <span class="ic">capa</span> on your PATH; the <strong>manual binary</strong> if you prefer to verify the asset yourself; <strong>from source</strong> if you intend to contribute.</p>
+    <h2>Four paths</h2>
+    <p class="section-intro"><strong>pip install</strong> if you already have Python 3.10+; the <strong>one-line installer</strong> if you want <span class="ic">capa</span> on your PATH without it; the <strong>manual binary</strong> if you prefer to verify the asset yourself; <strong>from source</strong> if you intend to contribute.</p>
 
-    <h3 id="install-a" style="scroll-margin-top:90px">Option A: one-line installer <span class="ic">recommended</span></h3>
+    <h3 id="install-a" style="scroll-margin-top:90px">Option A: pip install <span class="ic">recommended</span></h3>
+    <p>If you already have <strong>Python 3.10+</strong>, this is the shortest path. Capa is on PyPI as the distribution <span class="ic">capa-language</span>; the import package and the <span class="ic">capa</span> command are unchanged. Open a new shell and <span class="ic">capa --version</span> should answer.</p>
+    <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">PyPI</span></div>
+<pre><code>$ pip install capa-language
+$ capa --run hello.capa</code></pre></div>
+    <div class="note">The distribution on PyPI is <span class="ic">capa-language</span>; the import package stays <span class="ic">capa</span>, so <span class="ic">import capa</span>, <span class="ic">python -m capa</span> and the <span class="ic">capa</span> command all keep working. The Wasm backend is optional: <span class="ic">pip install "capa-language[wasm]"</span> unlocks <span class="ic">capa --wasm --run</span>. Published through PyPI Trusted Publishing (OIDC), with no stored API token, and a PEP 740 attestation.</div>
+
+    <h3 style="scroll-margin-top:90px">Option B: one-line installer</h3>
     <p>Downloads the latest pre-built binary into <span class="ic">~/.local/bin/capa</span> (Linux / macOS) or <span class="ic">%LOCALAPPDATA%\capa\capa.exe</span> (Windows). Open a new shell and <span class="ic">capa --version</span> should answer.</p>
     <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">Linux / macOS</span></div>
 <pre><code><span class="cm"># Linux / macOS</span>
@@ -26,8 +33,8 @@ $ curl -fsSL https://github.com/nelsonduarte/capa-language/releases/latest/downl
 <pre><code>PS&gt; irm https://github.com/nelsonduarte/capa-language/releases/latest/download/install.ps1 | iex</code></pre></div>
     <div class="note"><strong>Verify before you run.</strong> Each one-liner has a companion <span class="ic">.sha256</span> in the same release. Download both, <span class="ic">sha256sum -c install.sh.sha256</span>, read the script, then <span class="ic">bash install.sh</span>. Override the location with <span class="ic">INSTALL_DIR</span> / <span class="ic">CAPA_INSTALL_DIR</span>; the installer is idempotent; rerun to upgrade. It adds the install dir to your PATH automatically (set <span class="ic">CAPA_NO_MODIFY_PATH=1</span> to opt out).</div>
 
-    <h3>Option B: manual binary download</h3>
-    <p>Each tagged release publishes a standalone PyInstaller binary that bundles the compiler and a Python interpreter into one file. No <span class="ic">pip install</span>, no Python required. The language server is bundled too, so <span class="ic">capa lsp</span> works straight from it.</p>
+    <h3>Option C: manual binary download</h3>
+    <p>Each tagged release publishes a standalone PyInstaller binary that bundles the compiler and its own Python interpreter into one file, so it runs on a machine with no Python installed. The language server is bundled too, so <span class="ic">capa lsp</span> works straight from it.</p>
     <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">Linux · x86_64</span></div>
 <pre><code>$ curl -L -o capa \
    https://github.com/nelsonduarte/capa-language/releases/latest/download/capa-linux-x86_64
@@ -46,7 +53,7 @@ $ ./capa --run hello.capa</code></pre></div>
 PS&gt; .\capa.exe --run hello.capa</code></pre></div>
     <div class="note">Each binary ships a matching <span class="ic">.sha256</span>; verify with <span class="ic">sha256sum -c</span> before running. Since <strong>1.18.0</strong> the binaries and the two install scripts also carry SLSA build provenance: <span class="ic">gh attestation verify capa-linux-x86_64 --owner nelsonduarte</span> checks who built the file and from what source, which a hash cannot. Assets from <span class="ic">1.17.0</span> and earlier have no attestation and that command returns 404 for them; they were deliberately not retro-signed, so a 404 on an older asset is history, not tampering. On Linux the binary is a CLI tool, not a desktop app: open a terminal and <span class="ic">chmod +x</span> rather than double-clicking. The macOS build is not yet notarised, so remove the quarantine attribute or allow it in System Settings → Privacy &amp; Security.</div>
 
-    <h3>Option C: from source</h3>
+    <h3>Option D: from source</h3>
     <p>Requirements: <strong>Python 3.10+</strong> and <strong>git</strong>. Tested on 3.10, 3.12 and 3.14 across all three platforms. Zero runtime dependencies outside the standard library.</p>
     <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">source install</span></div>
 <pre><code>$ git clone https://github.com/nelsonduarte/capa-language
