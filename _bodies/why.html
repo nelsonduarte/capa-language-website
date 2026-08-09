@@ -198,10 +198,13 @@ stdio.<span class="fn">println</span>(masked)</code></pre>
   </div>
 
   <h3>Calling a Capa check from another language</h3>
-  <!-- language-list: keep in sync with the index.html "Where to go next" bullet.
-       If a Go host is confirmed end-to-end, extend both from "Python (wasmtime-py),
-       JavaScript (jco), and Rust (the wasmtime crate)" to include Go. -->
-  <p>A Capa function compiles to a WebAssembly Component Model component (<span class="ic">capa --wasm --component</span>), which a Component-Model-aware host can instantiate. A component built this way has been called end-to-end from Python (wasmtime-py), JavaScript (jco), and Rust (the wasmtime crate). Two things bound what the boundary buys you, and both are worth stating plainly.</p>
+  <!-- language-list: keep this in sync with the index.html "Where to go next"
+       bullet. Verified end-to-end today: Python (wasmtime-py), JavaScript (jco),
+       Rust (the wasmtime crate), and C or C++ (the official Wasmtime C API).
+       Tried and NOT working end-to-end, so kept out: Go, Java (Chicory, no
+       Component-Model support), C# (Wasmtime .NET, no Component-Model host API).
+       Add a host to both lines only after it is confirmed end-to-end. -->
+  <p>A Capa function compiles to a WebAssembly Component Model component (<span class="ic">capa --wasm --component</span>), which a Component-Model-aware host can instantiate. A component built this way has been called end-to-end from Python (wasmtime-py), JavaScript (jco), Rust (the wasmtime crate), and C or C++ (the official Wasmtime C API). Two things bound what the boundary buys you, and both are worth stating plainly.</p>
   <p><strong>The shape is a yes/no check, not an arbitrary function.</strong> The component exports exactly <span class="ic">main</span>. Its inputs are capability handles, not data: a value the check needs arrives through a capability such as <span class="ic">Env</span>, never as a string argument. Its return is a single scalar, one of <span class="ic">Int</span>, <span class="ic">Float</span>, <span class="ic">Bool</span>, or <span class="ic">Unit</span>. A <span class="ic">String</span> return is refused:</p>
   <div class="code">
     <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa --wit</span></div>
