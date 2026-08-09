@@ -177,6 +177,58 @@ stdio.<span class="fn">println</span>(masked)</code></pre>
   </ul>
   <p>The same content shows up downstream in whatever process needs it: dependency review, audit, regulator-facing evidence under CRA / NIS2 / DORA / NIST SSDF / OWASP SCVS. The mapping across those frameworks lives on the <a href="regulatory.html">regulatory page</a>. Capa's contribution at the language layer is the discipline itself; the emitters are a consequence of having the information in the right place.</p>
 
+  <h2 id="complement" class="anchor">Adding a provable Capa piece to your existing stack</h2>
+  <p>Nobody rewrites a working service in a new language, and Capa does not ask you to. The realistic way to adopt it is to carve out one component that has to be provable and leave the rest of your stack exactly where it is. Two company-facing needs fit that shape today: software auditing and SBOM, and secrets handling. This is a complement, not a replacement.</p>
+
+  <h3>The fully-real piece: source-level audit artefacts</h3>
+  <p>Write the component you want to be accountable for in Capa, and the same compile that checks the capability discipline emits its supply-chain evidence. None of this needs a runtime, a Wasm toolchain, or a network connection:</p>
+  <ul class="emitters">
+    <li><span class="ic">capa --manifest</span>: a per-function record, listing each function's <span class="ic">declared_capabilities</span>, the <span class="ic">provably_excluded_capabilities</span> it can never reach, and an <span class="ic">authority_provable_from_types</span> flag.</li>
+    <li><span class="ic">capa --manifest-digest</span>: the same manifest wrapped in a <span class="ic">content_integrity</span> envelope (canonical bytes, SHA-256), with the verify procedure written into the document itself. The compiler holds no keys and never signs; the signature slot is left open for you (SLSA Build L1).</li>
+    <li><span class="ic">capa --cyclonedx</span>: a CycloneDX 1.5 SBOM with the capability data embedded, plus <span class="ic">--spdx</span>, <span class="ic">--vex</span> and <span class="ic">--provenance</span> from the same compile.</li>
+    <li><span class="ic">capa --compose-sbom</span>: a product-wide roll-up across a multi-package project.</li>
+    <li><span class="ic">capa --check-capabilities</span>: a CI gate. It fails with a non-zero exit if any function reaches an authority outside the <span class="ic">max = [...]</span> or <span class="ic">pure = true</span> ceiling declared in <span class="ic">capa.toml</span>.</li>
+  </ul>
+  <p>Because the manifest is derived from the source, a third party who holds the source and the compiler can recompute the digest and confirm it independently. The claim is not "trust our scanner"; it is "re-run the compiler and check the bytes."</p>
+  <p>The gate is what makes this usable in CI. Declare the ceiling once, and a dependency bump or a refactor that quietly introduces <span class="ic">Net</span> fails the build with the offending authority named:</p>
+  <div class="code">
+    <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa --check-capabilities</span></div>
+<pre><code><span class="er">capa: --check-capabilities: FAILED - 1 ceiling violation(s):</span>
+<span class="er">  - package 'gatecheck' declares max=['Stdio'] but its own code introduces 'Net'</span></code></pre>
+  </div>
+
+  <h3>Calling a Capa check from another language</h3>
+  <!-- language-list: keep in sync with the index.html "Where to go next" bullet.
+       If a Go host is confirmed end-to-end, extend both from "Python (wasmtime-py),
+       JavaScript (jco), and Rust (the wasmtime crate)" to include Go. -->
+  <p>A Capa function compiles to a WebAssembly Component Model component (<span class="ic">capa --wasm --component</span>), which a Component-Model-aware host can instantiate. A component built this way has been called end-to-end from Python (wasmtime-py), JavaScript (jco), and Rust (the wasmtime crate). Two things bound what the boundary buys you, and both are worth stating plainly.</p>
+  <p><strong>The shape is a yes/no check, not an arbitrary function.</strong> The component exports exactly <span class="ic">main</span>. Its inputs are capability handles, not data: a value the check needs arrives through a capability such as <span class="ic">Env</span>, never as a string argument. Its return is a single scalar, one of <span class="ic">Int</span>, <span class="ic">Float</span>, <span class="ic">Bool</span>, or <span class="ic">Unit</span>. A <span class="ic">String</span> return is refused:</p>
+  <div class="code">
+    <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa --wit</span></div>
+<pre><code><span class="er">capa: --wit: main returning 'String' is not supported by the WASM</span>
+<span class="er">component backend; return a scalar (Int / Float / Bool) or Unit</span></code></pre>
+  </div>
+  <p>So the honest use is: compile a security decision into a component and get a yes/no answer back. An <span class="ic">Env</span>-fed token check that returns <span class="ic">Bool</span> is the canonical shape. Its whole interface is a capability handle in, a scalar out:</p>
+  <div class="code">
+    <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">program.wit</span></div>
+<pre><code><span class="k">interface</span> <span class="ty">env</span> {
+  get: <span class="k">func</span>(handle: <span class="ty">u32</span>, name: <span class="ty">string</span>) <span class="pu">-&gt;</span> <span class="ty">option</span>&lt;<span class="ty">string</span>&gt;;
+}
+<span class="k">world</span> <span class="ty">program</span> {
+  <span class="k">import</span> env;
+  <span class="k">export</span> main: <span class="k">func</span>(cap0-env: <span class="ty">u32</span>) <span class="pu">-&gt;</span> <span class="ty">bool</span>;
+}</code></pre>
+  </div>
+  <p><strong>One bound survives to any host; the finer ones do not.</strong> A component can import only the interfaces its WIT declares, and the runtime gives it nothing else. So the coarse authority bound (this component can touch <span class="ic">Env</span> and nothing else, no <span class="ic">Net</span>, no <span class="ic">Fs</span>) holds in any Component-Model host, including a foreign one. What does <em>not</em> cross the boundary automatically is the finer machinery. Capability attenuation (<span class="ic">restrict_to</span> on <span class="ic">Net</span> / <span class="ic">Fs</span>, <span class="ic">restrict_to_keys</span> on <span class="ic">Env</span>) does appear at the boundary as an interface call, but its <em>enforcement</em> lives in the host's implementation of the handle table, which Capa's own host provides. A naive foreign host that reimplements the interface and ignores the narrowing will hand back a value Capa's host would have denied. And <span class="ic">@secret</span> is a source-level analysis with no representation at the component boundary: the component carries no labels and enforces none. Both properties are real, and both are Capa-host or source-level properties, not something the emitted binary imposes on an arbitrary host.</p>
+
+  <h3>What this needs today</h3>
+  <ul class="bullets">
+    <li><strong>The host side is not documented yet.</strong> A foreign host must hand-implement the <span class="ic">capa:host/*</span> interfaces the component imports (for the token check above, <span class="ic">capa:host/env</span>). There is no drop-in host binding shipped.</li>
+    <li><strong>The Wasm path needs external tools.</strong> <span class="ic">wasm-tools</span> and a Component-Model runtime must be present; these are not Python dependencies that <span class="ic">pip</span> pulls in.</li>
+    <li><strong>Auditing is over the source, not a handed-over binary.</strong> The provenance subject is the SHA-256 of the source file, and there is no attested link binding a manifest or provenance to a specific deployed <span class="ic">.wasm</span>. Reproduce and verify from the source you were given.</li>
+  </ul>
+  <p>You keep your stack. You add one Capa piece where being able to prove the authority surface, or hand an auditor a manifest they can recompute, is worth more than the convenience of writing that piece inline.</p>
+
   <h2>What Capa does <em>not</em> solve</h2>
   <p>To be honest about the limits:</p>
   <ul class="bullets">
