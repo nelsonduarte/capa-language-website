@@ -713,6 +713,7 @@ PAGES=[
  ("roadmap.html","Roadmap | Capa","What is done, what is next, and what is explicitly out of scope for Capa.","roadmap","roadmap.html",0),
  ("releases.html","Releases | Capa","Per-version release notes for Capa, newest first: what changed, a short before-and-after, and the honest scope of each fix.","releases","releases_index.html",0),
  ("whats-new-1.31.0.html","What's New in Capa 1.31.0 | Capa","What changed in Capa 1.31.0: an information-flow security fix that flags a @secret value leaked from inside a closure body.","releases","whats_new_1_31_0.html",0),
+ ("design-1.31.0.html","Capa 1.31.0 design record | Capa","The technical design record for Capa 1.31.0: model, mechanism, verification and residuals of the capture-internal-sink information-flow fix.","releases","design_1_31_0.html",0),
  ("stdlib.html","Standard library | Capa","The Capa standard library: modules, capabilities and core types.","stdlib","stdlib.html",0),
  ("packages.html","Packages | Capa","The Capa package registry: curated, first-party libraries installed by name with capa add over a GPG-signed index.","packages","packages.html",0),
  ("community.html","Community | Capa","How to get involved with Capa.","community","community.html",0),

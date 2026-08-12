@@ -16,7 +16,7 @@
     <h2>Release notes</h2>
     <p class="section-intro">Pick a version to read its notes. The most recent release is at the top; the list grows as the earlier history is written up.</p>
     <ul class="linklist">
-      <li><a href="whats-new-1.31.0.html">Capa 1.31.0</a> <span class="desc">&middot; 2026-08-11 &middot; an information-flow security fix: a value marked <span class="ic">@secret</span>, captured by a closure and leaked inside the closure body, is now flagged.</span></li> <!-- historical-version: names the release the note is about -->
+      <li><a href="whats-new-1.31.0.html">Capa 1.31.0</a> <span class="desc">&middot; 2026-08-11 &middot; an information-flow security fix: a <span class="ic">@secret</span> value captured by a closure and sunk inside that closure's body after the taint arrived is now flagged, a warning by default and a hard error under <span class="ic">@strict_ifc</span>. <a href="design-1.31.0.html">Technical details</a>.</span></li> <!-- historical-version: names the release the note is about -->
     </ul>
     <div class="note">The full machine-readable history is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a>, and every security fix has a matching entry under <a href="https://github.com/nelsonduarte/capa-language/tree/main/docs/advisories">security advisories</a>. Older versions will be summarised here as their notes are backfilled.</div>
   </div>

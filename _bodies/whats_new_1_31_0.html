@@ -3,62 +3,88 @@
   <div class="wrap">
     <span class="eyebrow">Releases &middot; 1.31.0</span> <!-- historical-version: names the release this page documents -->
     <h1>What's new in Capa 1.31.0</h1> <!-- historical-version: names the release this page documents -->
-    <p class="lead">A small information-flow security fix. A value marked <span class="ic">@secret</span>, captured by a closure and then leaked from inside that closure's own body, used to slip past the checker with no diagnostic at all. This release flags it: a warning by default, and a hard error under <span class="ic">@strict_ifc</span>.</p>
+    <p class="lead">An information-flow security fix. A value marked <span class="ic">@secret</span>, captured by a closure and then sunk from <em>inside</em> that closure's own body after the taint arrived, used to slip past the checker with no diagnostic at either tier. This release flags it: a warning by default, and a hard error under <span class="ic">@strict_ifc</span>, on both backends.</p>
     <div class="phero-actions">
       <a class="btn btn-ghost" href="releases.html">&larr; All releases</a>
+      <a class="btn btn-soft" href="design-1.31.0.html">Technical design record &rarr;</a> <!-- historical-version: permanent route name for this release's design page -->
     </div>
   </div>
 </section>
 
 <section>
   <div class="article"><h2>What this release is</h2>
-    <p>Capa 1.31.0 is an information-flow security fix, and only that. It closes a case where a value you marked <span class="ic">@secret</span> could reach a public sink, a log line or a network call, with no signal to the author: no warning at the default tier, and not even an error under <span class="ic">@strict_ifc</span>. That silence at both tiers was the whole problem, because the author wrote <span class="ic">@secret</span>, believed the value was protected, and it was not.</p> <!-- historical-version: names the release this page documents -->
-    <p>It is a minor release. The only programs it affects are the ones that were already leaking a secret without a warning; every correct program compiles exactly as before. That follows the same rule the earlier information-flow soundness fixes on the 1.x line used: tightening a static check so a program that was silently unsound now warns is a security fix, not a breaking change.</p>
+    <p>Capa 1.31.0 is an information-flow security fix, and only that. It closes a case where a value you marked <span class="ic">@secret</span> could reach a public sink (a log line, a network call) with no signal to the author: no warning at the default tier, and not even an error under <span class="ic">@strict_ifc</span>. That silence at both tiers was the whole problem, because the author wrote <span class="ic">@secret</span>, believed the value was protected, and it was not.</p> <!-- historical-version: names the release this page documents -->
+    <p>It is a minor release. The only programs it affects are the ones that were already leaking a secret without a diagnostic; every correct program compiles exactly as before. That follows the same rule the earlier information-flow soundness fixes on the 1.x line used: tightening a static check so a program that was silently unsound now warns is a security fix under the project's stability policy, not a breaking change. Severity is low to moderate, confidentiality only, and the fix touches the analyzer alone (no runtime or code-generation change).</p>
   </div>
 </section>
 
 <section class="band">
   <div class="article"><h2>What changed, in plain terms</h2>
-    <p>A closure is a small inline function that can capture the variables around it. Deferring a log line or a serialise step into a closure and calling it a moment later is an everyday pattern. The leak lived in the order of events:</p>
+    <p>A closure is a small inline function that captures the variables around it. Deferring a log line or a serialise step into a closure and calling it a moment later is an everyday pattern. The leak lived in the <strong>order of events</strong>:</p>
     <ul class="bullets">
-      <li>A closure captured a variable that was still <strong>public</strong> when the closure was written.</li>
-      <li>The <span class="ic">@secret</span> value was stored into that variable <strong>after</strong> the closure was written.</li>
+      <li>A closure captured a value that was still <strong>public</strong> when the closure was written.</li>
+      <li>The <span class="ic">@secret</span> value was stored into that captured value <strong>after</strong> the closure was written.</li>
       <li>The closure was then called, and its body sent the now-secret value to a public sink.</li>
     </ul>
-    <p>The checker read the closure body once, at the point it was written, when the captured value was still public, and never looked at it again at the call. So the later taint was missed entirely. Each closure now also carries a summary of which captured values reach a sink inside its body. At the call the compiler checks the <em>live</em> label of each of those captured values, and a captured <span class="ic">@secret</span> reaching an internal sink is flagged at the call site, on both the interpreter and the Wasm backend.</p>
+    <p>The checker read the closure body once, at the point it was written, when the captured value was still public, and never looked at it again at the call. So the later taint was missed entirely. The prior release (1.30.0) had already learned to re-check a capture when the closure's <em>returned result</em> is sunk by the caller, but a sink <em>internal</em> to the body, where the closure returns nothing and prints the captured value itself, carries no result to inspect and stayed silent. Capa 1.31.0 gives each closure a summary of which captured values reach a sink inside its body; at the call it checks the <em>live</em> label of each of those captured values, and a captured <span class="ic">@secret</span> reaching an internal sink is now flagged at the call site. The check runs in the analyzer, before code generation, so the diagnostic is identical on the interpreter and the Wasm backend.</p> <!-- historical-version: describes what this release did -->
   </div>
 </section>
 
 <section>
   <div class="article"><h2>Before and after</h2>
-    <p>The closure below captures <span class="ic">bag</span>, the secret is written into <span class="ic">bag</span> afterwards, and the closure sinks it:</p>
+    <p>The closure below captures <span class="ic">bag</span>. The secret is written into <span class="ic">bag</span> afterwards, and the closure sinks it from inside its own body:</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">leak.capa</span></div>
-<pre><code><span class="k">type</span> <span class="ty">Bag</span> { <span class="pu">data:</span> <span class="ty">String</span> }
+<pre><code><span class="k">const</span> TOKEN: <span class="cp">@secret</span> <span class="ty">String</span> = <span class="st">"s3cr3t"</span>
+
+<span class="k">type</span> <span class="ty">Bag</span> { <span class="pu">data:</span> <span class="ty">String</span> }
 
 <span class="k">fun</span> <span class="fn">leak</span>(stdio: <span class="cp">Stdio</span>, secret: <span class="cp">@secret</span> <span class="ty">String</span>)
     <span class="k">var</span> bag: <span class="ty">Bag</span> = <span class="ty">Bag</span> { <span class="pu">data:</span> <span class="st">"public"</span> }
     <span class="k">let</span> log: <span class="ty">Fun</span>() <span class="pu">-&gt;</span> <span class="ty">Unit</span> = <span class="k">fun</span>() <span class="pu">-&gt;</span> <span class="ty">Unit</span> <span class="pu">=&gt;</span> stdio.<span class="fn">println</span>(bag.data)
     bag.data = secret        <span class="cm">// the secret arrives after log is defined</span>
-    <span class="fn">log</span>()                    <span class="cm">// sinks the secret inside the closure body</span></code></pre></div>
+    <span class="fn">log</span>()                    <span class="cm">// sinks the secret inside the closure body</span>
 
-    <p>On earlier versions <span class="ic">capa --check</span> reported <span class="ic">ok</span> and exited 0, and even adding <span class="ic">@strict_ifc</span> reported no error, while the program printed the secret at run time. Now the default check warns:</p>
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="fn">leak</span>(stdio, TOKEN)</code></pre></div>
 
-<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+    <p>On 1.30.1 (and earlier releases on the 1.x line) the checker was silent at both tiers, and both backends printed the secret at run time:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.1</span></div>
 <pre><code>$ capa --check leak.capa
-warning: information-flow: a @secret value is passed to 'log' as the
-  captured 'bag', which reaches a public sink inside 'log' (it sends
-  data out of the program). Route it through
-  declassify(value, reason: "...") if this disclosure is intended.</code></pre></div>
+leak.capa: ok (4 items, 15 expressions typed, 8 bindings)
 
-    <p>Under <span class="ic">@strict_ifc</span> the same finding is a hard error and the build exits non-zero, so a pipeline that gates on strict mode now stops it. If the disclosure is genuinely intended, route the value through <span class="ic">declassify(value, reason: "...")</span>, exactly as in the <a href="learn/13-information-flow.html">information-flow chapter</a>; a closure that declassifies the value it sinks stays clean.</p>
+$ capa --run leak.capa            # Python backend
+s3cr3t
+
+$ capa --run --wasm leak.capa     # Wasm backend
+s3cr3t</code></pre></div>
+
+    <p>Adding <span class="ic">@strict_ifc()</span> to <span class="ic">leak</span> made no difference on 1.30.1: <span class="ic">capa --check</span> still reported <span class="ic">ok</span> and exited 0 while the secret escaped. On 1.31.0 the default check warns at the call site:</p> <!-- historical-version: contrasts this release with the prior one -->
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.31.0</span></div> <!-- historical-version: labels the release whose output this is -->
+<pre><code>$ capa --check leak.capa
+leak.capa:9:5: warning: information-flow: a @secret value is passed to 'log' as the captured 'bag', which reaches a public sink inside 'log' (it sends data out of the program). Route it through declassify(value, reason: "...") if this disclosure is intended.
+   9 |     log()                    // sinks the secret inside the closure body
+           ^
+
+leak.capa: ok (4 items, 15 expressions typed, 8 bindings)</code></pre></div>
+
+    <p>Add <span class="ic">@strict_ifc()</span> to <span class="ic">leak</span> and the same finding becomes a hard error: <span class="ic">capa --check</span> exits 1, so a pipeline that gates on strict mode now stops the build. A warning does not block, so <span class="ic">capa --run</span> still prints the secret at the default tier on both backends (the warning is printed first); it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. If the disclosure is genuinely intended, route the value through <span class="ic">declassify(value, reason: "...")</span>, exactly as in the <a href="learn/13-information-flow.html">information-flow chapter</a>; a closure that declassifies the value it sinks stays clean.</p>
   </div>
 </section>
 
 <section class="band">
   <div class="article"><h2>An honest scope</h2>
-    <p>This is a security fix with a deliberately narrow, disclosed scope. It closes the <strong>locally-resolved</strong> case: a closure bound to a name and called in the same place, or one that is immediately invoked, where the sink is reached directly or through a named helper. That is the common shape, and it is now covered on both backends.</p>
-    <p>It does not close every closure shape, and the advisory says so plainly. Still open, and documented as tested residuals, are closures that <em>escape</em> local resolution (aliased to another name, passed to another function and called there, or returned), a sink reached only through a further nested inline closure, and a few container-aliasing shapes. These remain honest, known limitations rather than silent ones. If you want the full list and the reasoning, read the advisory below.</p>
+    <p>This is a security fix with a deliberately narrow, disclosed scope. It closes the <strong>locally-resolved</strong> case: a closure bound to a name and called in the same scope, or one that is immediately invoked, where the sink is reached directly or through a named helper, and the taint arrives by a field store, a container push, or a called function's field-write. That is the common shape, and it is now covered on both backends. It is <strong>not</strong> "capture-internal sinks are closed".</p>
+    <p>The following stay open, each a known, tested false negative that still leaks unflagged at run time on both backends, documented rather than silent:</p>
+    <ul class="bullets">
+      <li>Closures that <strong>escape</strong> local resolution: aliased to another name (<span class="ic">let g = f; g()</span>), passed to another function and invoked there (<span class="ic">apply(f)</span>), returned, or reassigned. Closing these needs a higher-order control-flow analysis Capa does not have.</li>
+      <li>A sink reached <strong>only through a further nested inline closure</strong>: the body-summary walk follows calls to named functions and methods, not to a local lambda binding.</li>
+      <li>A few <strong>container-aliasing</strong> shapes inherited from the underlying taint channel: a container moved out of its struct, or a mutator whose receiver is rooted at a call or an index rather than a binding.</li>
+      <li>A <strong>loop-carried</strong> read placed textually before the push that would feed it, which the one-pass body summary does not see.</li>
+    </ul>
+    <p>In the other direction the fix errs toward flagging: in a small number of sound cases it warns where nothing actually leaks (for example a whole-struct read of a clean field of a struct whose <em>different</em> field was later made secret). Those over-reports never hide a leak, and are listed alongside the residuals in the advisory. For the full reasoning, the reproduction, and the complete list, read the advisory or the technical design record linked below.</p>
     <div class="note"><strong>Warnings do not block.</strong> As with every information-flow finding in Capa, the default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. Gate on strict mode in CI if you want the guarantee enforced.</div>
   </div>
 </section>
@@ -66,10 +92,10 @@ warning: information-flow: a @secret value is passed to 'log' as the
 <section>
   <div class="article"><h2>Learn more</h2>
     <ul class="linklist">
-      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-11-ifc-capture-internal-sink.md">Security advisory</a> <span class="desc">: the full write-up, the reproduction, the severity, and the complete list of residuals that stay open.</span></li>
+      <li><a href="design-1.31.0.html">Technical design record</a> <span class="desc">: the deep engineering companion to this page, for contributors and auditors: the model, the mechanism in the analyzer with file and line references, the alternatives rejected, how it was verified, and every residual.</span></li> <!-- historical-version: permanent route name for this release's design page -->
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-11-ifc-capture-internal-sink.md">Security advisory</a> <span class="desc">: the severity, the reproduction, and the complete list of residuals and over-reports.</span></li>
       <li><a href="learn/13-information-flow.html">Information-flow control</a> <span class="desc">: the chapter that introduces <span class="ic">@secret</span>, the sinks, and <span class="ic">declassify</span>.</span></li>
       <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> <span class="desc">: the machine-readable entry for this release.</span></li>
-      <li><strong>Technical design spec</strong> <span class="desc">: the deep design record for this fix is being published and will be linked here. <span class="ic">coming soon</span></span></li>
     </ul>
   </div>
 </section>
@@ -79,7 +105,7 @@ warning: information-flow: a @secret value is passed to 'log' as the
     <span class="eyebrow">Keep going</span>
     <div class="nextgrid">
       <a class="nextcard" href="releases.html"><h4><span class="arr">&larr;</span> All releases</h4><p>Back to the version index.</p></a>
-      <a class="nextcard" href="learn/13-information-flow.html"><h4>Information-flow control <span class="arr">&rarr;</span></h4><p>How <span class="ic">@secret</span> data is tracked, and where it may and may not go.</p></a>
+      <a class="nextcard" href="design-1.31.0.html"><h4>Technical design record <span class="arr">&rarr;</span></h4><p>The engineering-level record of the fix: model, mechanism, verification, residuals.</p></a> <!-- historical-version: permanent route name for this release's design page -->
     </div>
   </div>
 </section>
