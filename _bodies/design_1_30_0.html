@@ -1,0 +1,163 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Design record &middot; 1.30.0</span>
+    <h1>Lambda-flow sensitivity information-flow fix</h1>
+    <p class="lead">The engineering-level record for Capa 1.30.0, the companion to its <a href="1.30.0.html">What's New</a> page. It states what was built, the model it rests on, the mechanism in the analyzer with file and line references, the alternatives rejected, how it was verified, and every residual that stays open. Claims are labelled MEASURED (read or run) or JUDGEMENT (reasoned inference).</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="1.30.0.html">&larr; What's New</a>
+      <a class="btn btn-soft" href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-10-ifc-lambda-flow-sensitivity.md">Security advisory &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:30px">
+  <div class="docs">
+    <nav class="toc">
+      <h6>Sections</h6>
+      <ol>
+        <li><a href="#summary">Summary</a></li>
+        <li><a href="#problem">Problem and threat</a></li>
+        <li><a href="#model">Model and prior art</a></li>
+        <li><a href="#mechanism">Mechanism</a></li>
+        <li><a href="#alternatives">Alternatives considered</a></li>
+        <li><a href="#verification">Verification</a></li>
+        <li><a href="#scope">Scope and residuals</a></li>
+        <li><a href="#xrefs">Cross-references</a></li>
+      </ol>
+    </nav>
+
+    <div class="docbody">
+      <div class="note"><strong>Sources.</strong> The released analyzer source read from a clean <span class="ic">pip install capa-language==1.30.0</span> (not the repository working tree, which sits on an unrelated branch); the fix commits <span class="ic">d8a31c5</span>, <span class="ic">5189908</span>, <span class="ic">099e2bc</span>, <span class="ic">ff65822</span>, <span class="ic">38dff85</span> and the release commit <span class="ic">cafe73d</span> from the git object store; the advisory <span class="ic">docs/advisories/2026-08-10-ifc-lambda-flow-sensitivity.md</span>; and the pinning tests in <span class="ic">tests/test_ifc_branch_scoped_container.py</span>. The before/after was run on clean 1.29.0 and 1.30.0 installs, on both backends. Every file and line reference below was confirmed against the installed 1.30.0 package.</div>
+
+      <h2 id="summary"><span class="nx">1</span>Summary</h2>
+      <p>Capa 1.30.0 is an information-flow (IFC) soundness fix. Before it, a <span class="ic">@secret</span> value that reached a public sink through a <em>locally-resolved lambda</em>, either bound to the lambda's parameter or captured by a closure and read back through its result, leaked with no diagnostic at either tier: <span class="ic">capa --check</span> reported <span class="ic">ok</span>, an <span class="ic">@strict_ifc</span> build reported zero errors, and the secret reached the sink at run time on both backends. The identical flow written as a direct named call was already flagged, so the gap was the lambda indirection, not the sink. A lambda's flow and capture labels were stamped at its definition, and the call branch for a function value did no information-flow work.</p>
+      <p>The fix applies a lambda's latent flow signature at the application site: each lambda literal is summarised on the same sink-reaching fixpoint as a named function and applied at a locally-resolved call, and each captured binding's live label is re-read at the invocation. A coupled correctness change rejects a named argument at a first-class call, which had no sound meaning and diverged between the two backends. It ships under the <span class="ic">STABILITY.md</span> security exception as a MINOR bump. Severity is low to moderate, confidentiality only.</p>
+
+      <h2 id="problem"><span class="nx">2</span>Problem and threat</h2>
+      <p><strong>Property at stake.</strong> Capa treats information-flow control over <span class="ic">@secret</span> data as a first-class, machine-checked security property: a <span class="ic">@secret</span> value must not reach a public sink (<span class="ic">Stdio.println</span> / <span class="ic">eprintln</span>, <span class="ic">Net.post</span>, <span class="ic">panic</span>, a sink-reaching parameter of a further function) without an explicit <span class="ic">declassify</span>. The noninterference guarantee is claimed only under <span class="ic">@strict_ifc</span>, where the check is a hard error; by default it is a warning.</p>
+      <p><strong>Threat model.</strong> A silent false negative: the author writes <span class="ic">@secret</span>, believes they are protected, and a build that gates noninterference on <span class="ic">@strict_ifc</span> passes while the secret escapes at run time. There is no integrity or availability impact and no bypass of the capability discipline; the break is confidentiality only. The advisory's illustrative vector is <span class="ic">CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N</span> (about 5.3), with <span class="ic">AC:H</span> reflecting that the specific lambda-indirection shape and the <span class="ic">@secret</span> annotation must all be present.</p>
+      <p><strong>Two distinct pre-fix mechanisms (MEASURED).</strong> Face 1, the parameter-sink: a call whose callee is a <span class="ic">Fun</span>-typed local or an IIFE went through a branch that consulted no sink summary and bound the arguments positionally, so a <span class="ic">@secret</span> bound to a lambda parameter reaching a sink inside the body was silently public. Face 2, the container-capture result-sink: a closure's captured labels were stamped at the closure's definition and never re-reflected when a captured binding was mutated afterwards, so a container captured before a push and read through the closure's result was silently public.</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">face1_param_sink.capa</span></div>
+<pre><code><span class="k">const</span> TOKEN: <span class="cp">@secret</span> <span class="ty">String</span> = <span class="st">"s3cr3t"</span>
+<span class="k">fun</span> <span class="fn">sink_str</span>(s: <span class="ty">String</span>, stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(s)
+<span class="k">fun</span> <span class="fn">leak</span>(stdio: <span class="cp">Stdio</span>, secret: <span class="cp">@secret</span> <span class="ty">String</span>)
+    <span class="k">let</span> g: <span class="ty">Fun</span>(<span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Unit</span> = <span class="k">fun</span>(s: <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Unit</span> <span class="pu">=&gt;</span> <span class="fn">sink_str</span>(s, stdio)
+    <span class="fn">g</span>(secret)
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="fn">leak</span>(stdio, TOKEN)</code></pre></div>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">face2_capture_result.capa</span></div>
+<pre><code><span class="k">const</span> TOKEN: <span class="cp">@secret</span> <span class="ty">String</span> = <span class="st">"s3cr3t"</span>
+<span class="k">type</span> <span class="ty">Bag</span> { <span class="pu">items:</span> <span class="ty">List</span>&lt;<span class="ty">String</span>&gt; }
+<span class="k">impl</span> <span class="ty">Bag</span>
+    <span class="k">fun</span> <span class="fn">reveal</span>(self) <span class="pu">-&gt;</span> <span class="ty">String</span>
+        <span class="k">match</span> self.items.<span class="fn">get</span>(<span class="nu">0</span>)
+            <span class="ty">Some</span>(x) <span class="pu">-&gt;</span> <span class="k">return</span> x
+            <span class="ty">None</span> <span class="pu">-&gt;</span> <span class="k">return</span> <span class="st">"empty"</span>
+<span class="k">fun</span> <span class="fn">leak</span>(stdio: <span class="cp">Stdio</span>, secret: <span class="cp">@secret</span> <span class="ty">String</span>)
+    <span class="k">var</span> bag: <span class="ty">Bag</span> = <span class="ty">Bag</span> { <span class="pu">items:</span> [] }
+    <span class="k">let</span> f = <span class="k">fun</span>() <span class="pu">-&gt;</span> <span class="ty">String</span> <span class="pu">=&gt;</span> bag.<span class="fn">reveal</span>()
+    bag.items.<span class="fn">push</span>(secret)
+    stdio.<span class="fn">println</span>(<span class="fn">f</span>())
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="fn">leak</span>(stdio, TOKEN)</code></pre></div>
+
+      <h2 id="model"><span class="nx">3</span>Model and prior art</h2>
+      <p><strong>First-class functions in an information-flow type system.</strong> The design frames a closure as carrying a latent flow signature that is instantiated at the application site, not the definition site. This is the model the advisory attributes to FlowCaml (the information-flow extension of Caml; Pottier and Simonet, "Information Flow Inference for ML", POPL 2002 and TOPLAS 2003). MEASURED: the advisory names "FlowCaml's model for first-class functions" as the basis for applying the signature at the application site. Capa realises the signature as the same per-callable sink-reaching / sink-path summary it computes for named functions, extended to lambda literals; the capture side re-reads the live label of each free binding at the invocation.</p>
+      <p><strong>Noninterference and declassification (background).</strong> The underlying property is noninterference (Goguen and Meseguer, 1982): a public observation must not depend on a secret input. <span class="ic">declassify(value, reason: "...")</span> is Capa's endorsed escape hatch, an intentional, audited downgrade, in the tradition of principled declassification (Sabelfeld and Sands, "Declassification: Dimensions and Principles", 2005). JUDGEMENT: these citations are the standard basis for the property Capa enforces; they were not re-derived here, they frame the mechanism below.</p>
+
+      <h2 id="mechanism"><span class="nx">4</span>Mechanism</h2>
+      <p>The fix touches <span class="ic">capa/analyzer/_ifc.py</span>, <span class="ic">capa/analyzer/_ifc_summary.py</span> and <span class="ic">capa/analyzer/_dispatch.py</span> across five commits. All references below are into the clean 1.30.0 install (<span class="ic">site-packages/capa/analyzer/</span>).</p>
+
+      <h3>4.1 Face 1: the parameter-sink summary applied at the call (<span class="ic">d8a31c5</span>)</h3>
+      <p><span class="ic">_collect_lambda_callables</span> (<span class="ic">_ifc_summary.py:514</span>) registers every lambda literal in the module as a synthetic callable keyed by <span class="ic">("lambda", id(lambda_expr))</span> (<span class="ic">_ifc_summary.py:516</span>) and summarises its body on the same sink-reaching / sink-path fixpoint a named function uses. At a call <span class="ic">g(args)</span> whose callee resolves through the existing binding resolution to one certain lambda literal, and at an IIFE whose callee is the literal, that summary is applied to the actual arguments: <span class="ic">_check_ifc_local_lambda_call</span> (<span class="ic">_ifc.py:2804</span>) applies it at <span class="ic">_ifc.py:2823</span>, and <span class="ic">_check_ifc_iife_call</span> (<span class="ic">_ifc.py:2825</span>) applies it at <span class="ic">_ifc.py:2833</span>, both through the shared <span class="ic">_apply_lambda_sink_summary</span> (<span class="ic">_ifc.py:2835</span>). The diagnostic is assembled at <span class="ic">_ifc.py:3010</span>, naming the bound name (<span class="ic">'g'</span>) or "the closure" for an IIFE. On any ambiguity (a reassigned <span class="ic">var</span>, an alias, a call-result binding, a lambda invoked in a higher-order callee) it falls back to no check: a conservative miss, never a wrong-target guess.</p>
+
+      <h3>4.2 Face 2: the live capture re-read (<span class="ic">099e2bc</span>, <span class="ic">38dff85</span>)</h3>
+      <p><span class="ic">_fresh_capture_label</span> (<span class="ic">_ifc.py:1430</span>) re-reads, at the invocation of a locally-resolved lambda, each captured free binding's current live label and joins it into the callee label. It never consults the label cached at the lambda's definition. It reads the branch-scoped container-mutation taint for all captures, and the live whole-value label for a reference-typed capture only. <span class="ic">38dff85</span> restricted the whole-value re-read to reference types: a value-typed / built-in-immutable capture (<span class="ic">String</span> / <span class="ic">Int</span> / <span class="ic">Float</span> / <span class="ic">Bool</span> / <span class="ic">Char</span>) is captured by value, so its later reassignment is correctly ignored. Branch-soundness is by construction: the container-taint map is live and branch-scoped, so a push in a mutually-exclusive branch is not observed at another branch's invocation. This face carries the later taint into the closure's RESULT label, so a caller that sinks the result is caught; a sink internal to the body carries no result and stays open (section 7, residual 1).</p>
+
+      <h3>4.3 Rejecting a named argument at a first-class call (<span class="ic">5189908</span>)</h3>
+      <p>A named argument at a first-class / lambda call site was type-checked positionally, but the Python transpiler emitted kwargs (honouring the names) while the Wasm backend bound positionally, a silent divergence that could reorder a <span class="ic">@secret</span> into an un-sunk slot. A <span class="ic">Fun</span>-typed value carries no parameter names, so a named argument has no sound binding. The check (<span class="ic">_dispatch.py:164</span>) rejects it before the positional binding that would otherwise misbind it, returning True when a named argument is found so the caller skips that binding. The named <span class="ic">fun</span> / method / variant path does carry parameter names and keeps the sound named-argument path (<span class="ic">_resolve_named_args</span>); it is untouched. Being an analysis rejection, it is identical on both backends.</p>
+
+      <h3>4.4 Both backends</h3>
+      <p>MEASURED: Faces 1 and 2 are a single analyzer implementation that runs before code generation, so the two new IFC diagnostics are backend-independent by construction; the runtime leak they should reject reproduced identically on the Python interpreter and the Wasm Component Model backend (section 6). The named-argument change is the opposite case: it REMOVES a real backend divergence (Python printed <span class="ic">s3cr3t</span>, Wasm printed <span class="ic">pub</span> for the same source) by rejecting the construct at analysis time on both backends.</p>
+
+      <h2 id="alternatives"><span class="nx">5</span>Alternatives considered and why rejected</h2>
+      <ul class="bullets">
+        <li><strong>Stamping the flow labels at the lambda's definition (the pre-fix behaviour, unsound).</strong> This is exactly what leaked: a definition-time stamp cannot see a later capture mutation, and the function-value call branch did no flow work. Rejected in favour of applying the signature at the application site.</li>
+        <li><strong>Guessing the target on an ambiguous callee (rejected).</strong> When the callee cannot be resolved to one certain lambda literal, the check falls back to no check rather than guessing. A wrong-target guess could flag the wrong flow or miss the real one; a conservative miss is the disclosed residual 2, not a false report.</li>
+        <li><strong>Re-reading every capture's whole-value label (over-reports; corrected in <span class="ic">38dff85</span>).</strong> Re-reading a value-typed primitive capture's label would flag a later reassignment that a by-value capture cannot observe. <span class="ic">38dff85</span> restricted the whole-value re-read to reference types, keeping the container-taint re-read for all captures. A pentester found the value-typed-capture false positive during Stage B; the reviewer measured the sound resolution.</li>
+        <li><strong>Binding a named first-class argument positionally by declaration order (unsound, the divergence).</strong> A function value carries no parameter names, so there is no sound binding; the two backends disagreed. Rejecting the construct is sound and identical on both backends; positional first-class calls stay allowed.</li>
+      </ul>
+
+      <h2 id="verification"><span class="nx">6</span>Verification</h2>
+      <p><strong>Before/after, run on both released binaries.</strong> Two isolated venvs, <span class="ic">capa-language==1.29.0</span> and <span class="ic">capa-language==1.30.0</span> (<span class="ic">capa --version</span> confirmed for each), plus <span class="ic">wasmtime</span> for the Wasm backend.</p>
+      <p>BEFORE, capa 1.29.0 (Face 1, silent at both tiers, leaks on both backends):</p>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.29.0</span></div>
+<pre><code>$ capa --check face1_param_sink.capa
+face1_param_sink.capa: ok (4 items, 13 expressions typed, 10 bindings)
+
+$ capa --run face1_param_sink.capa            # Python backend
+s3cr3t
+
+$ capa --run --wasm face1_param_sink.capa     # Wasm backend
+s3cr3t</code></pre></div>
+      <p>AFTER, capa 1.30.0 (warns by default, errors under <span class="ic">@strict_ifc</span>; still leaks at run time because a warning does not block):</p>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.0</span></div>
+<pre><code>$ capa --check face1_param_sink.capa
+face1_param_sink.capa:6:7: warning: information-flow: a @secret value is passed to 'g' as s, which reaches a public sink inside 'g' (it sends data out of the program). Route it through declassify(value, reason: "...") if this disclosure is intended.
+   6 |     g(secret)
+             ^
+
+face1_param_sink.capa: ok (4 items, 13 expressions typed, 10 bindings)
+
+# with @strict_ifc() on leak:
+face1_param_sink.capa:7:7: error: information-flow: a @secret value is passed to 'g' as s, which reaches a public sink inside 'g' (it sends data out of the program). Route it through declassify(value, reason: "...") if this disclosure is intended.
+face1_param_sink.capa: 1 error</code></pre></div>
+      <p>Face 2 (<span class="ic">face2_capture_result.capa</span>) was silent on 1.29.0 and warns on 1.30.0 at the caller's own sink, <span class="ic">stdio.println(f())</span>, with the result-sink wording:</p>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.0</span></div>
+<pre><code>face2_capture_result.capa:12:19: warning: information-flow: a @secret value reaches Stdio.println (argument 1), a public sink that sends data out of the program. Route it through declassify(value, reason: "...") if this disclosure is intended.</code></pre></div>
+      <p><strong>The named-argument divergence (MEASURED).</strong> The program <span class="ic">g(b: secret, a: "pub")</span> on 1.29.0 passed <span class="ic">capa --check</span> with zero warnings, then <span class="ic">capa --run</span> printed <span class="ic">s3cr3t</span> and <span class="ic">capa --run --wasm</span> printed <span class="ic">pub</span>: a byte-level backend divergence, confirmed on the released 1.29.0 binary. On 1.30.0 it is rejected on both backends:</p>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.0</span></div>
+<pre><code>named.capa:6:5: error: named arguments are not supported at a call to the function value 'g'; a function value carries no parameter names, so pass the arguments positionally
+named.capa: 1 error</code></pre></div>
+      <p><strong>Tests that pin it.</strong> All in <span class="ic">tests/test_ifc_branch_scoped_container.py</span> at <span class="ic">cafe73d</span>. Closed shapes: <span class="ic">TestSecretIntoLocalLambdaSinkClosed</span> (Face 1), <span class="ic">TestClosureCaptureBeforePushClosed</span> and <span class="ic">TestCaptureRereadReftype</span> (Face 2). Precision: <span class="ic">TestCaptureLiveRereadPrecision</span>. Disclosed residuals: <span class="ic">TestCaptureInternalSinkResidualDisclosed</span>, <span class="ic">TestEscapingLambdaSinkResidualDisclosed</span>, <span class="ic">TestHofInvokedClosureResidualDisclosed</span>, <span class="ic">TestNestedLocalLambdaSinkOpaqueResidualDisclosed</span>.</p>
+      <div class="note"><strong>Scope of the suite figure.</strong> The full-suite pass is claimed by the release commit and the advisory; it was not independently re-run for this record, because the repository working tree is checked out on an unrelated in-progress branch, so the in-place suite is not the 1.30.0 code. What was measured for this record is the before/after on both released binaries and both backends, and the file and line references in section 4.</div>
+
+      <h2 id="scope"><span class="nx">7</span>Scope and residuals</h2>
+      <p>MEASURED framing: 1.30.0 flags a live-<span class="ic">@secret</span> flow through a LOCALLY-RESOLVED lambda (a <span class="ic">let</span>-bound lambda invoked in the same scope, or an IIFE) for the PARAMETER-SINK and the container-capture RESULT-SINK cases, and rejects a named argument at a first-class call. It closes nothing more. This is NOT "lambdas are closed".</p>
+      <p><strong>Open residuals</strong> (each a tested false negative that leaks at run time UNFLAGGED at both tiers on both backends):</p>
+      <ul class="bullets">
+        <li><strong>A sink INTERNAL to the closure body.</strong> A locally-resolved closure that captures a value mutated after its definition and SINKS it inside its own body (a side effect, not the result the caller sinks) leaks unflagged, because the Face 2 re-read carries the taint into the closure's result label only. Pinned in <span class="ic">TestCaptureInternalSinkResidualDisclosed</span>. The locally-resolved portion of this was closed in the successor release <!-- historical-version: forward reference to 1.31.0 --><a href="1.31.0.html">1.31.0</a>.</li>
+        <li><strong>Closures that ESCAPE local resolution.</strong> A closure the caller cannot resolve to one certain lambda literal is reached by neither the sink summary nor the capture re-read: a reassigned <span class="ic">var</span>, an alias, a call-result binding, a closure passed to a higher-order callee then invoked, returned then invoked, stored then invoked, recursive, or conditionally selected. Closing them needs a higher-order control-flow / points-to analysis Capa does not have. Pinned in <span class="ic">TestEscapingLambdaSinkResidualDisclosed</span>, <span class="ic">TestHofInvokedClosureResidualDisclosed</span>.</li>
+        <li><strong>A sink reached only through a NESTED LOCAL lambda.</strong> The summary walk resolves a body's calls to named callees only, never to a local-lambda binding, so "sinks its parameter" means directly or via a named callee. Pinned in <span class="ic">TestNestedLocalLambdaSinkOpaqueResidualDisclosed</span>.</li>
+      </ul>
+      <p><strong>Two disclosed sound over-reports</strong> (they FLAG though nothing secret reaches the sink):</p>
+      <ul class="bullets">
+        <li><strong>A captured STRUCT whole-reassigned to a secret after the closure is defined.</strong> A reference-typed capture's re-read cannot tell a whole reassign from an in-place field store, so it flags under <span class="ic">@strict_ifc</span> though the capture is by value and prints the public value at run time: a safe strict-tier over-rejection. Pinned in <span class="ic">TestCaptureRereadReftype</span>. A related sibling-read over-report (a closure reading only a clean sibling of a mutated struct) was, for the DIRECT field-read case, removed in <a href="1.30.1.html">1.30.1</a>.</li>
+        <li><strong>An in-body <span class="ic">declassify</span> inside a captured closure.</strong> The Face 2 re-read reads the raw branch-scoped container taint and is declassify-blind, so a closure that declassifies its captured value in-body flags at both tiers. Sound (over-report, never a missed leak), with a clean workaround: declassify at the call site. Pinned in <span class="ic">TestCaptureLiveRereadPrecision</span>.</li>
+      </ul>
+
+      <h2 id="xrefs"><span class="nx">8</span>Cross-references</h2>
+      <ul class="bullets">
+        <li><strong>Version.</strong> 1.30.0 (released 2026-08-10). MINOR bump under the <span class="ic">STABILITY.md</span> security exception, matching the earlier IFC soundness releases (1.2.0, 1.3.0, 1.4.0, 1.15.0, 1.26.0 through 1.29.0). It closes the lambda-flow residual disclosed with 1.29.0's whole-struct-read advisory.</li>
+        <li><strong>Commits.</strong> <span class="ic">d8a31c5</span> (Stage A, the parameter-sink face), <span class="ic">5189908</span> (reject named arguments at a first-class call; disclose the nested-local-lambda sink), <span class="ic">099e2bc</span> (Stage B, the capture-side result-sink face), <span class="ic">ff65822</span> (disclose the declassify-blind capture re-read over-report), <span class="ic">38dff85</span> (restrict the capture re-read to reference-typed captures; honest capture-side wording; residual pins), <span class="ic">cafe73d</span> (release).</li>
+        <li><strong>Advisory.</strong> <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-10-ifc-lambda-flow-sensitivity.md">docs/advisories/2026-08-10-ifc-lambda-flow-sensitivity.md</a>. DISCREPANCY (MEASURED): the release process references the external identifier <span class="ic">GHSA-xm3f-8mh8-3x5x</span>, but no GHSA, CWE or CVE identifier for this fix appears in the committed 1.30.0 tree (the advisory body, the CHANGELOG entry, or <span class="ic">SECURITY.md</span>). This record treats that identifier as an out-of-tree reference, not as tree content.</li>
+        <li><strong>Tests.</strong> <span class="ic">tests/test_ifc_branch_scoped_container.py</span> (section 6).</li>
+        <li><strong>Related records.</strong> The successor precision release <a href="1.30.1.html">1.30.1</a> (field-store field-sensitivity, which removes one sibling-read over-report of this fix and builds the field-store access-path channel), and the successor security release <!-- historical-version: forward reference to 1.31.0 --><a href="1.31.0.html">1.31.0</a> (which closes the locally-resolved capture-internal sink, residual 1 above). The broader information-flow laundering line: <span class="ic">2026-06-16-soundness.md</span>, <span class="ic">2026-07-03-soundness.md</span>, and the 2026-08 advisories for 1.26.0 through 1.29.0.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="1.30.0.html"><h4><span class="arr">&larr;</span> What's New in 1.30.0</h4><p>The reader-facing release note for this fix.</p></a>
+      <a class="nextcard" href="index.html"><h4>All releases <span class="arr">&rarr;</span></h4><p>The version index, newest first.</p></a>
+    </div>
+  </div>
+</section>

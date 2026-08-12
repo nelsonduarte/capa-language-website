@@ -3,9 +3,9 @@
   <div class="wrap">
     <span class="eyebrow">Releases</span>
     <h1>What's new in Capa</h1>
-    <p class="lead">A per-version record of what changed and why, newest first. Every release page explains the change in plain terms, shows a short before-and-after, and states its scope honestly, including exactly what a security fix does and does not close. For what is planned rather than shipped, see the <a href="roadmap.html">roadmap</a>.</p>
+    <p class="lead">A per-version record of what changed and why, newest first. Every release page explains the change in plain terms, shows a short before-and-after, and states its scope honestly, including exactly what a security fix does and does not close. For what is planned rather than shipped, see the <a href="../roadmap.html">roadmap</a>.</p>
     <div class="phero-actions">
-      <a class="btn btn-ghost" href="reference.html">Language reference</a>
+      <a class="btn btn-ghost" href="../reference.html">Language reference</a>
     </div>
   </div>
 </section>
@@ -16,7 +16,9 @@
     <h2>Release notes</h2>
     <p class="section-intro">Pick a version to read its notes. The most recent release is at the top; the list grows as the earlier history is written up.</p>
     <ul class="linklist">
-      <li><a href="whats-new-1.31.0.html">Capa 1.31.0</a> <span class="desc">&middot; 2026-08-11 &middot; an information-flow security fix: a <span class="ic">@secret</span> value captured by a closure and sunk inside that closure's body after the taint arrived is now flagged, a warning by default and a hard error under <span class="ic">@strict_ifc</span>. <a href="design-1.31.0.html">Technical details</a>.</span></li> <!-- historical-version: names the release the note is about -->
+      <li><a href="1.31.0.html">Capa 1.31.0</a> <span class="desc">&middot; 2026-08-11 &middot; an information-flow security fix: a <span class="ic">@secret</span> value captured by a closure and sunk inside that closure's body after the taint arrived is now flagged, a warning by default and a hard error under <span class="ic">@strict_ifc</span>. <a href="1.31.0-design.html">Technical details</a>.</span></li> <!-- historical-version: names the release the note is about -->
+      <li><a href="1.30.1.html">Capa 1.30.1</a> <span class="desc">&middot; 2026-08-11 &middot; a precision release (a PATCH, no security advisory): it removes two false-positive information-flow reports on a read of a public sibling field of a struct whose <em>other</em> field was stored a secret. No leak is closed; the direction is accept-more. <a href="1.30.1-design.html">Technical details</a>.</span></li> <!-- historical-version: names the release the note is about -->
+      <li><a href="1.30.0.html">Capa 1.30.0</a> <span class="desc">&middot; 2026-08-10 &middot; an information-flow security fix: a <span class="ic">@secret</span> reaching a public sink through a locally-resolved lambda (its parameter, or a captured container read back through its result) is now flagged, and a named argument at a first-class call is rejected, closing a silent backend divergence. <a href="1.30.0-design.html">Technical details</a>.</span></li> <!-- historical-version: names the release the note is about -->
     </ul>
     <div class="note">The full machine-readable history is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a>, and every security fix has a matching entry under <a href="https://github.com/nelsonduarte/capa-language/tree/main/docs/advisories">security advisories</a>. Older versions will be summarised here as their notes are backfilled.</div>
   </div>
@@ -27,8 +29,8 @@
     <span class="eyebrow">Companions</span>
     <h2>Where to read more</h2>
     <div class="nextgrid">
-      <a class="nextcard" href="roadmap.html"><h4>Roadmap <span class="arr">&rarr;</span></h4><p>What is done, what is next, and what is explicitly out of scope.</p></a>
-      <a class="nextcard" href="learn/13-information-flow.html"><h4>Information-flow control <span class="arr">&rarr;</span></h4><p>The chapter behind most of these security fixes: <span class="ic">@secret</span>, <span class="ic">declassify</span>, and the sinks.</p></a>
+      <a class="nextcard" href="../roadmap.html"><h4>Roadmap <span class="arr">&rarr;</span></h4><p>What is done, what is next, and what is explicitly out of scope.</p></a>
+      <a class="nextcard" href="../learn/13-information-flow.html"><h4>Information-flow control <span class="arr">&rarr;</span></h4><p>The chapter behind most of these security fixes: <span class="ic">@secret</span>, <span class="ic">declassify</span>, and the sinks.</p></a>
     </div>
   </div>
 </section>

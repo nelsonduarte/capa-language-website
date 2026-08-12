@@ -5,8 +5,8 @@
     <h1>What's new in Capa 1.31.0</h1> <!-- historical-version: names the release this page documents -->
     <p class="lead">An information-flow security fix. A value marked <span class="ic">@secret</span>, captured by a closure and then sunk from <em>inside</em> that closure's own body after the taint arrived, used to slip past the checker with no diagnostic at either tier. This release flags it: a warning by default, and a hard error under <span class="ic">@strict_ifc</span>, on both backends.</p>
     <div class="phero-actions">
-      <a class="btn btn-ghost" href="releases.html">&larr; All releases</a>
-      <a class="btn btn-soft" href="design-1.31.0.html">Technical design record &rarr;</a> <!-- historical-version: permanent route name for this release's design page -->
+      <a class="btn btn-ghost" href="index.html">&larr; All releases</a>
+      <a class="btn btn-soft" href="1.31.0-design.html">Technical design record &rarr;</a> <!-- historical-version: permanent route name for this release's design page -->
     </div>
   </div>
 </section>
@@ -70,7 +70,7 @@ leak.capa:9:5: warning: information-flow: a @secret value is passed to 'log' as 
 
 leak.capa: ok (4 items, 15 expressions typed, 8 bindings)</code></pre></div>
 
-    <p>Add <span class="ic">@strict_ifc()</span> to <span class="ic">leak</span> and the same finding becomes a hard error: <span class="ic">capa --check</span> exits 1, so a pipeline that gates on strict mode now stops the build. A warning does not block, so <span class="ic">capa --run</span> still prints the secret at the default tier on both backends (the warning is printed first); it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. If the disclosure is genuinely intended, route the value through <span class="ic">declassify(value, reason: "...")</span>, exactly as in the <a href="learn/13-information-flow.html">information-flow chapter</a>; a closure that declassifies the value it sinks stays clean.</p>
+    <p>Add <span class="ic">@strict_ifc()</span> to <span class="ic">leak</span> and the same finding becomes a hard error: <span class="ic">capa --check</span> exits 1, so a pipeline that gates on strict mode now stops the build. A warning does not block, so <span class="ic">capa --run</span> still prints the secret at the default tier on both backends (the warning is printed first); it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. If the disclosure is genuinely intended, route the value through <span class="ic">declassify(value, reason: "...")</span>, exactly as in the <a href="../learn/13-information-flow.html">information-flow chapter</a>; a closure that declassifies the value it sinks stays clean.</p>
   </div>
 </section>
 
@@ -92,9 +92,9 @@ leak.capa: ok (4 items, 15 expressions typed, 8 bindings)</code></pre></div>
 <section>
   <div class="article"><h2>Learn more</h2>
     <ul class="linklist">
-      <li><a href="design-1.31.0.html">Technical design record</a> <span class="desc">: the deep engineering companion to this page, for contributors and auditors: the model, the mechanism in the analyzer with file and line references, the alternatives rejected, how it was verified, and every residual.</span></li> <!-- historical-version: permanent route name for this release's design page -->
+      <li><a href="1.31.0-design.html">Technical design record</a> <span class="desc">: the deep engineering companion to this page, for contributors and auditors: the model, the mechanism in the analyzer with file and line references, the alternatives rejected, how it was verified, and every residual.</span></li> <!-- historical-version: permanent route name for this release's design page -->
       <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-11-ifc-capture-internal-sink.md">Security advisory</a> <span class="desc">: the severity, the reproduction, and the complete list of residuals and over-reports.</span></li>
-      <li><a href="learn/13-information-flow.html">Information-flow control</a> <span class="desc">: the chapter that introduces <span class="ic">@secret</span>, the sinks, and <span class="ic">declassify</span>.</span></li>
+      <li><a href="../learn/13-information-flow.html">Information-flow control</a> <span class="desc">: the chapter that introduces <span class="ic">@secret</span>, the sinks, and <span class="ic">declassify</span>.</span></li>
       <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> <span class="desc">: the machine-readable entry for this release.</span></li>
     </ul>
   </div>
@@ -104,8 +104,8 @@ leak.capa: ok (4 items, 15 expressions typed, 8 bindings)</code></pre></div>
   <div class="article">
     <span class="eyebrow">Keep going</span>
     <div class="nextgrid">
-      <a class="nextcard" href="releases.html"><h4><span class="arr">&larr;</span> All releases</h4><p>Back to the version index.</p></a>
-      <a class="nextcard" href="design-1.31.0.html"><h4>Technical design record <span class="arr">&rarr;</span></h4><p>The engineering-level record of the fix: model, mechanism, verification, residuals.</p></a> <!-- historical-version: permanent route name for this release's design page -->
+      <a class="nextcard" href="index.html"><h4><span class="arr">&larr;</span> All releases</h4><p>Back to the version index.</p></a>
+      <a class="nextcard" href="1.31.0-design.html"><h4>Technical design record <span class="arr">&rarr;</span></h4><p>The engineering-level record of the fix: model, mechanism, verification, residuals.</p></a> <!-- historical-version: permanent route name for this release's design page -->
     </div>
   </div>
 </section>

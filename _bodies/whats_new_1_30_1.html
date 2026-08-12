@@ -1,0 +1,115 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Releases &middot; 1.30.1</span>
+    <h1>What's new in Capa 1.30.1</h1>
+    <p class="lead">A precision release. It removes two spurious information-flow reports on a read of a <em>public sibling field</em> of a struct whose <em>other</em> field was stored a secret. No leak is closed, so it ships as a PATCH and carries no security advisory. Nothing is added and nothing is removed; the only change accepts more programs, so it cannot break a 1.x program.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All releases</a>
+      <a class="btn btn-soft" href="1.30.1-design.html">Technical design record &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>What this release is</h2>
+    <p>Capa 1.30.1 is a precision fix, and only that. Two leak-free field-store shapes that 1.30.0 over-reported are now accepted at every tier. Because it removes false positives and closes no leak, it does not use the security exception the earlier information-flow releases used; it ships under the plain patch rule ("fixes a bug so the actual behaviour matches the documented behaviour"). The direction of the only change is accept-more, so no correct 1.x program can break.</p>
+    <p>Concretely, 1.30.0 flagged two cases where nothing actually leaked:</p>
+    <ul class="bullets">
+      <li>A caller reading a <strong>public sibling field</strong> of a struct whose <em>other</em> field a callee stored a secret into. <span class="ic">fill(bag, secret)</span> does <span class="ic">bag.secret_field = secret</span>, then reading the clean <span class="ic">bag.note</span> raised a warning and, under <span class="ic">@strict_ifc</span>, a hard error.</li>
+      <li>A closure re-reading a <strong>clean sibling field</strong> of a struct whose other field was stored into after the closure was defined. <span class="ic">let f = fun() =&gt; box.note</span>, then <span class="ic">box.secret_field = secret</span>, then <span class="ic">f()</span> flagged the sibling read.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>What changed, in plain terms</h2>
+    <p>Capa's information-flow checker tracks where a secret goes. When a secret is pushed into a container field of a struct, the checker already keyed that taint on an <strong>access path</strong>, the <span class="ic">(root, field-path)</span> pair naming exactly which part of the struct is dirty, so a read of a <em>different</em> field stayed clean. A plain field store, <span class="ic">bag.secret_field = secret</span>, did not get that precision: it raised the label of the <em>whole</em> struct, so any later read of that struct, including a disjoint public sibling, looked tainted.</p>
+    <p>Capa 1.30.1 gives a direct field store the same field sensitivity a container mutation already had: the store is keyed on the <span class="ic">(root, field-path)</span> it writes, so a read of a disjoint sibling path is no longer tainted by it. The keying applies only when the store is rooted <strong>directly</strong> at the binding within a tracked field-path bound; an aliased, renamed, or over-long root keeps the conservative whole-value carrier, so no cross-function whole-value flow loses coverage.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Before and after</h2>
+    <p>Below, <span class="ic">fill</span> stores the secret into <span class="ic">bag.secret_field</span>. <span class="ic">main</span> then reads only the public <span class="ic">bag.note</span>, which never held the secret:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">sibling.capa</span></div>
+<pre><code><span class="k">const</span> TOKEN: <span class="cp">@secret</span> <span class="ty">String</span> = <span class="st">"s3cr3t"</span>
+
+<span class="k">type</span> <span class="ty">Bag</span> { <span class="pu">secret_field:</span> <span class="ty">String</span>, <span class="pu">note:</span> <span class="ty">String</span> }
+
+<span class="k">fun</span> <span class="fn">fill</span>(bag: <span class="ty">Bag</span>, secret: <span class="cp">@secret</span> <span class="ty">String</span>)
+    bag.secret_field = secret
+
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">var</span> bag: <span class="ty">Bag</span> = <span class="ty">Bag</span> { <span class="pu">secret_field:</span> <span class="st">""</span>, <span class="pu">note:</span> <span class="st">"public"</span> }
+    <span class="fn">fill</span>(bag, TOKEN)
+    stdio.<span class="fn">println</span>(bag.note)</code></pre></div>
+
+    <p>On 1.30.0 the read of the clean sibling raised a warning by default, and a hard error under <span class="ic">@strict_ifc</span>, though the program only ever prints <span class="ic">public</span>:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.0</span></div>
+<pre><code>$ capa --check sibling.capa
+sibling.capa:11:19: warning: information-flow: a @secret value reaches Stdio.println (argument 1), a public sink that sends data out of the program. Route it through declassify(value, reason: "...") if this disclosure is intended.
+  11 |     stdio.println(bag.note)
+                         ^
+
+sibling.capa: ok (4 items, 14 expressions typed, 7 bindings)
+
+$ capa --run sibling.capa
+public</code></pre></div>
+
+    <p>On 1.30.1 the disjoint sibling read is clean at every tier, and the program runs exactly as before, printing <span class="ic">public</span> on both backends:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.1</span></div>
+<pre><code>$ capa --check sibling.capa
+sibling.capa: ok (4 items, 14 expressions typed, 7 bindings)
+
+$ capa --run sibling.capa            # Python backend
+public
+
+$ capa --run --wasm sibling.capa     # Wasm backend
+public</code></pre></div>
+
+    <p>Adding <span class="ic">@strict_ifc()</span> is the same story: 1.30.0 turned the sibling read into a build-stopping error; on 1.30.1 the strict build passes.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>An honest scope</h2>
+    <p>This is a precision fix. It removes false positives; it closes no leak. Every leak 1.30.0 flagged stays flagged on 1.30.1, a warning by default and a hard error under <span class="ic">@strict_ifc</span>, on both backends:</p>
+    <ul class="bullets">
+      <li>A read of the <strong>stored</strong> field itself (<span class="ic">bag.secret_field</span>) stays flagged. Verified: on 1.30.1 that read still warns.</li>
+      <li>A <strong>whole or getter read</strong> of the struct, and passing the whole struct to a callee that sinks the stored path, stay flagged.</li>
+      <li>A store into an <strong>interior node</strong> read back through a descendant path stays flagged.</li>
+    </ul>
+    <p>Two limits stay open, each disclosed rather than silent:</p>
+    <ul class="bullets">
+      <li>A closure reading the captured struct through a <strong>whole or method receiver</strong> (a bare use, a method like <span class="ic">bag.reveal()</span>, or an argument) cannot be resolved to a field path, so it still observes every taint on the root and still <strong>over-reports</strong> a clean sibling. This is a sound over-report, never a missed leak; only the direct field read was made precise here.</li>
+      <li>A struct held as a container <strong>value or element</strong> (a <span class="ic">Map</span> value or a <span class="ic">List</span> element, mutated through its own binding and read via <span class="ic">.get(...)</span>) is a pre-existing different-root points-to residual: it leaks on 1.30.0 and 1.30.1 alike and is not introduced here.</li>
+    </ul>
+    <div class="note"><strong>No advisory.</strong> Because this release closes no leak, it ships with no security advisory. The two 2026-08-10 advisories that disclosed these shapes as sound over-reports now record them as resolved (for the direct field-read case); the machine-readable entry is in the CHANGELOG.</div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Learn more</h2>
+    <ul class="linklist">
+      <li><a href="1.30.1-design.html">Technical design record</a> <span class="desc">: the deep engineering companion to this page, for contributors and auditors: the model, the mechanism in the analyzer with file and line references, the alternatives rejected, how it was verified, and every residual.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-10-ifc-cross-function-whole-struct-read.md">Advisory: cross-function whole-struct read</a> <span class="desc">: where the cross-function field-store sibling over-report is disclosed and now recorded as resolved.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-10-ifc-lambda-flow-sensitivity.md">Advisory: lambda-flow sensitivity</a> <span class="desc">: where the closure clean-sibling over-report is disclosed and now recorded as resolved for the direct field read.</span></li>
+      <li><a href="../learn/13-information-flow.html">Information-flow control</a> <span class="desc">: the chapter that introduces <span class="ic">@secret</span>, the sinks, and <span class="ic">declassify</span>.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> <span class="desc">: the machine-readable entry for this release.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="index.html"><h4><span class="arr">&larr;</span> All releases</h4><p>Back to the version index.</p></a>
+      <a class="nextcard" href="1.30.1-design.html"><h4>Technical design record <span class="arr">&rarr;</span></h4><p>The engineering-level record of the fix: model, mechanism, verification, residuals.</p></a>
+    </div>
+  </div>
+</section>

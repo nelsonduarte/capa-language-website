@@ -1,0 +1,140 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Releases &middot; 1.30.0</span>
+    <h1>What's new in Capa 1.30.0</h1>
+    <p class="lead">An information-flow security fix. A value marked <span class="ic">@secret</span> that reached a public sink <em>through a lambda</em> (bound to its parameter, or captured by it and read back through its result) used to slip past the checker with no diagnostic at either tier, while the identical flow through a direct named call was caught. This release closes the locally-resolved cases: a warning by default, a hard error under <span class="ic">@strict_ifc</span>, on both backends. It also rejects a named argument at a first-class call, closing a silent divergence between the two backends.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All releases</a>
+      <a class="btn btn-soft" href="1.30.0-design.html">Technical design record &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>What this release is</h2>
+    <p>Capa 1.30.0 is an information-flow security fix. It closes a case where a value you marked <span class="ic">@secret</span> could reach a public sink (a log line, a network call) with no signal to the author: no warning at the default tier, and not even an error under <span class="ic">@strict_ifc</span>. The direct form of the same flow, a plain named call carrying the secret into a sink, was already caught; the gap was the <strong>lambda indirection</strong>, the idiomatic way to factor out a log or serialise step.</p>
+    <p>It is a minor release. The only programs it affects are the ones that were already leaking a secret without a diagnostic; every correct program compiles exactly as before. That follows the rule the earlier information-flow soundness fixes on the 1.x line used: tightening a static check so a program that was silently unsound now warns is a security fix under the project's stability policy, not a breaking change. Severity is low to moderate, confidentiality only, and the fix lives in the analyzer (with one coupled correctness change in the backends, below).</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>What changed, in plain terms</h2>
+    <p>A lambda is a small inline function. Capa already knew how to follow a secret through a named function: it summarises which of a function's parameters reach a sink, and flags a <span class="ic">@secret</span> passed into one of them. But a lambda's flow labels were stamped at the point the lambda was <strong>defined</strong>, and the branch that calls a function <em>value</em> (a <span class="ic">let</span>-bound lambda, or an immediately-invoked <span class="ic">(fun...)(x)</span>) did no information-flow work at all. So the lambda laundered the secret past both the default warning and the <span class="ic">@strict_ifc</span> error.</p>
+    <p>Capa 1.30.0 applies a lambda's latent flow signature at the <strong>call site</strong>, not at its definition. That closes two shapes:</p>
+    <ul class="bullets">
+      <li><strong>The parameter-sink.</strong> A <span class="ic">@secret</span> bound to a lambda's parameter that reaches a public sink inside the body. Each lambda literal now carries its own sink-reaching summary, resolved to the invoked lambda and applied at the call exactly as the named-call check does.</li>
+      <li><strong>The container-capture result-sink.</strong> A container captured by a closure defined <em>before</em> a mutation, then read back through the closure's <em>result</em>. Each captured binding's current live label is now re-read at the invocation, so a later push is visible through the earlier capture.</li>
+    </ul>
+    <p>The check runs in the analyzer, before code generation, so the diagnostic is identical on the interpreter and the Wasm backend.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Before and after</h2>
+    <p>The lambda below binds its parameter <span class="ic">s</span> and sinks it. The secret is passed to the lambda, not to a direct named call:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">leak.capa</span></div>
+<pre><code><span class="k">const</span> TOKEN: <span class="cp">@secret</span> <span class="ty">String</span> = <span class="st">"s3cr3t"</span>
+
+<span class="k">fun</span> <span class="fn">sink_str</span>(s: <span class="ty">String</span>, stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(s)
+
+<span class="k">fun</span> <span class="fn">leak</span>(stdio: <span class="cp">Stdio</span>, secret: <span class="cp">@secret</span> <span class="ty">String</span>)
+    <span class="k">let</span> g: <span class="ty">Fun</span>(<span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Unit</span> = <span class="k">fun</span>(s: <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Unit</span> <span class="pu">=&gt;</span> <span class="fn">sink_str</span>(s, stdio)
+    <span class="fn">g</span>(secret)
+
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="fn">leak</span>(stdio, TOKEN)</code></pre></div>
+
+    <p>On 1.29.0 (and earlier releases on the 1.x line) the checker was silent at both tiers, and both backends printed the secret at run time:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.29.0</span></div>
+<pre><code>$ capa --check leak.capa
+leak.capa: ok (4 items, 13 expressions typed, 10 bindings)
+
+$ capa --run leak.capa            # Python backend
+s3cr3t
+
+$ capa --run --wasm leak.capa     # Wasm backend
+s3cr3t</code></pre></div>
+
+    <p>Adding <span class="ic">@strict_ifc()</span> to <span class="ic">leak</span> made no difference on 1.29.0: <span class="ic">capa --check</span> still reported <span class="ic">ok</span> and exited 0 while the secret escaped. On 1.30.0 the default check warns at the call site:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.0</span></div>
+<pre><code>$ capa --check leak.capa
+leak.capa:8:7: warning: information-flow: a @secret value is passed to 'g' as s, which reaches a public sink inside 'g' (it sends data out of the program). Route it through declassify(value, reason: "...") if this disclosure is intended.
+   8 |     g(secret)
+             ^
+
+leak.capa: ok (4 items, 13 expressions typed, 10 bindings)</code></pre></div>
+
+    <p>Add <span class="ic">@strict_ifc()</span> to <span class="ic">leak</span> and the same finding becomes a hard error: <span class="ic">capa --check</span> exits 1, so a pipeline that gates on strict mode now stops the build. A warning does not block, so <span class="ic">capa --run</span> still prints the secret at the default tier on both backends. If the disclosure is genuinely intended, route the value through <span class="ic">declassify(value, reason: "...")</span>, exactly as in the <a href="../learn/13-information-flow.html">information-flow chapter</a>.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>A coupled fix: a named argument at a first-class call</h2>
+    <p>Capa promises byte-identical output on the Python interpreter and the Wasm backend. A <strong>named</strong> argument at a first-class (lambda) call site broke that promise. It was type-checked positionally, but the Python backend honoured the names while the Wasm backend bound positionally, so the two backends printed different values, and the names could reorder a <span class="ic">@secret</span> into an un-sunk slot:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">named.capa</span></div>
+<pre><code><span class="k">const</span> TOKEN: <span class="cp">@secret</span> <span class="ty">String</span> = <span class="st">"s3cr3t"</span>
+
+<span class="k">fun</span> <span class="fn">sink_str</span>(s: <span class="ty">String</span>, stdio: <span class="cp">Stdio</span>)
+    stdio.<span class="fn">println</span>(s)
+
+<span class="k">fun</span> <span class="fn">leak</span>(stdio: <span class="cp">Stdio</span>, secret: <span class="cp">@secret</span> <span class="ty">String</span>)
+    <span class="k">let</span> g: <span class="ty">Fun</span>(<span class="ty">String</span>, <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Unit</span> = <span class="k">fun</span>(a: <span class="ty">String</span>, b: <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Unit</span> <span class="pu">=&gt;</span> <span class="fn">sink_str</span>(b, stdio)
+    <span class="fn">g</span>(b: secret, a: <span class="st">"pub"</span>)
+
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="fn">leak</span>(stdio, TOKEN)</code></pre></div>
+
+    <p>On 1.29.0 that program passed <span class="ic">capa --check</span> with zero warnings, then diverged: the Python backend printed <span class="ic">s3cr3t</span> and the Wasm backend printed <span class="ic">pub</span>. A function value carries no parameter names, so a named argument there has no sound binding. On 1.30.0 the call is rejected at compile time, identically on both backends:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.0</span></div>
+<pre><code>$ capa --check named.capa
+named.capa:8:5: error: named arguments are not supported at a call to the function value 'g'; a function value carries no parameter names, so pass the arguments positionally
+   8 |     g(b: secret, a: "pub")
+           ^
+
+named.capa: 1 error</code></pre></div>
+
+    <p>Positional first-class calls stay allowed. The named-function, method, and variant paths do carry parameter names and keep the sound named-argument path; they are untouched.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>An honest scope</h2>
+    <p>This is a security fix with a deliberately narrow, disclosed scope. It flags a secret reaching a public sink through a <strong>locally-resolved</strong> lambda (a <span class="ic">let</span>-bound lambda invoked in the same scope, or an immediately-invoked one) for the <strong>parameter-sink</strong> and the <strong>container-capture-result-sink</strong> cases, and nothing more. It is <strong>not</strong> "lambdas are closed".</p>
+    <p>The following stay open, each a known, tested false negative that still leaks unflagged at run time on both backends, documented rather than silent:</p>
+    <ul class="bullets">
+      <li>A sink <strong>internal</strong> to the closure body (a side effect, not the result the caller sinks). This carries no result to inspect, so it stayed open here; its locally-resolved portion was closed later, in <!-- historical-version: forward reference to 1.31.0 --><a href="1.31.0.html">1.31.0</a>.</li>
+      <li>Closures that <strong>escape</strong> local resolution: aliased (<span class="ic">let g2 = g</span>), passed to a higher-order callee and invoked there, returned, reassigned, or bound from a call result. Closing these needs a higher-order control-flow analysis Capa does not have.</li>
+      <li>A sink reached only through a <strong>nested local lambda</strong>: the summary walk resolves a body's calls to named callees only, not to a local-lambda binding.</li>
+    </ul>
+    <p>In the other direction the fix errs toward flagging in two disclosed, sound cases: a captured struct whole-reassigned to a secret after the closure is defined, and an in-body <span class="ic">declassify</span> inside a captured closure. Both over-report, never under-report; one of the sibling-read over-reports was later removed in <a href="1.30.1.html">1.30.1</a>. For the full reasoning, the reproduction, and the complete list, read the advisory or the technical design record linked below.</p>
+    <div class="note"><strong>Warnings do not block.</strong> As with every information-flow finding in Capa, the default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. Gate on strict mode in CI if you want the guarantee enforced.</div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Learn more</h2>
+    <ul class="linklist">
+      <li><a href="1.30.0-design.html">Technical design record</a> <span class="desc">: the deep engineering companion to this page, for contributors and auditors: the model, the mechanism in the analyzer with file and line references, the alternatives rejected, how it was verified, and every residual.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-10-ifc-lambda-flow-sensitivity.md">Security advisory</a> <span class="desc">: the severity, the reproduction of both faces and the backend divergence, and the complete list of residuals and over-reports.</span></li>
+      <li><a href="../learn/13-information-flow.html">Information-flow control</a> <span class="desc">: the chapter that introduces <span class="ic">@secret</span>, the sinks, and <span class="ic">declassify</span>.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> <span class="desc">: the machine-readable entry for this release.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="index.html"><h4><span class="arr">&larr;</span> All releases</h4><p>Back to the version index.</p></a>
+      <a class="nextcard" href="1.30.0-design.html"><h4>Technical design record <span class="arr">&rarr;</span></h4><p>The engineering-level record of the fix: model, mechanism, verification, residuals.</p></a>
+    </div>
+  </div>
+</section>

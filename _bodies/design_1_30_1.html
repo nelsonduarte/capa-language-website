@@ -1,0 +1,153 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Design record &middot; 1.30.1</span>
+    <h1>Field-store field-sensitivity precision fix</h1>
+    <p class="lead">The engineering-level record for Capa 1.30.1, the companion to its <a href="1.30.1.html">What's New</a> page. It states what was built, the model it rests on, the mechanism in the analyzer with file and line references, the alternatives rejected, how it was verified, and every residual that stays open. Claims are labelled MEASURED (read or run) or JUDGEMENT (reasoned inference). This is a precision (false-positive-removal) release, not a security fix; it carries no advisory.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="1.30.1.html">&larr; What's New</a>
+      <a class="btn btn-soft" href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:30px">
+  <div class="docs">
+    <nav class="toc">
+      <h6>Sections</h6>
+      <ol>
+        <li><a href="#summary">Summary</a></li>
+        <li><a href="#problem">Problem and motivation</a></li>
+        <li><a href="#model">Model and prior art</a></li>
+        <li><a href="#mechanism">Mechanism</a></li>
+        <li><a href="#alternatives">Alternatives considered</a></li>
+        <li><a href="#verification">Verification</a></li>
+        <li><a href="#scope">Scope and residuals</a></li>
+        <li><a href="#xrefs">Cross-references</a></li>
+      </ol>
+    </nav>
+
+    <div class="docbody">
+      <div class="note"><strong>Sources.</strong> The released analyzer source read from a clean <span class="ic">pip install capa-language==1.30.1</span> (not the repository working tree, which sits on an unrelated branch); the fix commits <span class="ic">7490d6a</span>, <span class="ic">24acfae</span>, <span class="ic">1580715</span>, <span class="ic">6eb9a10</span>, <span class="ic">a808c86</span>, <span class="ic">67cea58</span> and the release commit <span class="ic">2ac52e5</span> from the git object store; the CHANGELOG <span class="ic">[1.30.1]</span> entry and the 1.30.1 resolution annotations in <span class="ic">docs/advisories/2026-08-10-ifc-cross-function-whole-struct-read.md</span> and <span class="ic">docs/advisories/2026-08-10-ifc-lambda-flow-sensitivity.md</span>; and the pinning tests in <span class="ic">tests/test_ifc_branch_scoped_container.py</span>. The before/after was run on clean 1.30.0 and 1.30.1 installs, on both backends. Every file and line reference below was confirmed against the installed 1.30.1 package.</div>
+
+      <h2 id="summary"><span class="nx">1</span>Summary</h2>
+      <p>Capa 1.30.1 is an information-flow precision fix. It removes two sound over-reports that 1.30.0 emitted on a read of a public sibling field of a struct whose OTHER field was made secret: a cross-function field store (<span class="ic">bag.secret_field = secret</span> in a callee, then a caller reading <span class="ic">bag.note</span>) and the closure analogue (a closure re-reading a clean sibling of a struct stored into after the closure was defined). Both were disclosed as sound over-reports in the two 2026-08-10 advisories; neither ever leaked.</p>
+      <p>The fix gives a direct field store the field sensitivity a container mutation already had: it is keyed on the <span class="ic">(root, field-path)</span> access-path channel, so a read of a disjoint sibling path is no longer tainted. It closes no leak and removes no coverage, so it ships as a PATCH under the <span class="ic">STABILITY.md</span> patch rule, with no security advisory. Because the only change accepts more programs, no correct 1.x program can break.</p>
+
+      <h2 id="problem"><span class="nx">2</span>Problem and motivation</h2>
+      <p><strong>Not a threat, a false positive.</strong> Unlike the surrounding information-flow releases, 1.30.1 fixes no soundness hole. It removes a diagnostic that fired where nothing leaked. A sound over-report is safe (it never hides a leak), but it erodes trust in the checker and pushes an author toward a spurious <span class="ic">declassify</span> that then masks a genuine future leak, so removing it has real value.</p>
+      <p><strong>Pre-fix behaviour (MEASURED).</strong> 1.30.0 already keyed a container mutation (<span class="ic">bag.items.push(secret)</span>) on the <span class="ic">(root, field-path)</span> the container lived at, so a read of a different field stayed clean. A plain field store did not get that precision: it raised the label of the whole struct through the cross-function effect and the capture re-read alike, so a later read of any part of the struct, including a disjoint public sibling, observed the taint. The minimal reproduction:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">sibling.capa</span></div>
+<pre><code><span class="k">const</span> TOKEN: <span class="cp">@secret</span> <span class="ty">String</span> = <span class="st">"s3cr3t"</span>
+<span class="k">type</span> <span class="ty">Bag</span> { <span class="pu">secret_field:</span> <span class="ty">String</span>, <span class="pu">note:</span> <span class="ty">String</span> }
+<span class="k">fun</span> <span class="fn">fill</span>(bag: <span class="ty">Bag</span>, secret: <span class="cp">@secret</span> <span class="ty">String</span>)
+    bag.secret_field = secret
+<span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
+    <span class="k">var</span> bag: <span class="ty">Bag</span> = <span class="ty">Bag</span> { <span class="pu">secret_field:</span> <span class="st">""</span>, <span class="pu">note:</span> <span class="st">"public"</span> }
+    <span class="fn">fill</span>(bag, TOKEN)
+    stdio.<span class="fn">println</span>(bag.note)</code></pre></div>
+
+      <p>The read at <span class="ic">bag.note</span> is a disjoint sibling of the stored <span class="ic">bag.secret_field</span>; the program prints <span class="ic">public</span> and never discloses the secret, yet 1.30.0 flagged the read.</p>
+
+      <h2 id="model"><span class="nx">3</span>Model and prior art</h2>
+      <p><strong>Access-path / field-sensitive taint.</strong> The channel is the <span class="ic">(root, field-path)</span> access path: a taint names not just the binding but the exact sub-path of the value that is dirty, and a read observes a taint only when its path is prefix-compatible with the tainted path. This is the field-sensitive taint model the 1.28.0 and 1.29.0 container fixes built (keying a container mutation on the field it lives at, and catching a whole-value read back through the tainted prefix). MEASURED: 1.30.1 extends that same channel from container mutations to a direct field store. JUDGEMENT: field-sensitive / access-path taint is standard practice in static taint analysis; the novelty here is only extending an existing channel to one more mutation form, not a new theory.</p>
+      <p><strong>Soundness invariant.</strong> Field sensitivity is safe only if every whole-value label raise that a field-precise read cannot see still forces a conservative whole-value taint. 1.30.1 makes that a maintenance invariant (see 4.5): every non-seed whole-value raise routes through one choke-point that also marks the binding whole-value-dirty, so the field-precise re-read never silently suppresses a taint it cannot resolve to a path.</p>
+
+      <h2 id="mechanism"><span class="nx">4</span>Mechanism</h2>
+      <p>The fix is entirely in the analyzer (<span class="ic">capa/analyzer/_ifc.py</span> and <span class="ic">capa/analyzer/_ifc_summary.py</span>) across six commits. All references below are into the clean 1.30.1 install (<span class="ic">site-packages/capa/analyzer/</span>).</p>
+
+      <h3>4.1 Field-key the cross-function field-store effect (<span class="ic">7490d6a</span>, <span class="ic">24acfae</span>)</h3>
+      <p>A callee's field store used to record a WHOLE-VALUE cross-function effect on the mutated parameter. <span class="ic">7490d6a</span> keys that mutation effect on the <span class="ic">(root, field-path)</span> access path, and <span class="ic">24acfae</span> does the same for the cross-function summary content channel, so a caller reading a disjoint sibling is no longer tainted. The path of a read is computed by <span class="ic">_field_path_from_root</span> (<span class="ic">_ifc_summary.py:836</span>) and matched prefix-compatibly against the tainted paths (the argument-side gate at <span class="ic">_ifc_summary.py:297</span> onward): a determinable read path that is prefix-compatible with no tainted path is clean; an undeterminable read falls back to the empty path, which is prefix-compatible with every taint, so it stays conservatively flagged.</p>
+
+      <h3>4.2 Field-precise capture re-read of an in-place field store (<span class="ic">1580715</span>)</h3>
+      <p>The Face 2 capture re-read from 1.30.0, <span class="ic">_fresh_capture_label</span> (<span class="ic">_ifc.py:1430</span>), used the whole-value label of the captured root, so a closure reading only a clean sibling flagged. <span class="ic">1580715</span> makes it field-precise: a read at a determinable field path observes only the branch-scoped container taints prefix-compatible with that path, consulted through <span class="ic">_container_taint_at</span> (<span class="ic">_ifc.py:2126</span>). A whole or undeterminable read still observes every taint on the root (residual, section 7).</p>
+
+      <h3>4.3 Ancestor store observed on a descendant read (<span class="ic">6eb9a10</span>)</h3>
+      <p>Prefix-compatibility is directional: a store at an interior node must be observed by a read of any descendant path (writing the parent dirties the child). <span class="ic">6eb9a10</span> makes the read gate observe an ancestor field store on a descendant read, so making the whole struct secret and reading one field of it stays flagged. This keeps the precision from opening a hole.</p>
+
+      <h3>4.4 Re-consult the whole-value label for an escaped store (<span class="ic">a808c86</span>)</h3>
+      <p>A field store the field-precise channel cannot see (an aliased, renamed or over-long root) escapes to the whole-value label. <span class="ic">a808c86</span> makes the capture re-read re-consult <span class="ic">sym.label</span> for a capture dirtied by such an escaped store, so a store the precise channel misses is still caught through the conservative carrier.</p>
+
+      <h3>4.5 One choke-point for every non-seed whole-value raise (<span class="ic">67cea58</span>)</h3>
+      <p><span class="ic">67cea58</span> routes every whole-value label raise OUTSIDE the precise field-store leaf path (an aliased / escaped / unresolvable-path store, and the cross-function whole-value carrier) through a single choke-point, <span class="ic">_raise_whole_value_label</span> (<span class="ic">_ifc.py:2070</span>), which also marks the binding whole-value-dirty. This is the maintenance invariant that keeps the field-precise re-read sound: it can never silently suppress a whole-value taint it cannot resolve to a path, because any such taint has also set the dirty mark the re-read consults.</p>
+
+      <h3>4.6 Both backends</h3>
+      <p>MEASURED: the fix commits touch only <span class="ic">capa/analyzer/_ifc.py</span>, <span class="ic">capa/analyzer/_ifc_summary.py</span> and test files. No code-generation or runtime file is touched, and no runtime behaviour changes: the affected programs never leaked, so they print the same public value on both backends before and after. What changes is the analyzer verdict, which is a single implementation running before code generation and therefore backend-independent by construction (section 6).</p>
+
+      <h2 id="alternatives"><span class="nx">5</span>Alternatives considered and why rejected</h2>
+      <ul class="bullets">
+        <li><strong>Keep the whole-value carrier for a field store (the pre-fix behaviour, over-reports).</strong> Sound but imprecise: it flags every sibling read. Rejected in favour of the field-keyed store, keeping the whole-value carrier only where the store cannot be resolved to a path.</li>
+        <li><strong>Field-key every field store regardless of root (rejected).</strong> An aliased, renamed or over-long root cannot be resolved to a reliable field path, so field-keying it would drop a real cross-function whole-value flow. The keying is applied only to a store rooted directly at the binding within the tracked field-path bound; anything else keeps the conservative carrier. This preserves every leak 1.30.0 caught.</li>
+        <li><strong>Trust the field-precise channel everywhere (unsound without the invariant).</strong> A field-precise read that could not see an escaped or aliased store would silently clear a real taint. Instead every non-seed whole-value raise routes through the <span class="ic">_raise_whole_value_label</span> choke-point that also sets the dirty mark (4.5), so the precise read can defer to the conservative carrier when a taint is not path-resolvable.</li>
+      </ul>
+
+      <h2 id="verification"><span class="nx">6</span>Verification</h2>
+      <p><strong>Before/after, run on both released binaries.</strong> Two isolated venvs, <span class="ic">capa-language==1.30.0</span> and <span class="ic">capa-language==1.30.1</span> (<span class="ic">capa --version</span> confirmed for each), plus <span class="ic">wasmtime</span> for the Wasm backend. The program is the section 2 reproduction.</p>
+      <p>BEFORE, capa 1.30.0 (flags the clean sibling read; the program never leaks):</p>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.0</span></div>
+<pre><code>$ capa --check sibling.capa
+sibling.capa:8:19: warning: information-flow: a @secret value reaches Stdio.println (argument 1), a public sink that sends data out of the program. Route it through declassify(value, reason: "...") if this disclosure is intended.
+   8 |     stdio.println(bag.note)
+                         ^
+
+sibling.capa: ok (4 items, 14 expressions typed, 7 bindings)
+
+# with @strict_ifc() on main: the same finding is a hard error, exit 1
+sibling.capa:9:19: error: information-flow: a @secret value reaches Stdio.println (argument 1) ...
+sibling.capa: 1 error
+
+$ capa --run sibling.capa
+public</code></pre></div>
+      <p>AFTER, capa 1.30.1 (clean at every tier; runtime unchanged on both backends):</p>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.1</span></div>
+<pre><code>$ capa --check sibling.capa
+sibling.capa: ok (4 items, 14 expressions typed, 7 bindings)
+
+# with @strict_ifc() on main: still ok, exit 0
+
+$ capa --run sibling.capa            # Python backend
+public
+
+$ capa --run --wasm sibling.capa     # Wasm backend
+public</code></pre></div>
+      <p><strong>No leak dropped (MEASURED control).</strong> Changing the last line to read the STORED field, <span class="ic">stdio.println(bag.secret_field)</span>, still warns on 1.30.1:</p>
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa 1.30.1</span></div>
+<pre><code>$ capa --check stored.capa
+stored.capa:8:19: warning: information-flow: a @secret value reaches Stdio.println (argument 1), a public sink that sends data out of the program. Route it through declassify(value, reason: "...") if this disclosure is intended.
+   8 |     stdio.println(bag.secret_field)
+                         ^</code></pre></div>
+      <p><strong>Tests that pin it.</strong> All in <span class="ic">tests/test_ifc_branch_scoped_container.py</span> at <span class="ic">2ac52e5</span>. Precision closed: <span class="ic">TestCrossFnFieldStoreFieldKeyed</span>, <span class="ic">TestCrossFnContentFieldPrecise</span>, <span class="ic">TestCaptureFieldStoreFieldPrecise</span>, <span class="ic">TestAncestorStoreDescendantRead</span>, <span class="ic">TestCaptureEscapedStoreReconsult</span>, <span class="ic">TestCaptureCrossFnWholeValueReconsult</span>. Still-flagging over-report (whole / method read): <span class="ic">TestCaptureLiveRereadPrecision</span>; the whole-copy sibling over-report: <span class="ic">TestWholeCopySiblingOverReportDisclosed</span>.</p>
+      <div class="note"><strong>Scope of the suite figure.</strong> The full-suite pass is claimed by the release commit; it was not independently re-run for this record, because the repository working tree is checked out on an unrelated in-progress branch. What was measured for this record is the before/after on both released binaries and both backends (the check verdicts and the unchanged <span class="ic">public</span> runtime), and the file and line references in section 4.</div>
+
+      <h2 id="scope"><span class="nx">7</span>Scope and residuals</h2>
+      <p>MEASURED framing: 1.30.1 makes a DIRECT field store field-precise on the <span class="ic">(root, field-path)</span> channel for a store rooted directly at the binding, both cross-function and through a capture re-read, so a disjoint sibling read stays clean. It closes no leak and removes no coverage. It does nothing more.</p>
+      <p><strong>Stays flagged (no leak dropped, MEASURED where noted):</strong> a read of the stored path (verified, section 6), a whole or getter read of the struct, passing the whole struct to a callee that sinks the stored path, and a store at an interior node read back through a descendant path.</p>
+      <p><strong>Open residuals:</strong></p>
+      <ul class="bullets">
+        <li><strong>A whole or method read of a captured struct still over-reports.</strong> A closure reading the captured root through a method receiver (<span class="ic">bag.reveal()</span>), a bare use, or an argument cannot be resolved to a field path, so it still observes every taint on the root and still flags a clean sibling. A sound over-report, never a missed leak. Pinned in <span class="ic">TestCaptureLiveRereadPrecision</span>.</li>
+        <li><strong>An aliased, renamed or over-long root sibling still over-reports.</strong> A store the field-precise channel cannot resolve keeps the conservative whole-value carrier, so its sibling stays flagged, at parity with the container-mutation case.</li>
+        <li><strong>Element- and value-rooted points-to still leaks (pre-existing).</strong> A struct held as a <span class="ic">Map</span> value or a <span class="ic">List</span> / tuple element, mutated through its own binding and read via <span class="ic">.get(...)</span> / destructuring, is a different-root points-to residual that leaks on 1.30.0 and 1.30.1 alike; it is not introduced here.</li>
+      </ul>
+
+      <h2 id="xrefs"><span class="nx">8</span>Cross-references</h2>
+      <ul class="bullets">
+        <li><strong>Version.</strong> 1.30.1 (released 2026-08-11). PATCH under the <span class="ic">STABILITY.md</span> patch rule, NOT the security exception the earlier information-flow releases (1.2.0 through 1.30.0) used, because it closes no leak. No security advisory.</li>
+        <li><strong>Commits.</strong> <span class="ic">7490d6a</span> (field-key the cross-function field-store mutation effect), <span class="ic">24acfae</span> (field-key the cross-function summary content channel), <span class="ic">1580715</span> (field-precise capture re-read of an in-place field store), <span class="ic">6eb9a10</span> (observe an ancestor field store on a descendant read), <span class="ic">a808c86</span> (re-consult <span class="ic">sym.label</span> for a capture dirtied by an escaped store), <span class="ic">67cea58</span> (route every non-seed whole-value raise through one choke-point), <span class="ic">2ac52e5</span> (release).</li>
+        <li><strong>Advisories (resolution, no new advisory).</strong> The two sound over-reports are recorded as resolved (for the direct field read) in <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-10-ifc-cross-function-whole-struct-read.md">2026-08-10-ifc-cross-function-whole-struct-read.md</a> and <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-10-ifc-lambda-flow-sensitivity.md">2026-08-10-ifc-lambda-flow-sensitivity.md</a>.</li>
+        <li><strong>Tests.</strong> <span class="ic">tests/test_ifc_branch_scoped_container.py</span> (section 6).</li>
+        <li><strong>Related records.</strong> The predecessor security release <a href="1.30.0.html">1.30.0</a> (lambda-flow, whose sibling-read over-report this removes for the direct field read), and the successor security release <!-- historical-version: forward reference to 1.31.0 --><a href="1.31.0.html">1.31.0</a>, which consumes this field-store access-path channel to close the locally-resolved capture-internal sink.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="1.30.1.html"><h4><span class="arr">&larr;</span> What's New in 1.30.1</h4><p>The reader-facing release note for this fix.</p></a>
+      <a class="nextcard" href="index.html"><h4>All releases <span class="arr">&rarr;</span></h4><p>The version index, newest first.</p></a>
+    </div>
+  </div>
+</section>
