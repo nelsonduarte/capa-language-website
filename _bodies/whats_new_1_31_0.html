@@ -1,0 +1,85 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Releases &middot; 1.31.0</span> <!-- historical-version: names the release this page documents -->
+    <h1>What's new in Capa 1.31.0</h1> <!-- historical-version: names the release this page documents -->
+    <p class="lead">A small information-flow security fix. A value marked <span class="ic">@secret</span>, captured by a closure and then leaked from inside that closure's own body, used to slip past the checker with no diagnostic at all. This release flags it: a warning by default, and a hard error under <span class="ic">@strict_ifc</span>.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="releases.html">&larr; All releases</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>What this release is</h2>
+    <p>Capa 1.31.0 is an information-flow security fix, and only that. It closes a case where a value you marked <span class="ic">@secret</span> could reach a public sink, a log line or a network call, with no signal to the author: no warning at the default tier, and not even an error under <span class="ic">@strict_ifc</span>. That silence at both tiers was the whole problem, because the author wrote <span class="ic">@secret</span>, believed the value was protected, and it was not.</p> <!-- historical-version: names the release this page documents -->
+    <p>It is a minor release. The only programs it affects are the ones that were already leaking a secret without a warning; every correct program compiles exactly as before. That follows the same rule the earlier information-flow soundness fixes on the 1.x line used: tightening a static check so a program that was silently unsound now warns is a security fix, not a breaking change.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>What changed, in plain terms</h2>
+    <p>A closure is a small inline function that can capture the variables around it. Deferring a log line or a serialise step into a closure and calling it a moment later is an everyday pattern. The leak lived in the order of events:</p>
+    <ul class="bullets">
+      <li>A closure captured a variable that was still <strong>public</strong> when the closure was written.</li>
+      <li>The <span class="ic">@secret</span> value was stored into that variable <strong>after</strong> the closure was written.</li>
+      <li>The closure was then called, and its body sent the now-secret value to a public sink.</li>
+    </ul>
+    <p>The checker read the closure body once, at the point it was written, when the captured value was still public, and never looked at it again at the call. So the later taint was missed entirely. Each closure now also carries a summary of which captured values reach a sink inside its body. At the call the compiler checks the <em>live</em> label of each of those captured values, and a captured <span class="ic">@secret</span> reaching an internal sink is flagged at the call site, on both the interpreter and the Wasm backend.</p>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Before and after</h2>
+    <p>The closure below captures <span class="ic">bag</span>, the secret is written into <span class="ic">bag</span> afterwards, and the closure sinks it:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">leak.capa</span></div>
+<pre><code><span class="k">type</span> <span class="ty">Bag</span> { <span class="pu">data:</span> <span class="ty">String</span> }
+
+<span class="k">fun</span> <span class="fn">leak</span>(stdio: <span class="cp">Stdio</span>, secret: <span class="cp">@secret</span> <span class="ty">String</span>)
+    <span class="k">var</span> bag: <span class="ty">Bag</span> = <span class="ty">Bag</span> { <span class="pu">data:</span> <span class="st">"public"</span> }
+    <span class="k">let</span> log: <span class="ty">Fun</span>() <span class="pu">-&gt;</span> <span class="ty">Unit</span> = <span class="k">fun</span>() <span class="pu">-&gt;</span> <span class="ty">Unit</span> <span class="pu">=&gt;</span> stdio.<span class="fn">println</span>(bag.data)
+    bag.data = secret        <span class="cm">// the secret arrives after log is defined</span>
+    <span class="fn">log</span>()                    <span class="cm">// sinks the secret inside the closure body</span></code></pre></div>
+
+    <p>On earlier versions <span class="ic">capa --check</span> reported <span class="ic">ok</span> and exited 0, and even adding <span class="ic">@strict_ifc</span> reported no error, while the program printed the secret at run time. Now the default check warns:</p>
+
+<div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
+<pre><code>$ capa --check leak.capa
+warning: information-flow: a @secret value is passed to 'log' as the
+  captured 'bag', which reaches a public sink inside 'log' (it sends
+  data out of the program). Route it through
+  declassify(value, reason: "...") if this disclosure is intended.</code></pre></div>
+
+    <p>Under <span class="ic">@strict_ifc</span> the same finding is a hard error and the build exits non-zero, so a pipeline that gates on strict mode now stops it. If the disclosure is genuinely intended, route the value through <span class="ic">declassify(value, reason: "...")</span>, exactly as in the <a href="learn/13-information-flow.html">information-flow chapter</a>; a closure that declassifies the value it sinks stays clean.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>An honest scope</h2>
+    <p>This is a security fix with a deliberately narrow, disclosed scope. It closes the <strong>locally-resolved</strong> case: a closure bound to a name and called in the same place, or one that is immediately invoked, where the sink is reached directly or through a named helper. That is the common shape, and it is now covered on both backends.</p>
+    <p>It does not close every closure shape, and the advisory says so plainly. Still open, and documented as tested residuals, are closures that <em>escape</em> local resolution (aliased to another name, passed to another function and called there, or returned), a sink reached only through a further nested inline closure, and a few container-aliasing shapes. These remain honest, known limitations rather than silent ones. If you want the full list and the reasoning, read the advisory below.</p>
+    <div class="note"><strong>Warnings do not block.</strong> As with every information-flow finding in Capa, the default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. Gate on strict mode in CI if you want the guarantee enforced.</div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>Learn more</h2>
+    <ul class="linklist">
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-08-11-ifc-capture-internal-sink.md">Security advisory</a> <span class="desc">: the full write-up, the reproduction, the severity, and the complete list of residuals that stay open.</span></li>
+      <li><a href="learn/13-information-flow.html">Information-flow control</a> <span class="desc">: the chapter that introduces <span class="ic">@secret</span>, the sinks, and <span class="ic">declassify</span>.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> <span class="desc">: the machine-readable entry for this release.</span></li>
+      <li><strong>Technical design spec</strong> <span class="desc">: the deep design record for this fix is being published and will be linked here. <span class="ic">coming soon</span></span></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="releases.html"><h4><span class="arr">&larr;</span> All releases</h4><p>Back to the version index.</p></a>
+      <a class="nextcard" href="learn/13-information-flow.html"><h4>Information-flow control <span class="arr">&rarr;</span></h4><p>How <span class="ic">@secret</span> data is tracked, and where it may and may not go.</p></a>
+    </div>
+  </div>
+</section>

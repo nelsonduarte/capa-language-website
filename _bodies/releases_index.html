@@ -1,0 +1,34 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Releases</span>
+    <h1>What's new in Capa</h1>
+    <p class="lead">A per-version record of what changed and why, newest first. Every release page explains the change in plain terms, shows a short before-and-after, and states its scope honestly, including exactly what a security fix does and does not close. For what is planned rather than shipped, see the <a href="roadmap.html">roadmap</a>.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="reference.html">Language reference</a>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article">
+    <span class="eyebrow">By version</span>
+    <h2>Release notes</h2>
+    <p class="section-intro">Pick a version to read its notes. The most recent release is at the top; the list grows as the earlier history is written up.</p>
+    <ul class="linklist">
+      <li><a href="whats-new-1.31.0.html">Capa 1.31.0</a> <span class="desc">&middot; 2026-08-11 &middot; an information-flow security fix: a value marked <span class="ic">@secret</span>, captured by a closure and leaked inside the closure body, is now flagged.</span></li> <!-- historical-version: names the release the note is about -->
+    </ul>
+    <div class="note">The full machine-readable history is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a>, and every security fix has a matching entry under <a href="https://github.com/nelsonduarte/capa-language/tree/main/docs/advisories">security advisories</a>. Older versions will be summarised here as their notes are backfilled.</div>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Companions</span>
+    <h2>Where to read more</h2>
+    <div class="nextgrid">
+      <a class="nextcard" href="roadmap.html"><h4>Roadmap <span class="arr">&rarr;</span></h4><p>What is done, what is next, and what is explicitly out of scope.</p></a>
+      <a class="nextcard" href="learn/13-information-flow.html"><h4>Information-flow control <span class="arr">&rarr;</span></h4><p>The chapter behind most of these security fixes: <span class="ic">@secret</span>, <span class="ic">declassify</span>, and the sinks.</p></a>
+    </div>
+  </div>
+</section>
