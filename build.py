@@ -38,7 +38,7 @@ FONTS = SRC / "fonts"
 #
 # check_version_literals() aborta o build se o literal da versao corrente
 # aparecer num fragmento, que e como uma segunda copia se instalava sozinha.
-CAPA_VERSION = "1.31.0"
+CAPA_VERSION = "1.32.0"
 VERSION_TOKEN = "{{CAPA_VERSION}}"
 
 CSS = r"""
@@ -712,6 +712,7 @@ PAGES=[
  ("agent-demo.html","Agent demo | Capa","A worked example where the per-function capability bound is the security argument for an LLM agent.","agent","agent_demo.html",0),
  ("roadmap.html","Roadmap | Capa","What is done, what is next, and what is explicitly out of scope for Capa.","roadmap","roadmap.html",0),
  ("releases/index.html","Releases | Capa","Per-version release notes for Capa, newest first: what changed, a short before-and-after, and the honest scope of each fix.","releases","releases_index.html",1),
+ ("releases/1.32.0.html","What's New in Capa 1.32.0 | Capa","What changed in Capa 1.32.0: a security-hardening release closing seven soundness gaps, each published as its own advisory.","releases","whats_new_1_32_0.html",1),
  ("releases/1.31.0.html","What's New in Capa 1.31.0 | Capa","What changed in Capa 1.31.0: an information-flow security fix that flags a @secret value leaked from inside a closure body.","releases","whats_new_1_31_0.html",1),
  ("releases/1.31.0-design.html","Capa 1.31.0 design record | Capa","The technical design record for Capa 1.31.0: model, mechanism, verification and residuals of the capture-internal-sink information-flow fix.","releases","design_1_31_0.html",1),
  ("releases/1.30.1.html","What's New in Capa 1.30.1 | Capa","What changed in Capa 1.30.1: a precision release that removes two false-positive information-flow reports on field-store sibling reads.","releases","whats_new_1_30_1.html",1),
