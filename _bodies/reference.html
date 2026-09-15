@@ -18,6 +18,7 @@
         <li><a href="#exprs">Expressions</a></li>
         <li><a href="#patterns">Pattern matching</a></li>
         <li><a href="#caps">Capabilities</a></li>
+        <li><a href="#export">Component exports</a></li>
         <li><a href="#ifc">Information-flow control</a></li>
         <li><a href="#imports">Imports</a></li>
         <li><a href="#main">The main program</a></li>
@@ -151,6 +152,32 @@
 <pre><code><span class="k">extern</span> <span class="k">component</span> <span class="ty">Bureau</span> <span class="k">from</span> <span class="st">"vendor/bureau.wasm"</span>
     <span class="k">fun</span> <span class="fn">submit</span>(<span class="pu">net:</span> <span class="cp">Net</span>, <span class="pu">payload:</span> <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">String</span></code></pre></div>
 
+      <h3 id="export" style="scroll-margin-top:84px">Exporting functions from the component</h3>
+      <p>A top-level function tagged <span class="ic">@export()</span> is lifted into the component's WIT world alongside <span class="ic">main</span>, so a Component Model host can call it directly. It is an attribute on the function, independent of <span class="ic">pub</span>.</p>
+      <div class="code">
+<pre><code><span class="cp">@export</span>()
+<span class="k">fun</span> <span class="fn">add</span>(<span class="pu">a:</span> <span class="ty">Int</span>, <span class="pu">b:</span> <span class="ty">Int</span>) <span class="pu">-&gt;</span> <span class="ty">Int</span>
+    <span class="k">return</span> a + b</code></pre></div>
+      <p><span class="ic">capa --wit</span> on that program emits the export line beside <span class="ic">main</span>:</p>
+      <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa --wit</span></div>
+<pre><code>world program {
+  import stdio;
+  export main: func();
+  export add: func(a: s64, b: s64) -&gt; s64;
+}</code></pre></div>
+      <p><strong>Scope, stated exactly.</strong> This covers <strong>scalar signatures only</strong>: <span class="ic">Int</span> (<span class="ic">s64</span>), <span class="ic">Float</span> (<span class="ic">f64</span>), <span class="ic">Bool</span> (<span class="ic">bool</span>), and a <span class="ic">Unit</span> or absent return. <span class="ic">String</span> and every composite type across the boundary are <strong>deferred</strong>, and refused loudly rather than silently dropped or emitted as an invalid component. A function name must also already be a valid WIT identifier (lower kebab-case), because the world export name has to byte-match the core module's export:</p>
+      <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa --wit</span></div>
+<pre><code><span class="er">capa: --wit: @export 'greet': parameter type 'String' is not yet supported</span>
+<span class="er">by the component backend; this increment supports only scalar params</span>
+<span class="er">(Int / Float / Bool)</span>
+
+<span class="er">capa: --wit: @export 'add_two': the function name is not a valid WIT</span>
+<span class="er">identifier, so it cannot be a component export name (the WIT export must</span>
+<span class="er">byte-match the core (export "add_two")). Rename it to lower kebab-case</span>
+<span class="er">(letters, digits, single dashes; no underscore or uppercase) for this</span>
+<span class="er">increment.</span></code></pre></div>
+      <p><span class="ic">@export</span> on <span class="ic">main</span> or on an <span class="ic">impl</span> method is a hard error at <span class="ic">--check</span>, because <span class="ic">main</span> is already exported by the world unconditionally and only a top-level function can become a component export: <span class="ic">main is exported automatically; remove the redundant @export</span> and <span class="ic">@export is only valid on a top-level function, not an impl method</span>.</p>
+
       <h2 id="ifc"><span class="nx">7</span>Information-flow control</h2>
       <p>A two-point lattice: <span class="ic">@public</span> (default) below <span class="ic">@secret</span>. A label attaches to a type expression, so it can appear on parameters, bindings, return types and struct fields. A value's label is the <em>join</em> of every label flowing into it (operators, interpolation, field reads, indexing, <span class="ic">?</span>). <span class="ic">env.get</span> is secret by default and is the only secret source; <span class="ic">fs.read</span> is intentionally not. <span class="ic">Serve.recv</span> is the one inbound source and is <span class="ic">@public</span>: the lattice models <strong>confidentiality</strong>, not integrity or taint, so <span class="ic">@public</span> on an attacker-controlled inbound request asserts only that it is not a secret whose disclosure the analysis must prevent, and asserts nothing about it being trustworthy or safe to act on.</p>
       <table class="tbl">
@@ -191,7 +218,7 @@
           <tr><td><span class="ic">@audited</span></td><td>date, by, scope, notes</td><td>Record a manual security audit.</td></tr>
           <tr><td><span class="ic">@vex</span></td><td>cve, status, justification, detail</td><td>Per-function CycloneDX VEX exploitability claim.</td></tr>
           <tr><td><span class="ic">@strict_ifc</span></td><td>(none)</td><td>Opt this function into fail-closed information-flow checking: a secret-reaches-public-sink flow becomes a hard error instead of a warning, and implicit flows are caught.</td></tr>
-          <tr><td><span class="ic">@constant_time</span></td><td>(none)</td><td>Require this function to be constant-time: the analyzer rejects any control-flow decision or index that depends on a <span class="ic">@secret</span> value (CWE-208 timing leaks).</td></tr>
+          <tr><td><span class="ic">@constant_time</span></td><td>(none)</td><td>Require that no <span class="ic">@secret</span> value influences the function's execution time (CWE-208). The analyzer rejects four things inside it, at every tier and as a hard error: <strong>control flow on a secret</strong> (an <span class="ic">if</span> / <span class="ic">elif</span> / <span class="ic">while</span> / <span class="ic">if</span>-expression condition or a <span class="ic">match</span> scrutinee); <strong>a memory access indexed by a secret</strong> (<span class="ic">xs[secret]</span>, <span class="ic">list.get</span>, <span class="ic">map.get</span> / <span class="ic">contains_key</span> / <span class="ic">remove</span>, <span class="ic">set.contains</span>, <span class="ic">str.char_at</span>); <strong>variable-time arithmetic</strong> (<span class="ic">/</span> and <span class="ic">%</span> when either operand is secret, which run on the CPU's variable-latency divider); and <strong>short-circuiting comparison</strong> (<span class="ic">==</span> / <span class="ic">!=</span> on a secret <span class="ic">String</span> or <span class="ic">List</span>, the ordering operators on a secret <span class="ic">String</span>, and the scanning methods <span class="ic">starts_with</span>, <span class="ic">ends_with</span>, <span class="ic">contains</span>, <span class="ic">index_of</span>, <span class="ic">split_once</span>, <span class="ic">list.contains</span>). Fixed-latency add / subtract / multiply on secrets and branches on public data stay legal, so a branchless implementation type-checks. See the caveat under <a href="#limits">known limitations</a> for what the manifest's <span class="ic">constant_time</span> field does and does not attest.</td></tr>
         </tbody>
       </table>
       <p class="muted"><span class="ic">@vex status</span> accepts the CycloneDX vocabulary (<span class="ic">not_affected</span>, <span class="ic">affected</span>, <span class="ic">fixed</span>, <span class="ic">in_triage</span>, <span class="ic">false_positive</span>, <span class="ic">exploitable</span>, <span class="ic">resolved</span>, <span class="ic">resolved_with_pedigree</span>).</p>
@@ -205,7 +232,7 @@
           <tr><td><span class="ic">--wasm</span> [<span class="ic">--component</span>]</td><td>Compile through CIR to WebAssembly; wrap as a Component Model component.</td></tr>
           <tr><td><span class="ic">--wasi</span> <span style="font-family:var(--mono);font-size:.6rem;color:var(--accent);background:var(--wash);border:1px solid var(--aline);border-radius:6px;padding:.2em .5em">experimental</span></td><td>Emit a component for stock WASI Preview 2 runtimes (for example wasmtime) instead of the dedicated <span class="ic">capa:host</span>. Gives mitigation Levels 1 and 2 but not Level 3; dynamic paths need an operator grant <span class="ic">--preopen &lt;dir&gt;</span>. See the <a href="roadmap.html">roadmap</a>.</td></tr>
           <tr><td><span class="ic">--manifest</span></td><td>Capa-native JSON: per-function caps, attributes, Unsafe crossings, <span class="ic">args_flow</span>.</td></tr>
-          <tr><td><span class="ic">--cyclonedx</span> / <span class="ic">--spdx</span></td><td>CycloneDX 1.5 / SPDX 2.3 SBOM with per-function capability metadata.</td></tr>
+          <tr><td><span class="ic">--cyclonedx</span> / <span class="ic">--spdx</span></td><td>CycloneDX 1.6 / SPDX 2.3 SBOM with per-function capability metadata.</td></tr>
           <tr><td><span class="ic">--vex</span> / <span class="ic">--provenance</span></td><td>CycloneDX VEX per <span class="ic">@vex</span> · SLSA L1 provenance bound to the source SHA-256.</td></tr>
         </tbody>
       </table>
@@ -254,7 +281,8 @@
         <li><span class="ic">if</span>/<span class="ic">match</span> in block-body lambdas need <span class="ic">=&gt;</span> before the indented block.</li>
         <li>Multi-line <span class="ic">match</span> inside parentheses requires the inline <span class="ic">{ }</span> form.</li>
       </ul>
-      <p class="muted">For the full roadmap see the <a href="roadmap.html">roadmap page</a> and <a href="https://github.com/nelsonduarte/capa-language/blob/main/TODO.md">TODO.md</a>.</p>
+      <p class="muted">Two scope notes that belong with the guarantees above. The analysis is <strong>source-level</strong>, its rejections are the enumerated ones listed per feature, the information-flow discipline is <strong>opt-in per function</strong> (<span class="ic">@strict_ifc</span> / <span class="ic">@constant_time</span>), and there is no points-to analysis. And the manifest's per-function <span class="ic">constant_time</span> field reports <strong>the presence of the annotation</strong>, not the outcome of the check: read it as "the author marked this function <span class="ic">@constant_time</span>", never as "the toolchain verified this function is constant-time". The <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/trust-model.md">trust model</a> states both in full.</p>
+      <p class="muted">For the full roadmap see the <a href="roadmap.html">roadmap page</a> and <a href="https://github.com/nelsonduarte/capa-language/blob/main/TODO.md">TODO.md</a>. The canonical technical specification (24 chapters covering the language, the capability and information-flow models, both backends, the CLI and the supply-chain artefacts) lives in the compiler repository under <a href="https://github.com/nelsonduarte/capa-language/tree/main/specs">specs/</a>.</p>
     </div>
   </div>
 </section>
