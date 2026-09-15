@@ -1,0 +1,68 @@
+<section class="phero">
+  <div class="phero-glow"></div>
+  <div class="wrap">
+    <span class="eyebrow">Releases &middot; 1.32.0</span> <!-- historical-version: names the release this page documents -->
+    <h1>What's new in Capa 1.32.0</h1> <!-- historical-version: names the release this page documents -->
+    <p class="lead">A security-hardening release. It closes seven separate soundness gaps found in an audit of the whole compiler and in the hardening pass that followed 1.31.0, each published as its own advisory. Five are information-flow or resource-discipline fixes in the analyzer; two are backend fixes, one of which restored the byte-identical-output promise between the two backends.</p>
+    <div class="phero-actions">
+      <a class="btn btn-ghost" href="index.html">&larr; All releases</a>
+      <a class="btn btn-soft" href="https://github.com/nelsonduarte/capa-language/tree/main/docs/advisories">The seven advisories &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>What this release is</h2>
+    <p>Capa 1.32.0 is a security-hardening release. Every fix in it tightens a static check or a code generator, so a program that previously compiled (or, on Wasm, compiled to a wrong branch) is now rejected or compiled correctly. Only programs that were <em>already</em> unsound are affected; a correct program compiles exactly as before.</p> <!-- historical-version: names the release this page documents -->
+    <p>Each of the seven is claimed under the project's stability policy as a <strong>security exception</strong> and ships as a minor bump rather than a major one, matching every prior soundness fix on the 1.x line. Alongside them the release carries a modularization and test-net effort with <strong>no behaviour change</strong>, and a move to hash-pinned dependency installs for development and CI. That last one is a build-level property, not a runtime one: the published package stays dependency-free, so it does not change what a downstream consumer installs or runs.</p>
+    <div class="note"><strong>No design record for this release.</strong> Unlike 1.30.0, 1.30.1 and 1.31.0, which each document a single fix in depth, 1.32.0 bundles seven distinct findings. There is no combined technical design record page for it; the per-finding depth lives in the seven advisories linked below, which carry the reproductions, the mechanism and the residuals.</div> <!-- historical-version: names the release this page documents -->
+
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>The seven findings</h2>
+    <p class="section-intro">In the release's own order. The severity and the honest scope of each are stated in its advisory; the one-line summaries here are deliberately not a substitute for reading it.</p>
+    <table class="tbl">
+      <thead><tr><th>Finding</th><th>What it was</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Checks did not compose across a call</strong><span class="cl">GHSA-hcq6-x556-7r23</span></td><td>Under <span class="ic">@strict_ifc</span> the implicit-flow rule caught a public sink written inline in a secret-conditioned branch, but not one reached through a helper call, so the branch bit leaked. The same blind spot let a secret reach a variable-time operation inside an un-annotated helper under <span class="ic">@constant_time</span>, a timing oracle. Both are now flagged at the call site: a hard error under <span class="ic">@strict_ifc</span> for the first, and at every tier for the second.</td></tr>
+        <tr><td><strong>Destructuring could launder a secret</strong><span class="cl">GHSA-7pf3-h2cq-52wm</span></td><td>A struct-destructuring pattern bound each field with the type it has in the <em>pattern's</em> struct, never the value's, and the pattern's struct name was never checked against the value's type. A public twin of a secret-carrying struct therefore rebound the secret field under a public label. Closed in four faces, including one that leaked silently even under <span class="ic">@strict_ifc</span>.</td></tr>
+        <tr><td><strong><span class="ic">match</span> divergence did not raise the pc</strong><span class="cl">GHSA-w9m5-7pcc-mq3p</span></td><td>An incomplete earlier fix. A 1.4.0 advisory raised the block's program-counter label after a secret-conditioned divergence for <span class="ic">if</span> / <span class="ic">while</span> / <span class="ic">for</span>, but overlooked <span class="ic">match</span>, so a divergence inside a secret-scrutinee arm followed by a public sink leaked the predicate bit. Strict-tier only; no default-tier or output change.</td></tr>
+        <tr><td><strong>Wasm <span class="ic">match</span> read dangling memory</strong><span class="cl">GHSA-22qh-gw83-x9mj</span></td><td>On the Wasm backend a pattern string literal appearing nowhere else in the module was interned with no backing data, so the comparison ran against undefined bytes: usually a silent wrong branch, occasionally a <em>spurious match</em> that bypasses an authorization gate. The module still passed <span class="ic">wasm-tools validate</span>. The Python backends were never affected, which is what made it dangerous.</td></tr>
+        <tr><td><strong>Double discharge of a borrowed value</strong><span class="cl">GHSA-8q38-5qm9-5q2r</span></td><td>A borrowed (non-<span class="ic">consume</span>) linear or typestate parameter was tracked as owned, so returning, aliasing, packing or transitioning it discharged it a second time while the caller still owned it: a double-free with no diagnostic. A cap-bearing struct used after <span class="ic">consume</span> was likewise undiagnosed.</td></tr>
+        <tr><td><strong>Laundering through the return channel</strong><span class="cl">GHSA-fwph-gx2p-x9cr</span></td><td>A secret introduced inside a callee and returned to the caller, through a field store into a local, a deep field chain, a loop or destructuring binder, or a locally-resolved lambda's result, was not tracked at the field precision the sink check needs, so it reached a public sink clean at <em>both</em> tiers and on both backends.</td></tr>
+        <tr><td><strong>A name shadow diverged between backends</strong><span class="cl">GHSA-ppp5-344c-j7x9</span></td><td>A binding shadowing an enclosing binding or a module-level const passed <span class="ic">--check</span> yet compiled to different behaviour on the two backends (function scope versus lexical capture), so a captured secret was disclosed on one backend while the other crashed or bound a different value. This one broke the byte-identical-output promise directly; the analyzer now rejects the diverging shadows and the lowerer compiles a legal shadow identically on both.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="article"><h2>What ships knowingly unfixed</h2>
+    <!-- historical-version: names the release this page documents -->
+    <p>Two residuals were disclosed as open at the time of the release rather than left silent, each pinned by a test. A <strong>trait-typed downcast destructure</strong> (<span class="ic">s: Shape</span> then <span class="ic">let Circle { r } = s</span>) resolved to a trait rather than a struct, so a public-twin downcast was not caught on the Python backend; it was largely closed after 1.32.0, with two root-cause residuals still open. And the <span class="ic">--ir</span> backend raised <span class="ic">NotImplementedError</span> on struct and or-patterns under <span class="ic">--run --ir</span>, where the Wasm backend and the legacy transpiler handled both; that has since been fixed.</p>
+    <div class="note"><strong>Warnings still do not block.</strong> The information-flow default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns a finding into a build-stopping error. The <span class="ic">@constant_time</span> checks are hard errors at every tier. Gate on strict mode in CI if you want the information-flow guarantee enforced.</div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="article"><h2>Learn more</h2>
+    <ul class="linklist">
+      <li><a href="https://github.com/nelsonduarte/capa-language/tree/main/docs/advisories">The seven security advisories</a> <span class="desc">: each dated 2026-08-22, with the severity, the reproduction, and the complete list of residuals and over-reports.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> <span class="desc">: the machine-readable entry for this release, including the internal and no-behaviour-change work.</span></li>
+      <li><a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/trust-model.md">Trust model</a> <span class="desc">: what the toolchain verifies, what it trusts, and what is outside the threat model.</span></li>
+      <li><a href="../learn/13-information-flow.html">Information-flow control</a> <span class="desc">: the chapter behind five of the seven findings.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="article">
+    <span class="eyebrow">Keep going</span>
+    <div class="nextgrid">
+      <a class="nextcard" href="index.html"><h4><span class="arr">&larr;</span> All releases</h4><p>Back to the version index.</p></a>
+      <a class="nextcard" href="../reference.html"><h4>Language reference <span class="arr">&rarr;</span></h4><p>The syntax and semantics, including the attributes these fixes tightened.</p></a>
+    </div>
+  </div>
+</section>
