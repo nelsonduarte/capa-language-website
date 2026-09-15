@@ -171,7 +171,7 @@ stdio.<span class="fn">println</span>(masked)</code></pre>
   <p>What Capa adds is that, because the authority graph already lives in the type system, the compiler can emit standard supply-chain artefacts from source without an external scanner approximating the same information from binaries or heuristics. The same compile that rejects ambient authority can also produce, in one pass:</p>
   <ul class="emitters">
     <li><span class="ic">--manifest</span>: Capa-native JSON describing per-function authority, attached metadata, and the call graph.</li>
-    <li><span class="ic">--cyclonedx</span>: a valid CycloneDX 1.5 SBOM with capability metadata embedded as standard <span class="ic">properties[]</span>.</li>
+    <li><span class="ic">--cyclonedx</span>: a valid CycloneDX 1.6 SBOM with capability metadata embedded as standard <span class="ic">properties[]</span>.</li>
     <li><span class="ic">--spdx</span>: the SPDX 2.3 companion. Same content, different schema; pick whichever your downstream consumer standardises on.</li>
     <li><span class="ic">--vex</span>: CycloneDX VEX with <em>per-function</em> exploitability claims driven by a <span class="ic">@vex</span> attribute. "This CVE is in our SBOM, but this function is <span class="ic">not_affected</span> because the path is unreachable" becomes a machine-readable claim.</li>
     <li><span class="ic">--provenance</span>: a SLSA Build L1 provenance attestation (in-toto Statement v1 + SLSA Provenance v1.0) binding the artefact to the SHA-256 of its source.</li>
@@ -186,7 +186,7 @@ stdio.<span class="fn">println</span>(masked)</code></pre>
   <ul class="emitters">
     <li><span class="ic">capa --manifest</span>: a per-function record, listing each function's <span class="ic">declared_capabilities</span>, the <span class="ic">provably_excluded_capabilities</span> it can never reach, and an <span class="ic">authority_provable_from_types</span> flag.</li>
     <li><span class="ic">capa --manifest-digest</span>: the same manifest wrapped in a <span class="ic">content_integrity</span> envelope (canonical bytes, SHA-256), with the verify procedure written into the document itself. The compiler holds no keys and never signs; the signature slot is left open for you (SLSA Build L1).</li>
-    <li><span class="ic">capa --cyclonedx</span>: a CycloneDX 1.5 SBOM with the capability data embedded, plus <span class="ic">--spdx</span>, <span class="ic">--vex</span> and <span class="ic">--provenance</span> from the same compile.</li>
+    <li><span class="ic">capa --cyclonedx</span>: a CycloneDX 1.6 SBOM with the capability data embedded, plus <span class="ic">--spdx</span>, <span class="ic">--vex</span> and <span class="ic">--provenance</span> from the same compile.</li>
     <li><span class="ic">capa --compose-sbom</span>: a product-wide roll-up across a multi-package project.</li>
     <li><span class="ic">capa --check-capabilities</span>: a CI gate. It fails with a non-zero exit if any function reaches an authority outside the <span class="ic">max = [...]</span> or <span class="ic">pure = true</span> ceiling declared in <span class="ic">capa.toml</span>.</li>
   </ul>

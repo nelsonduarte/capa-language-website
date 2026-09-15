@@ -59,7 +59,7 @@ PS&gt; .\capa.exe --run hello.capa</code></pre></div>
 <pre><code>$ git clone https://github.com/nelsonduarte/capa-language
 $ cd capa
 $ pip install -e .
-$ python -m unittest discover tests   <span class="cm"># over 4,000 tests, a couple of minutes</span></code></pre></div>
+$ python -m unittest discover tests   <span class="cm"># over 6,000 tests, a couple of minutes</span></code></pre></div>
     <p class="muted">The editable install registers the package <em>and</em> adds a <span class="ic">capa</span> command on your PATH, so both <span class="ic">capa &lt;args&gt;</span> and <span class="ic">python -m capa &lt;args&gt;</span> work from any directory. The Wasm backend is optional: <span class="ic">pip install -e '.[wasm]'</span> unlocks <span class="ic">capa --wasm --run</span>.</p>
   </div>
 </section>
@@ -159,7 +159,7 @@ Hello from Capa!</code></pre></div>
         <tr><td><span class="ic">--run</span></td><td>Transpile and execute. The everyday flag.</td></tr>
         <tr><td><span class="ic">--fmt</span> / <span class="ic">--fmt-check</span></td><td>Rewrite in canonical style, or verify only.</td></tr>
         <tr><td><span class="ic">--doc</span></td><td>Emit a self-contained HTML page from <span class="ic">///</span> doc comments.</td></tr>
-        <tr><td><span class="ic">--manifest</span> … <span class="ic">--provenance</span></td><td>Emit the authority graph in five formats: Capa JSON, CycloneDX 1.5, SPDX 2.3, VEX, SLSA L1 provenance.</td></tr>
+        <tr><td><span class="ic">--manifest</span> … <span class="ic">--provenance</span></td><td>Emit the authority graph in five formats: Capa JSON, CycloneDX 1.6, SPDX 2.3, VEX, SLSA L1 provenance.</td></tr>
         <tr><td><span class="ic">--watch</span></td><td>Re-run on every change. Implies <span class="ic">--run</span>.</td></tr>
         <tr><td><span class="ic">lsp</span></td><td>Start the language server on stdio.</td></tr>
       </tbody>
