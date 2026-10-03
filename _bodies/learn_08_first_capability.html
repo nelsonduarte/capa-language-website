@@ -63,7 +63,7 @@
 <span class="k">fun</span> <span class="fn">fetch_users</span>(net: <span class="cp">Net</span>) -&gt; <span class="ty">Result</span>&lt;<span class="ty">String</span>, <span class="ty">IoError</span>&gt;
     <span class="k">return</span> net.<span class="fn">get</span>(<span class="st">"https://api.example.com/users"</span>)</code></pre></div>
 
-    <p>A call on a capability that is not in scope is <strong>refused</strong>. A function that takes only an <span class="ic">Int</span> has no <span class="ic">stdio</span> to call, so a <span class="ic">stdio.println(...)</span> in its body is a compile error. Not "is asked not to"; <em>refused</em>: the name is not in scope, and no constructor or literal produces a built-in capability. The compiler checks this structurally.</p>
+    <p>A call on a capability that is not in scope is <strong>refused</strong>. A top-level <span class="ic">fun double(x: Int) -&gt; Int</span> takes only an <span class="ic">Int</span>, so a <span class="ic">stdio.println(...)</span> in its body would be refused: there is no <span class="ic">stdio</span> for it to call. Not "is asked not to"; <em>refused</em>: the name is not in scope, and no constructor or literal produces a built-in capability. The compiler checks this structurally.</p>
   </div>
 </section>
 
@@ -109,7 +109,7 @@
             <p><strong>No copy of a parameter.</strong> A <span class="ic">let</span> whose right-hand side is a capability parameter is refused: <span class="ic">let copy = stdio</span> is a compile error (the second error mode below shows it).</p>
         </li>
         <li>
-            <p><strong>Not in fields, payloads or constants.</strong> The analyzer refuses a built-in capability type as the declared type of a struct field, a variant payload or a constant. (User-defined capabilities, chapter 10, relax this for the wrapper pattern: a struct that implements one may hold built-in capabilities as fields.)</p>
+            <p><strong>Not in fields, payloads or constants.</strong> The analyzer refuses a built-in capability type as the declared type of a struct field, a variant payload or a constant. (User-defined capabilities, chapter 10, relax this for the wrapper pattern: a struct that implements one may hold built-in capabilities other than <span class="ic">Unsafe</span> as fields.)</p>
             <p class="muted">A lambda <em>can</em> capture a capability, and that is a real limit worth knowing. A closure of type <span class="ic">Fun(Request) -&gt; Response</span> can hold a captured <span class="ic">Net</span> and its type will not say so. The analyzer refuses a closure that <em>consumes</em> a captured capability, since it may run more than once. A function whose signature takes a function value is marked in the manifest as not provable from its types; following what such a closure carries is then a job for <span class="ic">capa --manifest</span> or a package capability ceiling, not for the type of the closure.</p>
         </li>
         <li>

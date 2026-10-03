@@ -3,7 +3,7 @@
   <div class="hero-glow"></div>
   <div class="wrap hero-grid">
     <div>
-      <h1>Every function declares <span class="accent">what it is allowed to do</span>.</h1>
+      <h1>A function's signature names <span class="accent">the capabilities it is handed</span>.</h1>
       <p class="hero-sub">Pythonic syntax, with the discipline checked statically: the compiler refuses a call on <span class="ic">Fs</span> or <span class="ic">Net</span> in a function that has none in scope. From those same signatures the compiler emits a supply-chain SBOM: the capabilities each function holds, derived from the code rather than written beside it.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="start.html">Get started</a>
@@ -188,7 +188,7 @@
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_paymentguard">
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_paymentguard</h3>
-        <p>Payment-security core. Information-flow control checks every path it analyses from card data to a sink, and the build fails (<span class="ic">@strict_ifc</span> on <span class="ic">process</span>) if it detects one that is not masked; each sanctioned disclosure is an audited <span class="ic">declassify</span>, recorded in the manifest.</p>
+        <p>Payment-security core. Information-flow control reports a flow it detects from card data to a sink: a build error in <span class="ic">process</span> (<span class="ic">@strict_ifc</span>) and a warning elsewhere. Each sanctioned disclosure is an audited <span class="ic">declassify</span>, recorded in the manifest.</p>
         <span class="badge">IFC core</span>
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/sbom-watch">

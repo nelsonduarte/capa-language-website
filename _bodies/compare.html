@@ -14,7 +14,7 @@
     <span class="eyebrow">The property being compared</span>
     <h2>Where do the claims come from?</h2>
     <p class="section-intro">Comparing an SBOM's capability claims against a policy file is roughly thirty lines of code in any language. The pipeline downstream of the claims is not the interesting part. The interesting part is upstream: <strong>where do the claims come from, and why should an auditor believe them?</strong></p>
-    <div class="pull">Capa's answer: the declaration is derived from the code rather than written beside it. The compiler refuses a program in which a function calls a capability its signature does not hold, and records what each signature holds. Every row below is compared against that one property.</div>
+    <div class="pull">Capa's answer: the declaration is derived from the code rather than written beside it. Capa's compiler refuses a program in which a function calls a built-in capability that is not in scope, and records the capabilities each function's signature holds. Every row below is compared against that one property.</div>
   </div>
 </section>
 
@@ -39,7 +39,7 @@
       </div>
       <div class="cmp-row is-capa">
         <div class="cmp-term"><svg class="chk" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10.5l4 4 8-9"/></svg>Capa</div>
-        <p class="cmp-desc">A declaration derived from the code: the compiler refuses a program in which a function calls a capability its signature does not hold, and records what each signature holds. The auditor regenerates the SBOM from the same source with <span class="ic">capa --cyclonedx</span> and compares; its capability sets are the authority each function holds, which a given run need not exercise.</p>
+        <p class="cmp-desc">A declaration derived from the code: the compiler refuses a program in which a function calls a built-in capability that is not in scope, and records the capabilities each function's signature holds. The auditor regenerates the SBOM from the same source with <span class="ic">capa --cyclonedx</span> and compares; its capability sets are the authority each function holds, which a given run need not exercise.</p>
       </div>
     </div>
   </div>

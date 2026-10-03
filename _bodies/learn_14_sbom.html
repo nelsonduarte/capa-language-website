@@ -150,7 +150,7 @@ report by token ending 77c2
 <pre><code>$ capa --cyclonedx report.capa
 {
   "bomFormat": "CycloneDX",
-  "specVersion": "1.6",
+  "specVersion": "1.5",
   ...
   "components": [
     ...
@@ -244,7 +244,7 @@ report by token ending 77c2
 <section class="band">
   <div class="article"><h2>Artefact 5: provenance</h2>
 
-    <p>The last artefact answers "where did this come from?". <span class="ic">capa --provenance</span> emits a SLSA Build L1 attestation, an in-toto Statement v1 binding the artefact to the SHA-256 of its source:</p>
+    <p>The last artefact answers "where did this come from?". <span class="ic">capa --provenance</span> emits a SLSA Build L1 attestation, an in-toto Statement v1 whose subjects are the SHA-256 digests of the source files:</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --provenance report.capa

@@ -504,7 +504,7 @@ def footer(P):
   <div class="footer-grid">
     <div class="footer-brand">
       <a class="brand" href="{P}index.html"><svg class="mark mark-26"><use href="#capa-mark"/></svg>Capa</a>
-      <p>A capability-typed programming language. Every function declares the authorities it holds; the compiler checks the discipline statically.</p>
+      <p>A capability-typed programming language. A function's signature names the capabilities it is handed; the compiler checks the discipline statically.</p>
     </div>
     <div><h5>Pages</h5><ul>
       <li><a href="{P}index.html">Home</a></li><li><a href="{P}why.html">Why Capa</a></li>
@@ -686,7 +686,7 @@ def page(filename, title, desc, active, body, depth=0):
 
 # Configuração das páginas: (ficheiro, título, descrição, chave-ativa, fragmento, profundidade)
 PAGES=[
- ("index.html","Capa | a capability-typed programming language","Capa is a programming language where every function declares the authorities it holds. The compiler checks the discipline statically. Pythonic syntax.","home","index.html",0),
+ ("index.html","Capa | a capability-typed programming language","Capa is a programming language where a function's signature names the capabilities it is handed. The compiler checks the discipline statically. Pythonic syntax.","home","index.html",0),
  ("why.html","Why Capa? | the case for capability-based security","The case for Capa: ambient authority, the event-stream supply-chain attack, capability discipline as a language-level answer.","why","why.html",0),
  ("compare.html","How Capa compares | Capa","Where Capa sits among capability-typed languages (Pony, Koka, Roc, the Wasm Component Model, Zero) and among the existing sources of capability claims.","compare","compare.html",0),
  ("study.html","The capability-recall study | Capa","Capa measured head-to-head against a dependency SBOM, Semgrep, and CodeQL on 25 Python / Capa pairs. 0 false-clearances against CodeQL's 10.","study","study.html",0),

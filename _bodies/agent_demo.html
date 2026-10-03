@@ -4,6 +4,7 @@
     <span class="eyebrow">Agent demo</span>
     <h1>A capability-bound LLM agent</h1>
     <p class="lead"><a href="https://github.com/nelsonduarte/capa_agent_demo">capa_agent_demo</a> is an LLM agent harness in about 650 lines of Capa across four files. The model can call a small set of tools (read a file, list a directory, fetch a GET-only URL, read the clock); each tool's authority is statically narrowed by the type system, and the capability manifest is the audit contract.</p>
+    <p class="muted"><strong>Status:</strong> this demo does not build with the current Capa compiler; the manifest excerpt and the transcripts below were recorded with an earlier release.</p>
   </div>
 </section>
 
@@ -30,7 +31,7 @@
         <tr><td><span class="ic">current_time</span></td><td><span class="ic">Clock</span></td><td>Return Unix seconds.</td></tr>
       </tbody>
     </table>
-    <p class="muted"><span class="ic">ReadOnlyFs</span> and <span class="ic">GetOnlyHttp</span> are user-defined capabilities implemented as cap-bearing structs: <span class="ic">ReadOnlyFsImpl</span> holds the underlying <span class="ic">Fs</span> internally and exposes only <span class="ic">read_file</span> / <span class="ic">list_dir</span>. A call to <span class="ic">write</span> on a <span class="ic">ReadOnlyFs</span> is refused, because the capability declares no such method, and so is reaching the implementor's <span class="ic">Fs</span> field through a value typed <span class="ic">ReadOnlyFs</span>.</p>
+    <p class="muted"><span class="ic">ReadOnlyFs</span> and <span class="ic">GetOnlyHttp</span> are user-defined capabilities implemented as cap-bearing structs: <span class="ic">ReadOnlyFsImpl</span> holds the underlying <span class="ic">Fs</span> internally and exposes only <span class="ic">read_file</span> / <span class="ic">list_dir</span>. A call to <span class="ic">write</span> on a <span class="ic">ReadOnlyFs</span> is refused, because the capability declares no such method.</p>
   </div>
 </section>
 
@@ -73,6 +74,7 @@ main              <span class="pu">-&gt;</span> [<span class="cp">Stdio</span>, 
   <div class="article">
     <span class="eyebrow">Run it</span>
     <h2>The tool calls run locally</h2>
+    <p class="muted">These commands need a release in which the demo builds; with the current compiler, <span class="ic">capa --run agent.capa</span> stops at the type check.</p>
     <div class="code">
 <pre><code>$ git clone https://github.com/nelsonduarte/capa_agent_demo
 $ cd capa_agent_demo

@@ -235,7 +235,7 @@
         <span class="ty">Err</span>(e) <span class="pu">-&gt;</span> stdio.<span class="fn">eprintln</span>(<span class="st">"${e}"</span>)</code></pre></div>
 
       <h3>User-defined capabilities</h3>
-      <p>Libraries declare their own capabilities with the <span class="ic">capability</span> keyword; any type that <span class="ic">impl</span>s it becomes a valid implementor. A cap-bearing struct may hold built-in caps as fields. The discipline still applies: <span class="ic">let dup = mailer</span> on a capability parameter is rejected.</p>
+      <p>Libraries declare their own capabilities with the <span class="ic">capability</span> keyword; any type that <span class="ic">impl</span>s it becomes a valid implementor. A cap-bearing struct may hold built-in caps other than <span class="ic">Unsafe</span> as fields. The discipline still applies: <span class="ic">let dup = mailer</span> on a capability parameter is rejected.</p>
       <div class="code">
 <pre><code><span class="k">capability</span> <span class="ty">SendEmail</span>
     <span class="k">fun</span> <span class="fn">send</span>(<span class="k">self</span>, <span class="pu">to:</span> <span class="ty">String</span>, <span class="pu">subject:</span> <span class="ty">String</span>, <span class="pu">body:</span> <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
