@@ -466,7 +466,7 @@ pipeline ok: true</code></pre></div>
 <pre><code>$ cd negatives/ungranted_cap &amp;&amp; capa --wasm --run prog.capa
 capa: foreign component Parse.parse: instantiation denied -- the component imports a capability interface the call did not grant (granted: none). Underlying: component imports instance `capa:host/net`, but a matching implementation was not found in the linker</code></pre></div>
 
-    <p>Two honest limits. The confinement is for the capability <em>set</em>: <span class="ic">Unsafe</span>, the Python-only FFI escape, can never be a foreign-component parameter and stays TOP under every posture. And this is a boundary, not an analysis of the foreign code: Capa marks where its guarantee ends, it does not read inside the <span class="ic">.wasm</span>. For the whole worked example, all four actions, the policies, the release diff, and the three guarantee-proving negatives, read the <a href="https://github.com/nelsonduarte/capa_ci_pipeline">capa_ci_pipeline</a> demo end to end.</p>
+    <p>Two honest limits. The confinement is for the capability <em>set</em>: <span class="ic">Unsafe</span>, the Python-only FFI escape, can never be a foreign-component parameter and stays TOP under every posture. And this is a boundary, not an analysis of the foreign code: Capa marks where its guarantee ends, it does not read inside the <span class="ic">.wasm</span>. For the whole worked example, all four actions, the policies, the release diff, and the three negatives, read the <a href="https://github.com/nelsonduarte/capa_ci_pipeline">capa_ci_pipeline</a> demo end to end.</p>
   </div>
 </section>
 
