@@ -56,7 +56,7 @@
         <span class="cm">// real impl would talk SMTP over self.net; stubbed here.</span>
         <span class="k">return</span> <span class="ty">Ok</span>(())</code></pre></div>
 
-    <p>Two things are unusual about this struct. First, <span class="ic">SmtpMailer</span> has a <span class="ic">Net</span> field. The analyzer normally refuses a built-in capability as the declared type of a struct field; that would be a way to smuggle authority sideways. The rule relaxes for <strong>cap-bearing structs</strong>: a struct that implements a user-defined capability is allowed to hold built-in caps other than <span class="ic">Unsafe</span> as fields.</p>
+    <p>Two things are unusual about this struct. First, <span class="ic">SmtpMailer</span> has a <span class="ic">Net</span> field. The analyzer normally refuses a built-in capability as the declared type of a struct field; that would be a way to smuggle authority sideways. The rule relaxes for <strong>cap-bearing structs</strong>: a struct that implements a user-defined capability is allowed to hold built-in caps other than <span class="ic">Unsafe</span> as bare fields.</p>
 
     <p>Second, the constructor is just a regular function that returns the implementor, a <span class="ic">SmtpMailer</span>. That is the entry point into a user-defined cap: a factory function that takes whatever built-in caps it needs and returns a fresh implementor.</p>
 

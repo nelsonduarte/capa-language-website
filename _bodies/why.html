@@ -68,7 +68,7 @@
   <div class="layers">
     <div class="layer">
       <h4>Structural</h4>
-      <p>The analyzer refuses a built-in capability type as the declared type of a struct field, a variant payload or a constant, and a capability passed for a generic type parameter. One relaxation: a struct that implements a user-defined capability may hold built-in capabilities other than <span class="ic">Unsafe</span> as fields.</p>
+      <p>The analyzer refuses a built-in capability type as the declared type of a struct field, a variant payload or a constant, and a capability passed for a generic type parameter. One relaxation: a struct that implements a user-defined capability may hold built-in capabilities other than <span class="ic">Unsafe</span> as bare fields.</p>
       <div class="code">
 <pre><code><span class="cm">// Rejected:</span>
 <span class="k">type</span> <span class="ty">Service</span> {

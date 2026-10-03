@@ -109,7 +109,7 @@
             <p><strong>No copy of a parameter.</strong> A <span class="ic">let</span> whose right-hand side is a capability parameter is refused: <span class="ic">let copy = stdio</span> is a compile error (the second error mode below shows it).</p>
         </li>
         <li>
-            <p><strong>Not in fields, payloads or constants.</strong> The analyzer refuses a built-in capability type as the declared type of a struct field, a variant payload or a constant. (User-defined capabilities, chapter 10, relax this for the wrapper pattern: a struct that implements one may hold built-in capabilities other than <span class="ic">Unsafe</span> as fields.)</p>
+            <p><strong>Not in fields, payloads or constants.</strong> The analyzer refuses a built-in capability type as the declared type of a struct field, a variant payload or a constant. (User-defined capabilities, chapter 10, relax this for the wrapper pattern: a struct that implements one may hold built-in capabilities other than <span class="ic">Unsafe</span> as bare fields.)</p>
             <p class="muted">A lambda <em>can</em> capture a capability, and that is a real limit worth knowing. A closure of type <span class="ic">Fun(Request) -&gt; Response</span> can hold a captured <span class="ic">Net</span> and its type will not say so. The analyzer refuses a closure that <em>consumes</em> a captured capability, since it may run more than once. A function whose signature takes a function value is marked in the manifest as not provable from its types; following what such a closure carries is then a job for <span class="ic">capa --manifest</span> or a package capability ceiling, not for the type of the closure.</p>
         </li>
         <li>
