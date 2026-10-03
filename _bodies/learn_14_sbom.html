@@ -21,7 +21,7 @@ $ printf 'INFO boot\nERROR disk full\nINFO retry\nERROR disk full\nINFO ok\n' &g
 
     <p>(PowerShell: <span class="ic">"INFO boot`nERROR disk full`nINFO retry`nERROR disk full`nINFO ok`n" | Set-Content -NoNewline logs/app.log</span>.)</p>
 
-    <p>Then save this as <span class="ic">report.capa</span>. It deliberately exercises the distinctive machinery: a pure helper, a capability-holding function, an attenuated <span class="ic">Fs</span>, a secret from <span class="ic">Env</span> routed through <span class="ic">declassify</span>, and one <span class="ic">@vex</span> claim:</p>
+    <p>Then save this as <span class="ic">report.capa</span>. It deliberately exercises the distinctive machinery: a helper that holds no capability, a capability-holding function, an attenuated <span class="ic">Fs</span>, a secret from <span class="ic">Env</span> routed through <span class="ic">declassify</span>, and one <span class="ic">@vex</span> claim:</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
 <pre><code><span class="cm">// report.capa: read a log file, count error lines, print a summary.</span>
@@ -120,7 +120,7 @@ report by token ending 77c2
   }
 }</code></pre></div>
 
-    <p>Three fields carry the audit weight. <span class="ic">declared_capabilities</span> is the signature's claim. <span class="ic">provably_excluded_capabilities</span> is the type system's counter-claim: <span class="ic">summarise</span> can <em>never</em> touch <span class="ic">Net</span> or <span class="ic">Proc</span>, because those names are not in scope and the analyzer rejected every path to them. And <span class="ic">declassifications</span> lists every sanctioned secret disclosure with its stated reason, the record chapter 13 promised.</p>
+    <p>Three fields carry the audit weight. <span class="ic">declared_capabilities</span> is the signature's claim. <span class="ic">provably_excluded_capabilities</span> is the compiler's counter-claim: it found no path from <span class="ic">summarise</span> to <span class="ic">Net</span> or <span class="ic">Proc</span>, because those names are not in scope and <span class="ic">summarise</span> takes no function value. And <span class="ic">declassifications</span> lists every sanctioned secret disclosure with its stated reason, the record chapter 13 promised.</p>
 
     <p>The manifest also captures attenuation. Inside <span class="ic">main</span>'s entry, the call to <span class="ic">summarise</span> records that the <span class="ic">Fs</span> argument was narrowed before being handed down:</p>
 
@@ -144,7 +144,7 @@ report by token ending 77c2
 <section>
   <div class="article"><h2>Artefact 2: the CycloneDX SBOM</h2>
 
-    <p><span class="ic">capa --cyclonedx</span> wraps the same information in CycloneDX 1.6, the SBOM format most compliance tooling ingests. Each function becomes a component, and the capability data rides in standard <span class="ic">properties[]</span> under a <span class="ic">capa:</span> namespace:</p>
+    <p><span class="ic">capa --cyclonedx</span> re-expresses the per-function capability sets in CycloneDX, the SBOM format most compliance tooling ingests. Each function becomes a component, and the capability data rides in standard <span class="ic">properties[]</span> under a <span class="ic">capa:</span> namespace:</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">terminal</span></div>
 <pre><code>$ capa --cyclonedx report.capa
@@ -237,7 +237,7 @@ report by token ending 77c2
 
     <p>(The <span class="ic">detail</span> string is wrapped across three lines here for readability; the compiler emits it as a single line.)</p>
 
-    <p>Standard VEX is per-package: "our product bundles a vulnerable library, but we are not affected". Capa refines the claim to per-function, and gives it a machine-verifiable basis: the manifest's <span class="ic">provably_excluded_capabilities</span> for <span class="ic">summarise</span> includes <span class="ic">Net</span>, so the "code not reachable" justification is grounded in a type-system fact. If a later edit added <span class="ic">net: Net</span> to the signature, the claim's basis would visibly disappear from the next manifest diff.</p>
+    <p>Standard VEX is per-package: "our product bundles a vulnerable library, but we are not affected". Capa refines the claim to per-function, and grounds it in the manifest's derived exclusion: the manifest's <span class="ic">provably_excluded_capabilities</span> for <span class="ic">summarise</span> includes <span class="ic">Net</span>, so the "code not reachable" justification rests on a set the compiler derived rather than on the author's word alone. The VEX document itself carries the <span class="ic">@vex</span> claim, not the capability data. If a later edit added <span class="ic">net: Net</span> to the signature, the claim's basis would visibly disappear from the next manifest diff.</p>
   </div>
 </section>
 
@@ -281,15 +281,15 @@ report by token ending 77c2
     <table class="tbl">
         <thead><tr><th>Artefact</th><th>The question it answers</th></tr></thead>
         <tbody>
-            <tr><td>Manifest</td><td>Which functions hold which authorities, what is provably out of reach, where secrets are disclosed and why</td></tr>
-            <tr><td>CycloneDX SBOM</td><td>The same, in the format compliance pipelines already ingest</td></tr>
-            <tr><td>SPDX SBOM</td><td>The same, for SPDX-standardised consumers</td></tr>
-            <tr><td>VEX</td><td>Per-function exploitability of known CVEs, grounded in excluded capabilities</td></tr>
-            <tr><td>Provenance</td><td>Which exact source produced this artefact, by digest</td></tr>
+            <tr><td>Manifest</td><td>Which functions hold which authorities, which capabilities the compiler found no path to, where secrets are deliberately disclosed and why</td></tr>
+            <tr><td>CycloneDX SBOM</td><td>The per-function capability sets, in the format compliance pipelines already ingest</td></tr>
+            <tr><td>SPDX SBOM</td><td>The per-function capability sets, for SPDX-standardised consumers</td></tr>
+            <tr><td>VEX</td><td>Per-function exploitability claims for known CVEs, taken from your <span class="ic">@vex</span> attributes</td></tr>
+            <tr><td>Provenance</td><td>Which exact source files the compiler read, by digest</td></tr>
         </tbody>
     </table>
 
-    <p>None of these required a scanner, an agent, or a form. The discipline you learned in chapters 8 through 13 put the information in the type system; the five flags serialise it.</p>
+    <p>None of these required a scanner, an agent, or a form. The discipline you learned in chapters 8 through 13 put the capability information in type-checked signatures; the manifest, CycloneDX and SPDX flags serialise it, <span class="ic">--vex</span> records your <span class="ic">@vex</span> claims, and <span class="ic">--provenance</span> records the source digests.</p>
   </div>
 </section>
 
@@ -320,7 +320,7 @@ report by token ending 77c2
    "signature":{"algorithm":null,"key_id":null,"value":null}},
  "filename":"report.capa", ... ,"schema_version":3, ... }</code></pre></div>
 
-    <p>(The compiler emits this as a single canonical line; it is reflowed here, and the function bodies are elided.) The <span class="ic">digest</span> is a SHA-256 over the canonical bytes with the <span class="ic">content_integrity</span> key removed: recompute it the same way and you have proven the manifest is exactly this one. The <span class="ic">signature</span> slot is empty by construction. The compiler holds no keys and never signs in-band (SLSA Build L1); it emits the digest an external signer signs. Every product-level artefact below carries this same envelope, so each is <em>signable</em>, not signed.</p>
+    <p>(The compiler emits this as a single canonical line; it is reflowed here, and the function bodies are elided.) The <span class="ic">digest</span> is a SHA-256 over the canonical bytes with the <span class="ic">content_integrity</span> key removed: recompute it the same way and you confirm these canonical bytes are the ones the digest covers. The <span class="ic">signature</span> slot is empty by construction. The compiler holds no keys and never signs in-band (SLSA Build L1); it emits the digest an external signer signs. Every product-level artefact below carries this same envelope, so each is <em>signable</em>, not signed.</p>
   </div>
 </section>
 
@@ -350,7 +350,7 @@ report by token ending 77c2
   ...
 }</code></pre></div>
 
-    <p>(Reflowed and abbreviated from the single canonical line; each package object also carries <span class="ic">attributed_capabilities</span> and a reason string.) The attribution is <em>precise</em>, not a module-wide union: fetch and publish compose to <span class="ic">Net</span>, build to <span class="ic">Fs</span>, the parser to nothing, and the pure <span class="ic">pipeline_core</span> to nothing. That precision is the point. A coarse roll-up that credited every action the product's whole <span class="ic">{Fs, Net, Stdio}</span> would be sound but useless; the precise composed graph is what lets a policy forbid <span class="ic">Net</span> on the parser specifically.</p>
+    <p>(Reflowed and abbreviated from the single canonical line; each package object also carries <span class="ic">attributed_capabilities</span> and a reason string.) The attribution is <em>precise</em>, not a module-wide union: fetch and publish compose to <span class="ic">Net</span>, build to <span class="ic">Fs</span>, the parser to nothing, and <span class="ic">pipeline_core</span> to nothing. That precision is the point. A coarse roll-up that credited every action the product's whole <span class="ic">{Fs, Net, Stdio}</span> would be sound but useless; the precise composed graph is what lets a policy forbid <span class="ic">Net</span> on the parser specifically.</p>
 
     <p>The composed value lives in a small lattice: capability sets, plus one distinguished TOP element, "authority unknown". A dependency the compiler cannot read (a native library, an absent <span class="ic">capa.toml</span>, a package that crosses <span class="ic">Unsafe</span>) composes as TOP, and TOP is absorbing: one unknown anywhere marks the whole roll-up <span class="ic">authority_unknown: true</span>, and it is never treated as the empty set. That is the property no scanner has. A dependency scanner handed a subtree it cannot read attributes it nothing, and <em>nothing</em> reads as <em>clean</em>: an SBOM that is dishonestly clean in exactly the dangerous direction. Here the gap is a first-class verdict. The demo ships <span class="ic">negatives/native_action</span>, whose dependency carries a <span class="ic">capa.toml</span> but no Capa source; composing it yields <span class="ic">authority_unknown: true</span>. (The same boundary is why the default, non-<span class="ic">--wasm</span> posture composes the four foreign actions as TOP too; only <span class="ic">--wasm</span> makes them bounded, which the last section explains.)</p>
 
@@ -381,7 +381,7 @@ capa: --check-capabilities: FAILED - 1 ceiling violation(s):
 </section>
 
 <section>
-  <div class="article"><h2>Signed authority diffs: <span class="ic">--capability-diff</span></h2>
+  <div class="article"><h2>Signable authority diffs: <span class="ic">--capability-diff</span></h2>
 
     <p>A composed SBOM is a snapshot. The supply-chain risk is the <em>delta</em> between releases: the node-ipc 2022 pattern, where a package that was benign yesterday silently gains authority in an update. <span class="ic">capa --capability-diff old.json new.json</span> is that changelog. The demo's <span class="ic">v2/</span> overlay is one release later with a compromised build action, whose <span class="ic">run_build</span> quietly gains <span class="ic">Net</span> (a build step that legitimately holds <span class="ic">Fs</span> can now read the checkout <em>and</em> ship it out). Diff the before and after manifests, failing the build on any widening:</p>
 
@@ -404,7 +404,7 @@ capa: --check-capabilities: FAILED - 1 ceiling violation(s):
 }
 capa: --capability-diff: FAILED --fail-on-widening: 1 widening(s)</code></pre></div>
 
-    <p>(JSON reflowed and abbreviated; the gate line is the last one, on stderr, and the process exits 1.) Two set differences make the case. <span class="ic">run_build</span>'s reachable set <em>gained</em> <span class="ic">Net</span> (<span class="ic">added: ["Net"]</span>), and its exclusion proof for <span class="ic">Net</span> is <em>gone</em> (<span class="ic">guarantee_lost: ["Net"]</span>), so the delta is classified a <span class="ic">widening</span>. Functions are matched by their stable <span class="ic">(container, name)</span> identity, never by source position, so a function that only moved lines produces no entry. The changelog records both inputs' digests (<span class="ic">from_digest</span> / <span class="ic">to_digest</span>) so it is provably about those two exact artefacts, and it carries the same empty-slot envelope, so the changelog is itself signable.</p>
+    <p>(JSON reflowed and abbreviated; the gate line is the last one, on stderr, and the process exits 1.) Two set differences make the case. <span class="ic">run_build</span>'s reachable set <em>gained</em> <span class="ic">Net</span> (<span class="ic">added: ["Net"]</span>), and its exclusion entry for <span class="ic">Net</span> is <em>gone</em> (<span class="ic">guarantee_lost: ["Net"]</span>), so the delta is classified a <span class="ic">widening</span>. Functions are matched by their stable <span class="ic">(container, name)</span> identity, never by source position, so a function that only moved lines produces no entry. The changelog records both inputs' digests (<span class="ic">from_digest</span> / <span class="ic">to_digest</span>) so it names the two exact artefacts it compares, and it carries the same empty-slot envelope, so the changelog is itself signable.</p>
   </div>
 </section>
 

@@ -62,7 +62,7 @@
           <td><a href="https://github.com/nelsonduarte/capa_datetime"><span class="ic">capa_datetime</span></a></td>
           <td><span class="ic">v0.1.2</span></td>
           <td><span class="ic">capa add capa_datetime</span></td>
-          <td>Date and time values plus formatting; pure, no Clock capability required to format.</td>
+          <td>Date and time values plus formatting; no Clock capability required to format.</td>
         </tr>
         <tr>
           <td><a href="https://github.com/nelsonduarte/capa_decimal"><span class="ic">capa_decimal</span></a></td>
@@ -116,7 +116,7 @@
           <td><a href="https://github.com/nelsonduarte/capa_server"><span class="ic">capa_server</span></a></td>
           <td><span class="ic">v0.1.1</span></td>
           <td><span class="ic">capa add capa_server</span></td>
-          <td>A strict, fail-closed HTTP/1.1 server library written in Capa over the Serve capability; ambiguous framing is rejected rather than guessed at, because disagreement between two parsers is what request smuggling exploits, and only 3 of its 79 functions touch a capability at all (the parser and the response writer are pure). Python backend only, because Serve is; no chunked encoding, no keep-alive, no TLS, one connection at a time.</td>
+          <td>A strict, fail-closed HTTP/1.1 server library written in Capa over the Serve capability; ambiguous framing is rejected rather than guessed at, because disagreement between two parsers is what request smuggling exploits, and only 3 of its 79 functions touch a capability at all (the parser and the response writer hold none). Python backend only, because Serve is; no chunked encoding, no keep-alive, no TLS, one connection at a time.</td>
         </tr>
         <tr>
           <td><a href="https://github.com/nelsonduarte/capa_test"><span class="ic">capa_test</span></a></td>
@@ -140,7 +140,7 @@
           <td><a href="https://github.com/nelsonduarte/capa_uuid"><span class="ic">capa_uuid</span></a></td>
           <td><span class="ic">v0.1.0</span></td>
           <td><span class="ic">capa add capa_uuid</span></td>
-          <td>UUID v4 and v7 generation and validation in Capa with a minimal capability surface (v4 needs only Random, v7 Random+Clock, validation is pure).</td>
+          <td>UUID v4 and v7 generation and validation in Capa with a minimal capability surface (v4 needs only Random, v7 Random+Clock, validation holds no capability).</td>
         </tr>
         <tr>
           <td><a href="https://github.com/nelsonduarte/capa_validate"><span class="ic">capa_validate</span></a></td>

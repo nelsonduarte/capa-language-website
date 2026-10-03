@@ -11,7 +11,7 @@
 <div class="article-section">
 <article class="article">
 
-  <div class="pull">Capa is a capability-typed language whose discipline holds by construction, and whose type system therefore backs machine-verifiable per-function audit artefacts with one specific property: the compiler rejects any program whose SBOM would be smaller than its actual capability footprint.</div>
+  <div class="pull">Capa is a capability-typed language: a function's signature names the capabilities it is handed, the compiler refuses a program in which a function calls a built-in capability that is not in scope, and the compiler emits per-function audit artefacts derived from those type-checked signatures.</div>
 
   <h2>The problem: ambient authority</h2>
   <p>In Python, server-side JavaScript (Node.js), Java, Go, C#, Ruby, and almost every mainstream language, any function in any module has the same baseline access as any other function in the same process. It can open sockets, read your filesystem, leak environment variables, spawn subprocesses, change directory, all without any of that being visible in its signature.</p>
@@ -60,7 +60,7 @@
                 <span class="er">^</span></code></pre>
   </div>
 
-  <p>To mount the attack, the malicious maintainer would have to <em>change the signature</em> of <span class="ic">flat_map</span> to take a <span class="ic">Net</span> and an <span class="ic">Env</span>. Every caller in the dependency tree would then have to thread those capabilities through. The change is loud: it appears in pull requests, dependency-upgrade diffs, code review, and SBOM analyses. It is exactly the kind of signal an auditor, human or automated, can act on.</p>
+  <p>To mount the attack, the malicious maintainer would have to <em>change the signature</em> of <span class="ic">flat_map</span> so that the network and the environment reach it, for example by taking a <span class="ic">Net</span> and an <span class="ic">Env</span>. Every caller in the dependency tree would then have to thread those capabilities through. The change is loud: it appears in pull requests, dependency-upgrade diffs, code review, and SBOM analyses. It is exactly the kind of signal an auditor, human or automated, can act on.</p>
   <p class="muted">A complete walkthrough of the incident, with primary sources and the full Capa version, is at <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/demo-event-stream.md">the event-stream demo</a>.</p>
 
   <h2>The discipline, in three layers</h2>
@@ -68,7 +68,7 @@
   <div class="layers">
     <div class="layer">
       <h4>Structural</h4>
-      <p>Capabilities can appear only as function parameters, never as struct fields, variant payloads, return types, constants, locals, or generic args.</p>
+      <p>The analyzer refuses a built-in capability type as the declared type of a struct field, a variant payload or a constant, and a capability passed for a generic type parameter. One relaxation: a struct that implements a user-defined capability may hold built-in capabilities as fields.</p>
       <div class="code">
 <pre><code><span class="cm">// Rejected:</span>
 <span class="k">type</span> <span class="ty">Service</span> {
@@ -81,7 +81,7 @@
     </div>
     <div class="layer">
       <h4>Flow</h4>
-      <p>The same capability cannot be passed as two arguments of one call. Declared capability parameters must be used (or prefixed with <span class="ic">_</span>).</p>
+      <p>The analyzer refuses the call below, which passes the capability parameter <span class="ic">stdio</span> as two arguments of one call. Declared capability parameters must be used (or prefixed with <span class="ic">_</span>).</p>
       <div class="code">
 <pre><code><span class="k">fun</span> <span class="fn">main</span>(<span class="pu">stdio:</span> <span class="cp">Stdio</span>)
     <span class="fn">f</span>(stdio, stdio)
@@ -135,10 +135,10 @@
 <span class="k">fun</span> <span class="fn">welcome</span>(<span class="pu">mailer:</span> <span class="cp">SendEmail</span>, <span class="pu">to:</span> <span class="ty">String</span>) <span class="pu">-&gt;</span> <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
     <span class="k">return</span> mailer.<span class="fn">send</span>(to, <span class="st">"Welcome"</span>, <span class="st">"Hello!"</span>)</code></pre>
   </div>
-  <p>A function that takes a <span class="ic">SendEmail</span> can send email, and the type system guarantees that is the only thing the capability carries. No hidden <span class="ic">Net</span>, no hidden <span class="ic">Fs</span>. A higher-level library can encapsulate the low-level capabilities its implementation needs and expose only the higher-level contract to its callers.</p>
+  <p>A function that takes a <span class="ic">SendEmail</span> can send email through it, and the analyzer refuses <span class="ic">mailer.net</span> on a value typed <span class="ic">SendEmail</span>: the implementor's fields are private to its <span class="ic">impl</span>. A higher-level library can encapsulate the low-level capabilities its implementation needs and expose only the higher-level contract to its callers.</p>
 
   <h2>The other axis: where data is allowed to flow</h2>
-  <p>Capabilities control <em>which</em> effects a function may exercise. Information-flow control (IFC) controls <em>where</em> data may flow. Together they answer a question no mainstream language answers by construction: can this function read secret <span class="ic">X</span> and send it over the network?</p>
+  <p>Capabilities control <em>which</em> effects a function may exercise. Information-flow control (IFC) controls <em>where</em> data may flow. Together they let the compiler check a question mainstream languages leave to review: can this function read secret <span class="ic">X</span> and send it over the network?</p>
   <p>Capa carries a two-point security lattice: <span class="ic">@public</span> sits below <span class="ic">@secret</span>. You annotate the types, parameters, or struct fields that hold sensitive data, and the compiler tracks the rest.</p>
   <div class="code">
     <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">ifc.capa</span></div>
@@ -150,47 +150,47 @@
 <span class="er"># information-flow violation: a @secret value</span>
 <span class="er"># reaches Net.post, a public sink</span></code></pre>
   </div>
-  <p>Labels propagate automatically by <strong>join</strong> through every derived value: arithmetic, string interpolation, field reads. A function call with a secret argument returns a secret. And the most common exfiltration source is secret by default: <span class="ic">env.get(...)</span> returns <span class="ic">@secret</span> with no annotation at all, which covers the API-key and prompt-injection leak case out of the box.</p>
-  <p>The sinks are the points where data leaves the program: <span class="ic">Stdio.print</span>, <span class="ic">Net.get</span> / <span class="ic">post</span>, <span class="ic">Fs.write</span>, <span class="ic">Db.exec</span> / <span class="ic">query</span>, and <span class="ic">Serve.send</span> (its payload argument only, not the connection id, which the runtime issued rather than the program). A <span class="ic">@secret</span> value reaching any of them is an information-flow violation, reported at compile time.</p>
+  <p>Labels propagate automatically by <strong>join</strong> through every derived value: arithmetic, string interpolation, field reads. A function call with a secret argument returns a secret. And the most common exfiltration source is secret by default: <span class="ic">env.get(...)</span> returns <span class="ic">@secret</span> with no annotation at all, which puts the API-key and prompt-injection leak case under the check with no annotation.</p>
+  <p>The sinks are the points where data leaves the program: <span class="ic">Stdio.print</span>, <span class="ic">Net.get</span> / <span class="ic">post</span>, <span class="ic">Fs.write</span>, <span class="ic">Db.exec</span> / <span class="ic">query</span>, and <span class="ic">Serve.send</span> (its payload argument only, not the connection id, which the runtime issued rather than the program). A <span class="ic">@secret</span> value the analysis finds reaching any of them is reported at compile time.</p>
   <p>There is a second built-in source, and its label needs stating plainly. <span class="ic">Serve.recv</span>, the bytes of an inbound request, is the language's one <em>inbound</em> source, and it is <span class="ic">@public</span>. <strong>This lattice models confidentiality, not integrity or taint.</strong> <span class="ic">@public</span> on an attacker-controlled inbound request asserts only that it is not a secret whose disclosure the analysis must prevent; it asserts <em>nothing</em> about the data being trustworthy, well-formed, or safe to act on. Validate it as you would in any language. Labelling it <span class="ic">@secret</span> would encode an integrity property in a confidentiality lattice, whose immediate effect is that echoing a request back to the client that sent it, the normal case for a server, is reported as a violation. Integrity tracking would be a second lattice, not a relabelling of this one.</p>
-  <p>The policy is <strong>warn-then-enforce</strong>: a warning by default, and a hard error under the <span class="ic">@strict_ifc()</span> function attribute. Under <span class="ic">@strict_ifc</span>, the compiler also catches implicit flows: a sink inside a branch guarded by a secret condition, where the secret leaks through control flow rather than data.</p>
+  <p>The policy is <strong>warn-then-enforce</strong>: a warning by default, and a hard error under the <span class="ic">@strict_ifc()</span> function attribute. Under <span class="ic">@strict_ifc</span>, the compiler also checks implicit flows, for example a public sink inside a branch whose condition is <span class="ic">@secret</span>, where the secret would leak through control flow rather than data. Neither tier is a proof that no secret reaches an output.</p>
   <p>The single sanctioned way to move a secret to public is <span class="ic">declassify</span>, and it demands a named reason:</p>
   <div class="code">
 <pre><code><span class="k">let</span> masked = <span class="fn">declassify</span>(<span class="fn">mask_card</span>(card), <span class="pu">reason:</span> <span class="st">"PCI: only last 4 digits retained"</span>)
 stdio.<span class="fn">println</span>(masked)</code></pre>
   </div>
-  <p>Every <span class="ic">declassify</span> site is recorded in the SBOM as <span class="ic">declassification_sites</span>, with its reason, value, and source position, generated by the compiler. That is a machine-checkable record of exactly where, and why, a program discloses sensitive data.</p>
-  <p>Within a single function body, secrets do not launder through containers. A secret stashed in a struct, list, or tuple literal, or in a mutable <span class="ic">Map</span> / <span class="ic">Set</span> / <span class="ic">List</span>, or iterated over in a <span class="ic">for</span> loop, stays secret. The label follows the data.</p>
+  <p>Every <span class="ic">declassify</span> site is recorded in the Capa manifest (each function's <span class="ic">declassifications</span> list, counted in the summary as <span class="ic">declassification_sites</span>), with its reason, value, and source position, generated by the compiler. That is a machine-readable record of where, and why, a program deliberately discloses sensitive data through <span class="ic">declassify</span>.</p>
+  <p>Within a single function body, the label follows data through containers: a secret stashed in a struct, list, or tuple literal, or in a mutable <span class="ic">Map</span> / <span class="ic">Set</span> / <span class="ic">List</span>, or iterated over in a <span class="ic">for</span> loop, keeps its label.</p>
   <h3 id="ifc-limits" style="scroll-margin-top:84px">What the check does not catch</h3>
-  <p class="muted">Label tracking does not cross a function boundary implicitly: a value carries its <span class="ic">@secret</span> label into a callee only through a parameter explicitly declared <span class="ic">@secret</span>. What it does track, since <span class="ic">1.20.0</span>, is a container the callee mutates through such a parameter. A callee declared <span class="ic">fun stash(bag: List&lt;String&gt;, s: @secret String)</span> whose body is <span class="ic">bag.push(s)</span>, with the caller then reading that container into a public sink, is flagged exactly as the identical <span class="ic">bag.push(key)</span> written inline is: a warning by default, a hard error under <span class="ic">@strict_ifc</span>. Earlier releases produced no diagnostic for the callee form.</p>
+  <p class="muted">Inside a callee, a parameter carries a <span class="ic">@secret</span> label only when it is explicitly declared <span class="ic">@secret</span>; a secret argument passed to a callee whose parameter reaches a public sink is still reported, at the call site, when the analysis detects the flow. The analysis also tracks, since <span class="ic">1.20.0</span>, a container the callee mutates through such a parameter. A callee declared <span class="ic">fun stash(bag: List&lt;String&gt;, s: @secret String)</span> whose body is <span class="ic">bag.push(s)</span>, with the caller then reading that container into a public sink, is flagged exactly as the identical <span class="ic">bag.push(key)</span> written inline is: a warning by default, a hard error under <span class="ic">@strict_ifc</span>. Earlier releases produced no diagnostic for the callee form.</p>
   <p class="muted">Two further boundaries. At the <strong>default</strong> tier a violation is a warning: <span class="ic">capa --check</span> prints it and still exits 0, and implicit flows (a sink inside a branch guarded by a secret condition) are not reported at all. Only <span class="ic">@strict_ifc</span> makes the flow an error and turns implicit-flow checking on. And a struct field declared <span class="ic">@secret</span> keeps its label per-field, but a runtime secret stashed into an undeclared field, or any secret inside a list/map/tuple, is tracked at whole-aggregate granularity; finer per-element precision remains future work. The per-field precision landed in <strong>1.2.0</strong> as part of a soundness-hardening pass, documented in a published <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/advisories/2026-06-15-soundness.md">security advisory</a>, and a further pass in <strong>1.15</strong> closed additional cross-boundary laundering classes, including free-function return values, <span class="ic">@secret</span> module constants, capture by lambda, and two-hop closure-by-name.</p>
-  <p>A worked example is <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a>, a payment-security core (PCI DSS / PSD2) whose entry points are annotated <span class="ic">@strict_ifc</span>, so a card number reaching a log line or a network call there is a compile error unless it is masked through <span class="ic">declassify</span>, and the SBOM lists every disclosure point.</p>
+  <p>A worked example is <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a>, a payment-security core (PCI DSS / PSD2) whose entry points are annotated <span class="ic">@strict_ifc</span>, so a flow the analysis detects from a card number to a log line or a network call there is a compile error unless it is masked through <span class="ic">declassify</span>, and the manifest lists every deliberate disclosure point.</p>
 
   <h2>Where the type system can take you next</h2>
   <p>Capa is a capability-typed language; dialects of that idea exist in Pony, Koka, the WebAssembly Component Model, and elsewhere. The most recent entrant is Zero (Vercel Labs, May 2026), a systems language whose distinctive choice is a toolchain that emits stable error codes and typed repair categories so AI agents can read and repair code without a human in the loop. Zero's audience is the AI-agent toolchain; Capa's audience is the supply-chain auditor. Same intellectual root, different application.</p>
-  <p>What Capa adds is that, because the authority graph already lives in the type system, the compiler can emit standard supply-chain artefacts from source without an external scanner approximating the same information from binaries or heuristics. The same compile that rejects ambient authority can also produce, in one pass:</p>
+  <p>What Capa adds is that, because capabilities are declared in type-checked signatures, the compiler can emit supply-chain artefacts in standard formats from source without an external scanner approximating the same information from binaries or heuristics. The same compiler that checks the capability discipline also produces, one flag per artefact:</p>
   <ul class="emitters">
     <li><span class="ic">--manifest</span>: Capa-native JSON describing per-function authority, attached metadata, and the call graph.</li>
-    <li><span class="ic">--cyclonedx</span>: a valid CycloneDX 1.6 SBOM with capability metadata embedded as standard <span class="ic">properties[]</span>.</li>
+    <li><span class="ic">--cyclonedx</span>: a CycloneDX SBOM with the per-function capability sets carried as <span class="ic">capa:</span>-namespaced <span class="ic">properties[]</span> entries.</li>
     <li><span class="ic">--spdx</span>: the SPDX 2.3 companion. Same content, different schema; pick whichever your downstream consumer standardises on.</li>
     <li><span class="ic">--vex</span>: CycloneDX VEX with <em>per-function</em> exploitability claims driven by a <span class="ic">@vex</span> attribute. "This CVE is in our SBOM, but this function is <span class="ic">not_affected</span> because the path is unreachable" becomes a machine-readable claim.</li>
-    <li><span class="ic">--provenance</span>: a SLSA Build L1 provenance attestation (in-toto Statement v1 + SLSA Provenance v1.0) binding the artefact to the SHA-256 of its source.</li>
+    <li><span class="ic">--provenance</span>: a SLSA Build L1 provenance attestation (in-toto Statement v1 + SLSA Provenance v1.0) whose subjects are the SHA-256 digests of the source files.</li>
   </ul>
   <p>The same content shows up downstream in whatever process needs it: dependency review, audit, regulator-facing evidence under CRA / NIS2 / DORA / NIST SSDF / OWASP SCVS. The mapping across those frameworks lives on the <a href="regulatory.html">regulatory page</a>. Capa's contribution at the language layer is the discipline itself; the emitters are a consequence of having the information in the right place.</p>
 
-  <h2 id="complement" class="anchor">Adding a provable Capa piece to your existing stack</h2>
-  <p>Nobody rewrites a working service in a new language, and Capa does not ask you to. The realistic way to adopt it is to carve out one component that has to be provable and leave the rest of your stack exactly where it is. Two company-facing needs fit that shape today: software auditing and SBOM, and secrets handling. This is a complement, not a replacement.</p>
+  <h2 id="complement" class="anchor">Adding an auditable Capa piece to your existing stack</h2>
+  <p>Nobody rewrites a working service in a new language, and Capa does not ask you to. The realistic way to adopt it is to carve out one component that has to be auditable and leave the rest of your stack exactly where it is. Two company-facing needs fit that shape today: software auditing and SBOM, and secrets handling. This is a complement, not a replacement.</p>
 
   <h3>The fully-real piece: source-level audit artefacts</h3>
-  <p>Write the component you want to be accountable for in Capa, and the same compile that checks the capability discipline emits its supply-chain evidence. None of this needs a runtime, a Wasm toolchain, or a network connection:</p>
+  <p>Write the component you want to be accountable for in Capa, and the same compiler that checks the capability discipline emits its supply-chain evidence. None of this needs a runtime, a Wasm toolchain, or a network connection:</p>
   <ul class="emitters">
-    <li><span class="ic">capa --manifest</span>: a per-function record, listing each function's <span class="ic">declared_capabilities</span>, the <span class="ic">provably_excluded_capabilities</span> it can never reach, and an <span class="ic">authority_provable_from_types</span> flag.</li>
+    <li><span class="ic">capa --manifest</span>: a per-function record, listing each function's <span class="ic">declared_capabilities</span>, the <span class="ic">provably_excluded_capabilities</span> the compiler found no path to, and an <span class="ic">authority_provable_from_types</span> flag.</li>
     <li><span class="ic">capa --manifest-digest</span>: the same manifest wrapped in a <span class="ic">content_integrity</span> envelope (canonical bytes, SHA-256), with the verify procedure written into the document itself. The compiler holds no keys and never signs; the signature slot is left open for you (SLSA Build L1).</li>
-    <li><span class="ic">capa --cyclonedx</span>: a CycloneDX 1.6 SBOM with the capability data embedded, plus <span class="ic">--spdx</span>, <span class="ic">--vex</span> and <span class="ic">--provenance</span> from the same compile.</li>
+    <li><span class="ic">capa --cyclonedx</span>: a CycloneDX SBOM carrying the per-function capability sets, plus <span class="ic">--spdx</span>, <span class="ic">--vex</span> and <span class="ic">--provenance</span> from the same source.</li>
     <li><span class="ic">capa --compose-sbom</span>: a product-wide roll-up across a multi-package project.</li>
     <li><span class="ic">capa --check-capabilities</span>: a CI gate. It fails with a non-zero exit if any function reaches an authority outside the <span class="ic">max = [...]</span> or <span class="ic">pure = true</span> ceiling declared in <span class="ic">capa.toml</span>.</li>
   </ul>
-  <p>Because the manifest is derived from the source, a third party who holds the source and the compiler can recompute the digest and confirm it independently. The claim is not "trust our scanner"; it is "re-run the compiler and check the bytes."</p>
+  <p>Because the manifest is derived from the source, a third party who holds the source and the same compiler version can regenerate it and recompute its digest. The compiler's tests pin byte-identical output for repeated runs of the same program; a rebuild-and-diff is a check to run, not a guarantee. The claim is not "trust our scanner": the compiler derived the record from the source.</p>
   <p>The gate is what makes this usable in CI. Declare the ceiling once, and a dependency bump or a refactor that quietly introduces <span class="ic">Net</span> fails the build with the offending authority named:</p>
   <div class="code">
     <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa --check-capabilities</span></div>
@@ -231,7 +231,7 @@ stdio.<span class="fn">println</span>(masked)</code></pre>
     <li><strong>The Wasm path needs external tools.</strong> <span class="ic">wasm-tools</span> and a Component-Model runtime must be present; these are not Python dependencies that <span class="ic">pip</span> pulls in.</li>
     <li><strong>Auditing is over the source, not a handed-over binary.</strong> The provenance subject is the SHA-256 of the source file, and there is no attested link binding a manifest or provenance to a specific deployed <span class="ic">.wasm</span>. Reproduce and verify from the source you were given.</li>
   </ul>
-  <p>You keep your stack. You add one Capa piece where being able to prove the authority surface, or hand an auditor a manifest they can recompute, is worth more than the convenience of writing that piece inline.</p>
+  <p>You keep your stack. You add one Capa piece where being able to show which capabilities each function holds, or hand an auditor a manifest they can regenerate, is worth more than the convenience of writing that piece inline.</p>
 
   <h2>What Capa does <em>not</em> solve</h2>
   <p>To be honest about the limits:</p>
@@ -239,7 +239,7 @@ stdio.<span class="fn">println</span>(masked)</code></pre>
     <li><strong>A capability holder with bad intent is still dangerous.</strong> If a library legitimately needs <span class="ic">Net</span> and ships a malicious version, the language cannot tell a legitimate request from a malicious one. The discipline narrows <em>where</em> attacks can hide; attenuation (<span class="ic">restrict_to</span>) reduces this further.</li>
     <li><strong>The Python interop boundary is a risk.</strong> Anything crossing into Python via <span class="ic">py_import</span> / <span class="ic">py_invoke</span> loses Capa's guarantees. The boundary is gated by <span class="ic">Unsafe</span> so it is explicit, but the loss is real.</li>
     <li><strong>Capa is not a sandbox.</strong> A determined attacker with process-level access can do things the language cannot prevent. Capa raises the bar at the <em>source</em> level, where most supply-chain attacks live.</li>
-    <li><strong>Capa is not a replacement for SBOM/SCA tooling.</strong> They are complementary: SBOMs tell you <em>what</em> components are present; Capa tells you what each is <em>allowed</em> to do.</li>
+    <li><strong>Capa is not a replacement for SBOM/SCA tooling.</strong> They are complementary: SBOMs tell you <em>what</em> components are present; Capa tells you which capabilities each function <em>holds</em>.</li>
   </ul>
   <p class="muted">For an honest comparison with adjacent languages and tools (Pony, Koka, Roc, the WebAssembly Component Model), and a precise statement of what is and is not unique about Capa, see <a href="https://github.com/nelsonduarte/capa-language/blob/main/docs/positioning.md">docs/positioning.md</a>.</p>
 

@@ -60,14 +60,14 @@ main           <span class="pu">-&gt;</span> [<span class="cp">Stdio</span>, <sp
           <h3>Fully typed, <span style="font-family:var(--mono);color:var(--aink)">Unsafe</span> gone</h3>
           <p>Once the last <span class="ic">py_invoke</span> is gone, the Python file is unreferenced and can be deleted. <span class="ic">main</span> threads the exact capabilities the program uses and nothing more.</p>
           <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa --manifest</span></div>
-<pre><code>config_field   <span class="pu">-&gt;</span> []                      <span class="cm"># pure</span>
+<pre><code>config_field   <span class="pu">-&gt;</span> []                      <span class="cm"># no capability</span>
 load_config    <span class="pu">-&gt;</span> [<span class="cp">Fs</span>]
 get_api_key    <span class="pu">-&gt;</span> [<span class="cp">Env</span>]
-build_url      <span class="pu">-&gt;</span> []                      <span class="cm"># pure</span>
+build_url      <span class="pu">-&gt;</span> []                      <span class="cm"># no capability</span>
 fetch_status   <span class="pu">-&gt;</span> [<span class="cp">Net</span>]
 save_response  <span class="pu">-&gt;</span> [<span class="cp">Fs</span>]
 main           <span class="pu">-&gt;</span> [<span class="cp">Stdio</span>, <span class="cp">Fs</span>, <span class="cp">Env</span>, <span class="cp">Net</span>]   <span class="cm"># no Unsafe</span></code></pre></div>
-          <p class="muted">Compare to stage 1, where the only honest thing the manifest could say about <span class="ic">main</span> was <span class="ic">[Stdio, Unsafe]</span>. The SBOM is now a true per-function authority bound rather than a single <span class="ic">Unsafe</span> blob.</p>
+          <p class="muted">Compare to stage 1, where the only honest thing the manifest could say about <span class="ic">main</span> was <span class="ic">[Stdio, Unsafe]</span>. The manifest now records per-function authority instead of a single <span class="ic">Unsafe</span> crossing.</p>
         </div>
       </div>
     </div>

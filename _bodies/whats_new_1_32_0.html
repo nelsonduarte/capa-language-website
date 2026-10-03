@@ -42,7 +42,7 @@
   <div class="article"><h2>What ships knowingly unfixed</h2>
     <!-- historical-version: names the release this page documents -->
     <p>Two residuals were disclosed as open at the time of the release rather than left silent, each pinned by a test. A <strong>trait-typed downcast destructure</strong> (<span class="ic">s: Shape</span> then <span class="ic">let Circle { r } = s</span>) resolved to a trait rather than a struct, so a public-twin downcast was not caught on the Python backend; it was largely closed after 1.32.0, with two root-cause residuals still open. And the <span class="ic">--ir</span> backend raised <span class="ic">NotImplementedError</span> on struct and or-patterns under <span class="ic">--run --ir</span>, where the Wasm backend and the legacy transpiler handled both; that has since been fixed.</p>
-    <div class="note"><strong>Warnings still do not block.</strong> The information-flow default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns a finding into a build-stopping error. The <span class="ic">@constant_time</span> checks are hard errors at every tier. Gate on strict mode in CI if you want the information-flow guarantee enforced.</div>
+    <div class="note"><strong>Warnings still do not block.</strong> The information-flow default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns a finding into a build-stopping error. The <span class="ic">@constant_time</span> checks are hard errors at every tier. Gate on strict mode in CI if you want a detected information-flow finding to stop the build.</div>
   </div>
 </section>
 

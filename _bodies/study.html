@@ -4,7 +4,7 @@
   <div class="wrap">
     <span class="eyebrow">Empirical study</span>
     <h1>The capability-recall study</h1>
-    <p class="lead">The strongest quantitative result in the project, measured head-to-head against the tools auditors actually run. Capa runs against three real treatments on 25 hand-built Python / Capa pairs, scoring 48 per-function facts on two distinct questions. The decisive finding: under closed-world SBOM semantics, Capa never clears a function incorrectly, where the best dataflow tool clears ten.</p>
+    <p class="lead">The strongest quantitative result in the project, measured head-to-head against the tools auditors actually run. Capa runs against three real treatments on 25 hand-built Python / Capa pairs, scoring 48 per-function facts on two distinct questions. The decisive finding: under closed-world SBOM semantics, on this corpus Capa clears no function incorrectly, where the best dataflow tool clears ten.</p>
   </div>
 </section>
 
@@ -37,7 +37,7 @@
   <div class="article">
     <span class="eyebrow">The question</span>
     <h2>A claim is only as useful as what its absence means</h2>
-    <p class="section-intro">A Capa program ships a manifest of capability claims: for every function, which authorities it could possibly reach. An auditor verifies them by re-deriving the SBOM from source with the compiler itself, not a second analyser.</p>
+    <p class="section-intro">A Capa program ships a manifest of capability claims: for every function, which authorities it holds. An auditor regenerates the SBOM from source with the compiler itself, not a second analyser, to confirm it came from this source.</p>
     <p>An SBOM is a <strong>closed list</strong>. What is not listed for a function is implicitly <strong>excluded</strong>. A consumer reading "this function reaches nothing sensitive" treats that silence as a clearance. So the dangerous failure mode is not a missing detection in the abstract; it is a function the record silently clears while the code can in fact exercise the authority. The study measures exactly that, against the tools that produce such records today.</p>
   </div>
 </section>
@@ -63,7 +63,7 @@
       </div>
       <div class="cmp-row is-capa">
         <div class="cmp-term"><span class="tag">T3</span>Capa by construction</div>
-        <p class="cmp-desc">The capability record the Capa compiler emits, with a sound <em>provably-excluded</em> channel proved in Agda.</p>
+        <p class="cmp-desc">The capability record the Capa compiler emits, including its derived <em>provably-excluded</em> set.</p>
       </div>
     </div>
     <div class="note"><p><strong>Two distinct questions, reported separately, never collapsed into one number.</strong> <strong>Q1</strong> is positive attribution: does the treatment credit capability <span class="ic">C</span> to function <span class="ic">F</span>? <strong>Q2</strong> is false-clearance under closed-world semantics: does the treatment leave a true fact silently cleared?</p></div>
@@ -93,12 +93,12 @@
         </div>
         <div class="bar-row is-win">
           <div class="bar-label"><b>T3</b> Capa by construction</div>
-          <div class="bar-wrap"><div class="bar-zero"><span class="pz"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 10.5l4 4 8-9"/></svg>0 / 48</span> clears nothing it has not soundly proved absent</div></div>
+          <div class="bar-wrap"><div class="bar-zero"><span class="pz"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 10.5l4 4 8-9"/></svg>0 / 48</span> no false clearance on this corpus</div></div>
         </div>
       </div>
     </div>
-    <p style="margin-top:22px">CodeQL false-clears the ten via-dispatch / via-data dispatcher facts it cannot resolve. Capa's manifest gives each <span class="ic">(F, C)</span> three states: <em>reachable</em>, <em>provably-excluded</em> (sound, proved in Agda), or <em>not-determined</em>. The ten dispatcher facts land in <em>not-determined</em>, not <em>excluded</em>, so Capa clears nothing: <strong>0 false-clearances by construction</strong>.</p>
-    <div class="note">The separation is not a softer scoring rule for Capa. A consumer who read Capa's <span class="ic">reachable = []</span> closed-world (the only reading available for Semgrep and CodeQL) would also false-clear all ten dispatchers. What separates Capa is that it <em>offers</em> a sound exclusion channel a consumer can rely on.</div>
+    <p style="margin-top:22px">CodeQL false-clears the ten via-dispatch / via-data dispatcher facts it cannot resolve. Capa's manifest gives each <span class="ic">(F, C)</span> three states: <em>reachable</em>, <em>provably-excluded</em> (the compiler's derived exclusion set; on this study's 48-fact corpus it contained no capability the function exercised), or <em>not-determined</em>. The ten dispatcher facts land in <em>not-determined</em>, not <em>excluded</em>, so Capa clears none of them: <strong>0 false-clearances on this corpus</strong>. The Agda theorems are about the λcap calculus, not this field.</p>
+    <div class="note">The separation is not a softer scoring rule for Capa. A consumer who read Capa's <span class="ic">reachable = []</span> closed-world (the only reading available for Semgrep and CodeQL) would also false-clear all ten dispatchers. What separates Capa is that it <em>offers</em> an explicit exclusion channel, distinct from silence, and on this corpus that channel cleared no fact the function exercised.</div>
   </div>
 </section>
 
@@ -129,7 +129,7 @@
         </div>
       </div>
     </div>
-    <p style="margin-top:22px">CodeQL and Capa both attribute <strong>38/48</strong>: the 36 direct facts plus the 2 via-helper facts; neither attributes any of the 10 dispatcher facts. <strong>Capa does not see more than CodeQL on Q1.</strong> Its advantage is not attributing more: it is never clearing a function incorrectly, which is Q2.</p>
+    <p style="margin-top:22px">CodeQL and Capa both attribute <strong>38/48</strong>: the 36 direct facts plus the 2 via-helper facts; neither attributes any of the 10 dispatcher facts. <strong>Capa does not see more than CodeQL on Q1.</strong> Its advantage is not attributing more: it clears no function incorrectly on this corpus, which is Q2.</p>
   </div>
 </section>
 
@@ -158,7 +158,7 @@
       <div class="rl">via-dispatch / via-data</div>
       <div class="cell bad"><span class="q attr"><span class="dot r"></span>misses</span><span class="q fc">false-clears</span></div>
       <div class="cell bad"><span class="q attr"><span class="dot r"></span>misses</span><span class="q fc">false-clears</span></div>
-      <div class="cell ok"><span class="q attr"><span class="dot n"></span>misses</span><span class="q safe">safe (sound)</span></div>
+      <div class="cell ok"><span class="q attr"><span class="dot n"></span>misses</span><span class="q safe">safe</span></div>
     </div>
     <div class="note"><strong>The crux is in Q2, not Q1.</strong> On via-dispatch facts neither real tool nor Capa positively attributes the dispatcher; but both real tools false-clear it under closed-world semantics, while Capa reports <em>not-determined</em> and false-clears nothing. It holds against the best dataflow tool, not only the pattern heuristic.</div>
   </div>
@@ -172,23 +172,23 @@
     <p class="section-intro">Reading the real SBOM the Capa build emits (<span class="ic">capa --manifest main.capa</span>) on two enterprise programs that exist only in Capa, to show the scale of the per-function record on real code.</p>
     <div class="depth">
       <div class="statcard">
-        <div class="ring" style="--p:94.3"><span class="rv">94.3%</span><span class="rl2">pure</span></div>
+        <div class="ring" style="--p:94.3"><span class="rv">94.3%</span><span class="rl2">no capability</span></div>
         <div class="info">
           <h4><a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a></h4>
-          <div class="meta">PCI / payment core · 70 functions<br>66 / 70 provably side-effect-free</div>
-          <span class="big">625 <small>provably-excluded facts</small></span>
+          <div class="meta">PCI / payment core · 70 functions<br>66 / 70 declare no capability</div>
+          <span class="big">625 <small>derived exclusion entries</small></span>
         </div>
       </div>
       <div class="statcard">
-        <div class="ring" style="--p:87.8"><span class="rv">87.8%</span><span class="rl2">pure</span></div>
+        <div class="ring" style="--p:87.8"><span class="rv">87.8%</span><span class="rl2">no capability</span></div>
         <div class="info">
           <h4><a href="https://github.com/nelsonduarte/capa_claimdesk">capa_claimdesk</a></h4>
-          <div class="meta">claims engine · 213 functions<br>187 / 213 provably side-effect-free</div>
-          <span class="big">2,295 <small>provably-excluded facts</small></span>
+          <div class="meta">claims engine · 213 functions<br>187 / 213 declare no capability</div>
+          <span class="big">2,295 <small>derived exclusion entries</small></span>
         </div>
       </div>
     </div>
-    <p style="margin-top:22px">Between 88% and 94% of functions are provably pure, and no sensitive axis is held by more than ~4% of functions (paymentguard's <span class="ic">Fs</span> at 4.3%, three of seventy, is the worst case). These sound facts have no counterpart in any dependency SBOM: a dependency SBOM for <span class="ic">capa_claimdesk</span> lists six packages and cannot tell a consumer that exactly two functions reach the network, or that 187 functions are provably side-effect-free.</p>
+    <p style="margin-top:22px">Between 88% and 94% of functions hold no capability, and no sensitive axis is held by more than ~4% of functions (paymentguard's <span class="ic">Fs</span> at 4.3%, three of seventy, is the worst case). These per-function records have no counterpart in any dependency SBOM: a dependency SBOM for <span class="ic">capa_claimdesk</span> lists six packages and cannot tell a consumer that two functions hold <span class="ic">Net</span>, or that 187 functions declare no capability.</p>
   </div>
 </section>
 

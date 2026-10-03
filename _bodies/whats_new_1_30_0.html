@@ -114,7 +114,7 @@ named.capa: 1 error</code></pre></div>
       <li>A sink reached only through a <strong>nested local lambda</strong>: the summary walk resolves a body's calls to named callees only, not to a local-lambda binding.</li>
     </ul>
     <p>In the other direction the fix errs toward flagging in two disclosed, sound cases: a captured struct whole-reassigned to a secret after the closure is defined, and an in-body <span class="ic">declassify</span> inside a captured closure. Both over-report, never under-report; one of the sibling-read over-reports was later removed in <a href="1.30.1.html">1.30.1</a>. For the full reasoning, the reproduction, and the complete list, read the advisory or the technical design record linked below.</p>
-    <div class="note"><strong>Warnings do not block.</strong> As with every information-flow finding in Capa, the default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. Gate on strict mode in CI if you want the guarantee enforced.</div>
+    <div class="note"><strong>Warnings do not block.</strong> As with every information-flow finding in Capa, the default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. Gate on strict mode in CI if you want a detected finding to stop the build.</div>
   </div>
 </section>
 

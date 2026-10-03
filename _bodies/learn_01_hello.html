@@ -67,7 +67,7 @@ hello.capa:2:5: error: undefined name 'stdio'
    2 |     stdio.println("Hello, Capa")
            ^</code></pre></div>
 
-    <p>The compiler refused to run the program. <span class="ic">stdio</span> was not a parameter and is not a global, so the name does not exist in scope. This is the capability discipline doing its job: code with no <span class="ic">Stdio</span> in scope <em>cannot</em> print.</p>
+    <p>The compiler refused to run the program. <span class="ic">stdio</span> was not a parameter and is not a global, so the name does not exist in scope. This is the capability discipline doing its job: the compiler refuses a call on <span class="ic">stdio</span> in a function that does not have it in scope.</p>
 
     <p>Second mistake: keep <span class="ic">stdio</span> as a parameter but never use it.</p>
 

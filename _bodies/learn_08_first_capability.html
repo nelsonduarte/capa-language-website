@@ -19,7 +19,7 @@
 <pre><code><span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
     stdio.<span class="fn">println</span>(<span class="st">"..."</span>)</code></pre></div>
 
-    <p>The <span class="ic">stdio</span> parameter is a <strong>capability</strong>. The runtime hands a fresh <span class="ic">Stdio</span> value to <span class="ic">main</span> when the program starts, and that single value is the only way anything downstream of <span class="ic">main</span> can write to standard output.</p>
+    <p>The <span class="ic">stdio</span> parameter is a <strong>capability</strong>. The runtime hands a fresh <span class="ic">Stdio</span> value to <span class="ic">main</span> when the program starts, and the program prints through that value.</p>
 
     <p>To see why this is unusual, look at the same idea in Python:</p>
 
@@ -30,7 +30,7 @@
 
     <p>The Python <span class="ic">main</span> takes no parameters and yet has access to <span class="ic">print</span>. The standard output stream is <em>ambient authority</em>: it is in the surrounding environment, available to any code anywhere in the process, without anything in the function's signature indicating that fact. The same is true of <span class="ic">open</span>, <span class="ic">os.environ</span>, <span class="ic">urllib.request.urlopen</span>, and every other I/O primitive.</p>
 
-    <p>Capa removes ambient authority. The standard output stream becomes a <em>value</em>: a <span class="ic">Stdio</span> instance, no different at the language level from an <span class="ic">Int</span> or a <span class="ic">String</span>. The runtime gives one to <span class="ic">main</span>; code that does not receive one cannot use it.</p>
+    <p>Capa removes that ambient access for its built-in capabilities. The standard output stream becomes a <em>value</em>: a <span class="ic">Stdio</span> instance, no different at the language level from an <span class="ic">Int</span> or a <span class="ic">String</span>. The runtime gives one to <span class="ic">main</span>, and the compiler refuses a call on <span class="ic">stdio</span> in a function that does not have it in scope.</p>
   </div>
 </section>
 
@@ -63,7 +63,7 @@
 <span class="k">fun</span> <span class="fn">fetch_users</span>(net: <span class="cp">Net</span>) -&gt; <span class="ty">Result</span>&lt;<span class="ty">String</span>, <span class="ty">IoError</span>&gt;
     <span class="k">return</span> net.<span class="fn">get</span>(<span class="st">"https://api.example.com/users"</span>)</code></pre></div>
 
-    <p>A function that takes no capabilities <strong>cannot</strong> do I/O. Not "is asked not to"; <em>cannot</em>: the names of the capability values are not in scope, and there is no way to obtain one out of thin air. The compiler enforces this structurally.</p>
+    <p>A call on a capability that is not in scope is <strong>refused</strong>. A function that takes only an <span class="ic">Int</span> has no <span class="ic">stdio</span> to call, so a <span class="ic">stdio.println(...)</span> in its body is a compile error. Not "is asked not to"; <em>refused</em>: the name is not in scope, and no constructor or literal produces a built-in capability. The compiler checks this structurally.</p>
   </div>
 </section>
 
@@ -83,7 +83,7 @@
 <span class="k">fun</span> <span class="fn">main</span>(stdio: <span class="cp">Stdio</span>)
     <span class="fn">greet_all</span>(stdio, [<span class="st">"Ana"</span>, <span class="st">"Bruno"</span>, <span class="st">"Carla"</span>])</code></pre></div>
 
-    <p>Both intermediate functions declare <span class="ic">Stdio</span> because they ultimately call <span class="ic">println</span> or call a function that does. Reading the signatures of a Capa program tells you the exact authority surface: a function whose signature contains no capabilities is provably pure.</p>
+    <p>Both intermediate functions declare <span class="ic">Stdio</span> because they ultimately call <span class="ic">println</span> or call a function that does. Reading the signatures of a Capa program shows the capabilities each function is handed as parameters.</p>
 
     <p>When <span class="ic">main</span> needs more than one capability, list them as additional parameters:</p>
 
@@ -102,22 +102,22 @@
 <section class="band">
   <div class="article"><h2>The discipline, in three rules</h2>
 
-    <p>Capabilities are not normal values. The analyzer enforces three rules that distinguish them. None of them are arbitrary; each one closes a specific hole that ambient authority leaves open.</p>
+    <p>Capabilities are not normal values. The analyzer checks three rules that distinguish them.</p>
 
     <ol>
         <li>
-            <p><strong>No aliasing.</strong> A capability cannot be bound to a <span class="ic">let</span>. <span class="ic">let copy = stdio</span> is a compile error. If you could alias a cap, code could squirrel it away in a global and bypass the signature-as-contract.</p>
+            <p><strong>No copy of a parameter.</strong> A <span class="ic">let</span> whose right-hand side is a capability parameter is refused: <span class="ic">let copy = stdio</span> is a compile error (the second error mode below shows it).</p>
         </li>
         <li>
-            <p><strong>No returning, no storing.</strong> A built-in capability cannot be returned from a function or stored as a struct field. Authority flows downward through parameters; it cannot flow upward or sideways. (User-defined capabilities, chapter 10, relax this for the wrapper pattern; built-ins do not.)</p>
-            <p class="muted">A lambda <em>can</em> capture a capability, and that is a real limit worth knowing. A closure of type <span class="ic">Fun(Request) -&gt; Response</span> can hold a captured <span class="ic">Net</span> and its type will not say so. What the closure cannot do is <em>consume</em> a captured capability, since it may run more than once. The guarantee that survives is the one below: the capability had to be declared by the enclosing function to be captured at all, so it still appears in that function's manifest. Catching it is then a job for <span class="ic">capa --manifest</span> or a package capability ceiling, not for the type of the closure.</p>
+            <p><strong>Not in fields, payloads or constants.</strong> The analyzer refuses a built-in capability type as the declared type of a struct field, a variant payload or a constant. (User-defined capabilities, chapter 10, relax this for the wrapper pattern: a struct that implements one may hold built-in capabilities as fields.)</p>
+            <p class="muted">A lambda <em>can</em> capture a capability, and that is a real limit worth knowing. A closure of type <span class="ic">Fun(Request) -&gt; Response</span> can hold a captured <span class="ic">Net</span> and its type will not say so. The analyzer refuses a closure that <em>consumes</em> a captured capability, since it may run more than once. A function whose signature takes a function value is marked in the manifest as not provable from its types; following what such a closure carries is then a job for <span class="ic">capa --manifest</span> or a package capability ceiling, not for the type of the closure.</p>
         </li>
         <li>
-            <p><strong>Must be used.</strong> A function that declares a capability parameter and never invokes a method on it is a compile error. The signature is a contract; declaring a cap you do not use is a misleading contract.</p>
+            <p><strong>Must be used.</strong> A capability parameter the function never uses is a compile error; prefix its name with <span class="ic">_</span> to silence the check. The signature is a contract; declaring a cap you do not use is a misleading contract.</p>
         </li>
     </ol>
 
-    <p>Together, the three rules guarantee that the set of capabilities in a function's signature is an upper bound on what the function can actually do. The manifest you saw in chapter 1 (and that the compiler emits at any time with <span class="ic">capa --manifest</span>) is just this fact written out.</p>
+    <p>Together with the scope rule (a call on a capability that is not in scope is refused), these rules tie a call on a built-in capability to a value of it in the calling function's scope. The manifest you saw in chapter 1 (and that the compiler emits at any time with <span class="ic">capa --manifest</span>) records the capabilities each signature holds.</p>
   </div>
 </section>
 

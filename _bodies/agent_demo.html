@@ -12,7 +12,7 @@
     <span class="eyebrow">The problem</span>
     <h2>Tool permissions today rest on convention</h2>
     <p class="section-intro">Mainstream agent harnesses (LangChain, OpenAI function calling, MCP servers) ship tools as arbitrary functions with no permission system. Whether a prompt injection that says <em>"now delete the home directory"</em> succeeds depends on whether some tool happens to reach <span class="ic">subprocess.run</span> or an unrestricted filesystem handle deep in its body. The blast radius is implicit, dynamic, and auditable only by reading every line of every tool.</p>
-    <div class="callout"><p style="margin:0">The demo replaces the convention with a type-system guarantee: a tool's capability surface <em>is</em> its signature, the agent loop's surface is the union of its tools' signatures, and the compiler refuses to type-check a call to any authority a function did not name.</p></div>
+    <div class="callout"><p style="margin:0">The demo replaces the convention with a compiler check: a tool's capability surface <em>is</em> its signature, the agent loop's surface is the union of its tools' signatures, and the compiler refuses a call on a built-in capability that is not in scope.</p></div>
   </div>
 </section>
 
@@ -20,7 +20,7 @@
   <div class="article">
     <span class="eyebrow">What the demo is</span>
     <h2>Four tools, one narrow waist</h2>
-    <p class="section-intro">A four-tool agent loop against the Anthropic Messages API, running up to 5 turns. Every tool call is forwarded through one function, <span class="ic">dispatch_tool</span>: the narrow waist whose signature holds the entire authority union the loop may exercise.</p>
+    <p class="section-intro">A four-tool agent loop against the Anthropic Messages API, running up to 5 turns. Every tool call is forwarded through one function, <span class="ic">dispatch_tool</span>: the narrow waist whose signature holds the union of the capabilities its tools declare.</p>
     <table class="tbl">
       <thead><tr><th>Tool</th><th>Capability</th><th>What it does</th></tr></thead>
       <tbody>
@@ -30,14 +30,14 @@
         <tr><td><span class="ic">current_time</span></td><td><span class="ic">Clock</span></td><td>Return Unix seconds.</td></tr>
       </tbody>
     </table>
-    <p class="muted"><span class="ic">ReadOnlyFs</span> and <span class="ic">GetOnlyHttp</span> are user-defined capabilities implemented as cap-bearing structs: <span class="ic">ReadOnlyFsImpl</span> holds the underlying <span class="ic">Fs</span> internally and exposes only <span class="ic">read_file</span> / <span class="ic">list_dir</span>. A holder of <span class="ic">ReadOnlyFs</span> cannot call <span class="ic">Fs.write</span> because the wrapper never exposes it; the analyzer guarantees consumers can never reach past the declared surface to the authority underneath.</p>
+    <p class="muted"><span class="ic">ReadOnlyFs</span> and <span class="ic">GetOnlyHttp</span> are user-defined capabilities implemented as cap-bearing structs: <span class="ic">ReadOnlyFsImpl</span> holds the underlying <span class="ic">Fs</span> internally and exposes only <span class="ic">read_file</span> / <span class="ic">list_dir</span>. A call to <span class="ic">write</span> on a <span class="ic">ReadOnlyFs</span> is refused, because the capability declares no such method, and so is reaching the implementor's <span class="ic">Fs</span> field through a value typed <span class="ic">ReadOnlyFs</span>.</p>
   </div>
 </section>
 
 <section>
   <div class="article">
     <span class="eyebrow">The audit moment</span>
-    <h2>One command answers "what is the worst this agent can do?"</h2>
+    <h2>One command answers "which capabilities does this agent hold?"</h2>
     <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa --manifest agent.capa</span></div>
 <pre><code>tool_read_file    <span class="pu">-&gt;</span> [<span class="cp">ReadOnlyFs</span>]
 tool_list_dir     <span class="pu">-&gt;</span> [<span class="cp">ReadOnlyFs</span>]
@@ -46,7 +46,7 @@ tool_current_time <span class="pu">-&gt;</span> [<span class="cp">Clock</span>]
 dispatch_tool     <span class="pu">-&gt;</span> [<span class="cp">ReadOnlyFs</span>, <span class="cp">GetOnlyHttp</span>, <span class="cp">Clock</span>]
 run_agent_loop    <span class="pu">-&gt;</span> [<span class="cp">Stdio</span>, <span class="cp">Logger</span>, <span class="cp">LlmClient</span>, <span class="cp">ReadOnlyFs</span>, <span class="cp">GetOnlyHttp</span>, <span class="cp">Clock</span>]
 main              <span class="pu">-&gt;</span> [<span class="cp">Stdio</span>, <span class="cp">Env</span>, <span class="cp">Clock</span>, <span class="cp">Fs</span>, <span class="cp">Unsafe</span>]</code></pre></div>
-    <p>Read the <span class="ic">run_agent_loop</span> line and you are done. The model controls that function for up to 5 turns, and its blast radius is exactly those six capabilities: <strong>no write-capable <span class="ic">Fs</span>, no POST-capable HTTP, no <span class="ic">Net</span>, no <span class="ic">Db</span>, no <span class="ic">Unsafe</span></strong>. A prompt injection cannot widen the surface: the compiler refuses to type-check a call to an authority the function did not declare, so there is nothing for the injected text to reach.</p>
+    <p>Read the <span class="ic">run_agent_loop</span> line first. The model drives that function for up to 5 turns, and the function holds those six capabilities: <strong>no write-capable <span class="ic">Fs</span>, no POST-capable HTTP, no <span class="ic">Net</span>, no <span class="ic">Db</span>, no <span class="ic">Unsafe</span></strong>. Injected text cannot add a capability to that signature, and the compiler refuses a call on a built-in capability that is not in scope.</p>
     <p class="muted"><span class="ic">main</span> is the wiring point: it legitimately holds <span class="ic">Unsafe</span> and the raw <span class="ic">Fs</span>, passes them through three factories, and hands the loop only the attenuated versions. The dangerous line is the one line a human has to review, and the function behind it is under twenty lines of wiring.</p>
   </div>
 </section>

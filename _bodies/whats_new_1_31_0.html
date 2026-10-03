@@ -85,7 +85,7 @@ leak.capa: ok (4 items, 15 expressions typed, 8 bindings)</code></pre></div>
       <li>A <strong>loop-carried</strong> read placed textually before the push that would feed it, which the one-pass body summary does not see.</li>
     </ul>
     <p>In the other direction the fix errs toward flagging: in a small number of sound cases it warns where nothing actually leaks (for example a whole-struct read of a clean field of a struct whose <em>different</em> field was later made secret). Those over-reports never hide a leak, and are listed alongside the residuals in the advisory. For the full reasoning, the reproduction, and the complete list, read the advisory or the technical design record linked below.</p>
-    <div class="note"><strong>Warnings do not block.</strong> As with every information-flow finding in Capa, the default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. Gate on strict mode in CI if you want the guarantee enforced.</div>
+    <div class="note"><strong>Warnings do not block.</strong> As with every information-flow finding in Capa, the default tier warns and the program still runs; it is <span class="ic">@strict_ifc</span> that turns the finding into a build-stopping error. Gate on strict mode in CI if you want a detected finding to stop the build.</div>
   </div>
 </section>
 

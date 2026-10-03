@@ -3,7 +3,7 @@
   <div class="wrap">
     <span class="eyebrow">Learn &middot; Chapter 13 of 14</span>
     <h1>Information-flow control</h1>
-    <p class="lead">Capabilities decide which effects a function may use. Information-flow control decides where its data may go. This chapter is the second axis: mark a value <span class="ic">@secret</span> and the compiler tells you when it reaches a log line or a network call without going through an audited bridge. By default that is a warning; under <span class="ic">@strict_ifc</span> it is an error. The check has real limits, and this chapter names them.</p>
+    <p class="lead">Capabilities decide which effects a function may use. Information-flow control decides where its data may go. This chapter is the second axis: mark a value <span class="ic">@secret</span> and the compiler tells you when it detects it reaching a log line or a network call without going through an audited bridge. By default that is a warning; under <span class="ic">@strict_ifc</span> it is an error. The check has real limits, and this chapter names them.</p>
     <div class="phero-actions">
       <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
     </div>
@@ -76,7 +76,7 @@ warning: information-flow: a @secret value reaches Stdio.println
 
     <p>Inside one function body it also follows data into and out of containers: a secret put in a struct, list, tuple, or a mutable <span class="ic">Map</span> / <span class="ic">Set</span> / <span class="ic">List</span>, or iterated over in a <span class="ic">for</span> loop, stays secret. Stashing it somewhere and reading it back in the same body does not launder it.</p>
 
-    <div class="note"><strong>What crosses a call boundary.</strong> A value carries its <span class="ic">@secret</span> label into a callee only through a parameter explicitly declared <span class="ic">@secret</span>; there is no implicit inference across a bare parameter. Since <span class="ic">1.20.0</span>, a container the callee mutates through such a parameter does carry the label back out: <span class="ic">fun stash(bag: List&lt;String&gt;, s: @secret String)</span> whose body is <span class="ic">bag.push(s)</span>, called from a function that then reads <span class="ic">bag</span> into a public sink, is flagged exactly as the identical <span class="ic">bag.push(key)</span> inline is: a warning by default, a hard error under <span class="ic">@strict_ifc</span>. Earlier releases produced no diagnostic for the callee form.</div>
+    <div class="note"><strong>What crosses a call boundary.</strong> A value carries its <span class="ic">@secret</span> label into a callee only through a parameter explicitly declared <span class="ic">@secret</span>; there is no implicit inference across a bare parameter, but a secret argument passed to a callee whose parameter reaches a public sink is still reported, at the call site, when the analysis detects the flow. Since <span class="ic">1.20.0</span>, a container the callee mutates through such a parameter does carry the label back out: <span class="ic">fun stash(bag: List&lt;String&gt;, s: @secret String)</span> whose body is <span class="ic">bag.push(s)</span>, called from a function that then reads <span class="ic">bag</span> into a public sink, is flagged exactly as the identical <span class="ic">bag.push(key)</span> inline is: a warning by default, a hard error under <span class="ic">@strict_ifc</span>. Earlier releases produced no diagnostic for the callee form.</div>
   </div>
 </section>
 
@@ -91,10 +91,10 @@ warning: information-flow: a @secret value reaches Stdio.println
         <li><span class="ic">Fs.write</span></li>
         <li><span class="ic">Db.exec</span>, <span class="ic">Db.query</span></li>
         <li><span class="ic">Serve.send</span> (the payload argument only, not the connection id, which the runtime issued rather than the program)</li>
-        <li><span class="ic">panic</span>, whose message goes to stderr. It is the one sink that needs no capability, which is exactly why it is easy to forget: a function that holds nothing at all can still disclose through a panic message. Only the built-in applies; a user-defined function named <span class="ic">panic</span> shadows it and is handled by the ordinary cross-function analysis.</li>
+        <li><span class="ic">panic</span>, whose message goes to stderr. It needs no capability, which is exactly why it is easy to forget: a function that holds nothing at all can still disclose through a panic message. Only the built-in applies; a user-defined function named <span class="ic">panic</span> shadows it and is handled by the ordinary cross-function analysis.</li>
     </ul>
 
-    <p>A <span class="ic">@secret</span> value reaching any of them is an information-flow violation. By default it is a warning, so existing code keeps compiling while labelled code surfaces its disclosures. To make it a hard error, opt the function into strict mode:</p>
+    <p>A <span class="ic">@secret</span> value the analysis finds reaching any of them is reported. By default it is a warning, so existing code keeps compiling while labelled code surfaces its disclosures. To make it a hard error, opt the function into strict mode:</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
 <pre><code><span class="cp">@strict_ifc</span>()
@@ -124,7 +124,7 @@ warning: information-flow: a @secret value reaches Stdio.println
 </section>
 
 <section>
-  <div class="article"><h2>Why the reason matters: the SBOM</h2>
+  <div class="article"><h2>Why the reason matters: the manifest</h2>
 
     <p>Every <span class="ic">declassify</span> call is recorded in the manifest. Ask for it:</p>
 
@@ -136,7 +136,7 @@ $ capa --manifest app.capa | jq '.functions[] | select(.declassifications | leng
 [ { "reason": "PCI DSS 3.4: display only the last four digits",
     "value": "...", "pos": "10:12" } ]</code></pre></div>
 
-    <p>This is the regulatory payoff. The SBOM does not just say what a program does; it lists exactly where, and why, it discloses sensitive data, generated by the compiler rather than asserted in a document. An auditor reads the list, not your data-handling policy.</p>
+    <p>This is the regulatory payoff. The manifest does not just say which capabilities a program holds; it lists where, and why, the program deliberately discloses sensitive data through <span class="ic">declassify</span>, generated by the compiler rather than asserted in a document. An auditor reads that list alongside your data-handling policy.</p>
   </div>
 </section>
 
@@ -146,8 +146,8 @@ $ capa --manifest app.capa | jq '.functions[] | select(.declassifications | leng
     <p>The analysis is deliberately simple, and it is worth knowing its edges:</p>
 
     <ul>
-        <li><strong>Intra-procedural.</strong> A secret crossing a function boundary needs an explicit <span class="ic">@secret</span> parameter. This is by design: a signature stays honest about what it receives, the same philosophy as capabilities.</li>
-        <li><strong>Whole-aggregate granularity.</strong> A secret field taints its whole struct, rather than tracking each field separately. Per-field precision is future work.</li>
+        <li><strong>Summaries across calls.</strong> Inside a callee, a parameter is secret only when it is declared <span class="ic">@secret</span>; across the call the analysis works from per-function summaries, so a secret argument passed to a callee whose parameter reaches a public sink is reported at the call site when the analysis detects the flow.</li>
+        <li><strong>Per-field for structs, whole-aggregate elsewhere.</strong> A struct field declared <span class="ic">@secret</span> keeps its label per field; a secret inside a list, map, or tuple taints the whole aggregate.</li><li><strong>A check, not a proof.</strong> An accepted program, at either tier, is not thereby proved free of secret-to-sink flows; the analysis reports the flows it detects.</li>
     </ul>
 
     <p>These keep the feature ergonomic and the diagnostics low-noise, which is the lesson IFC research learned the hard way: a checker that cries wolf gets turned off.</p>
@@ -157,7 +157,7 @@ $ capa --manifest app.capa | jq '.functions[] | select(.declassifications | leng
 <section>
   <div class="article"><h2>Where you go next</h2>
 
-    <p>One chapter remains: <a href="14-from-source-to-sbom.html">chapter 14</a> turns everything you have learned into audit artefacts, generating the manifest, the SBOMs, the VEX, and the provenance attestation from one small program. The <a href="../reference.html">language reference</a> has the full IFC rules, and the <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a> showcase puts capabilities, information-flow control, and a generated EU Cyber Resilience Act conformity pack together on a payment-security core, the compiler proves a card number cannot reach a log or the network unmasked.</p>
+    <p>One chapter remains: <a href="14-from-source-to-sbom.html">chapter 14</a> turns everything you have learned into audit artefacts, generating the manifest, the SBOMs, the VEX, and the provenance attestation from one small program. The <a href="../reference.html">language reference</a> has the full IFC rules, and the <a href="https://github.com/nelsonduarte/capa_paymentguard">capa_paymentguard</a> showcase puts capabilities, information-flow control, and a generated EU Cyber Resilience Act conformity pack together on a payment-security core, where the build fails if the compiler detects a card number reaching a log or the network unmasked.</p>
 
     <p>If you build something with Capa, send it. Real use is the best feedback.</p>
   </div>

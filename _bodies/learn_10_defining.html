@@ -3,7 +3,7 @@
   <div class="wrap">
     <span class="eyebrow">Learn &middot; Chapter 10 of 14</span>
     <h1>Defining your own capability</h1>
-    <p class="lead">Libraries declare their own capability types and the discipline applies uniformly. A function that takes a <span class="ic">SendEmail</span> can send mail; nothing else can.</p>
+    <p class="lead">Libraries declare their own capability types and the discipline applies uniformly. A function that takes a <span class="ic">SendEmail</span> can send mail through it.</p>
     <div class="phero-actions">
       <a class="btn btn-ghost" href="index.html">&larr; All chapters</a>
     </div>
@@ -56,22 +56,22 @@
         <span class="cm">// real impl would talk SMTP over self.net; stubbed here.</span>
         <span class="k">return</span> <span class="ty">Ok</span>(())</code></pre></div>
 
-    <p>Two things are unusual about this struct. First, <span class="ic">SmtpMailer</span> has a <span class="ic">Net</span> field. Built-in capabilities cannot normally appear in struct fields; that would be a way to smuggle authority sideways. The rule relaxes for <strong>cap-bearing structs</strong>: a struct that implements a user-defined capability is allowed to hold built-in caps as fields, on the condition that it is itself treated as a capability by the discipline.</p>
+    <p>Two things are unusual about this struct. First, <span class="ic">SmtpMailer</span> has a <span class="ic">Net</span> field. The analyzer normally refuses a built-in capability as the declared type of a struct field; that would be a way to smuggle authority sideways. The rule relaxes for <strong>cap-bearing structs</strong>: a struct that implements a user-defined capability is allowed to hold built-in caps as fields, on the condition that it is itself treated as a capability by the discipline.</p>
 
-    <p>Second, the constructor is just a regular function. A built-in cap cannot be returned from a function; a user-defined one can. That is the entry point into a user-defined cap: a factory function that takes whatever built-in caps it needs and returns a fresh implementor.</p>
+    <p>Second, the constructor is just a regular function that returns the user-defined capability. That is the entry point into a user-defined cap: a factory function that takes whatever built-in caps it needs and returns a fresh implementor.</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
 <pre><code><span class="k">fun</span> <span class="fn">make_mailer</span>(net: <span class="cp">Net</span>, server: <span class="ty">String</span>) -&gt; <span class="ty">SmtpMailer</span>
     <span class="k">return</span> <span class="ty">SmtpMailer</span> { server: server, net: net }</code></pre></div>
 
-    <p>Inside <span class="ic">make_mailer</span>, the built-in <span class="ic">net</span> flows into the struct field. After construction, <span class="ic">SmtpMailer</span> takes over the discipline: a function that holds a <span class="ic">SmtpMailer</span> can send email; one that does not, cannot.</p>
+    <p>Inside <span class="ic">make_mailer</span>, the built-in <span class="ic">net</span> flows into the struct field. After construction, <span class="ic">SmtpMailer</span> takes over the discipline: a function that holds a <span class="ic">SmtpMailer</span> can send email through it, and <span class="ic">make_mailer</span>, which builds one, takes the <span class="ic">Net</span> it wraps as a parameter.</p>
   </div>
 </section>
 
 <section class="band">
   <div class="article"><h2>Using it</h2>
 
-    <p>From a caller's perspective, the user-defined cap behaves exactly like a built-in:</p>
+    <p>From a caller's perspective, the user-defined cap is used like a built-in:</p>
 
 <div class="code"><div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">capa</span></div>
 <pre><code><span class="k">fun</span> <span class="fn">notify_user</span>(mailer: <span class="ty">SendEmail</span>, user_id: <span class="ty">String</span>) -&gt; <span class="ty">Result</span>&lt;<span class="ty">Unit</span>, <span class="ty">IoError</span>&gt;
@@ -93,9 +93,9 @@
 <section>
   <div class="article"><h2>Why this matters for libraries</h2>
 
-    <p>Capability-typed libraries are the unique contribution of Capa. In a normal language, a library's authority surface is documented in the README and enforced by nothing. In Capa it is a type, the compiler enforces it, the SBOM emits it.</p>
+    <p>Capability-typed libraries are central to how Capa is used. In a normal language, a library's authority surface is documented in the README and enforced by nothing. In Capa it is a type, the compiler enforces it, the SBOM emits it.</p>
 
-    <p>Library authors get a stable contract: "to use this library you give it a <span class="ic">SendEmail</span>; to give it one you decide what implementor to build." Callers get reasoning power: "anything that does not take a <span class="ic">SendEmail</span> cannot send mail." Auditors get an SBOM where <span class="ic">declared_capabilities</span> is meaningful at the level the user actually cares about.</p>
+    <p>Library authors get a stable contract: "to use this library you give it a <span class="ic">SendEmail</span>; to give it one you decide what implementor to build." Callers get reasoning power: a holder of a <span class="ic">SendEmail</span> calls the capability's methods, and the analyzer refuses <span class="ic">mailer.net</span>, a field of the implementor behind it. Auditors get an SBOM where <span class="ic">declared_capabilities</span> is meaningful at the level the user actually cares about.</p>
 
     <p>The pattern scales. A database library exposes <span class="ic">capability QueryDB</span>; a message-queue client exposes <span class="ic">capability PublishMessage</span>; a JWT signer exposes <span class="ic">capability SignToken</span>. None of them appear as built-ins because Capa cannot anticipate every domain; the language makes it cheap for libraries to add their own.</p>
   </div>

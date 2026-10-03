@@ -4,7 +4,7 @@
   <div class="wrap hero-grid">
     <div>
       <h1>Every function declares <span class="accent">what it is allowed to do</span>.</h1>
-      <p class="hero-sub">Pythonic syntax, with the discipline checked statically: a function that does not list <span class="ic">Fs</span> or <span class="ic">Net</span> in its signature cannot touch the filesystem or the network. From those same signatures the compiler emits a machine-verifiable supply-chain SBOM by construction: a manifest that matches the code, not a scanner's approximation of it.</p>
+      <p class="hero-sub">Pythonic syntax, with the discipline checked statically: the compiler refuses a call on <span class="ic">Fs</span> or <span class="ic">Net</span> in a function that has none in scope. From those same signatures the compiler emits a supply-chain SBOM: the capabilities each function holds, derived from the code rather than written beside it.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="start.html">Get started</a>
         <a class="btn btn-ghost" href="why.html">Why Capa</a>
@@ -50,7 +50,7 @@
     <h2>What Capa is for</h2>
     <div class="split split-a" style="margin-top:30px">
       <p class="lead">Every dependency you install today runs with the full authority of the program that pulled it in. A logging library can read your environment. A date parser can open a socket. Nothing in the language stops it: you read the README and you trust.</p>
-      <p class="lead">Capa puts the authority surface in the type system. A function that needs the filesystem says so in its signature; one that does not cannot reach for it, no matter what its body tries to do. The compiler reads the source and emits a manifest of which functions hold which authorities, automatically.</p>
+      <p class="lead">Capa puts the authority surface in the type system. A function that needs the filesystem works on an <span class="ic">Fs</span> value derived from the one <span class="ic">main</span> received: no constructor, literal, global or import produces one. The compiler reads the source and emits a manifest of which functions hold which authorities, automatically.</p>
     </div>
   </div>
 </section>
@@ -61,15 +61,15 @@
     <div class="shead">
       <span class="eyebrow">In 30 seconds</span>
       <h2>From a signature to an audit artefact</h2>
-      <p class="lead">There is no global <span class="ic">Stdio</span> or ambient filesystem: you cannot reference what is not in the signature. The compiler reads the same source three ways.</p>
+      <p class="lead">There is no global <span class="ic">Stdio</span> or ambient filesystem: a call on a capability that is not in scope is refused. The compiler reads the same source three ways.</p>
     </div>
 
     <div class="seq">
       <div class="seq-i">
         <div class="seq-head">
           <div class="seq-n"><b>01</b> Declare nothing</div>
-          <h3>A pure helper holds no authority</h3>
-          <p>No capability in the signature means the compiler forbids any effect in the body. It is provably pure.</p>
+          <h3>A helper that needs no authority is handed none</h3>
+          <p><span class="ic">classify</span> takes a <span class="ic">Float</span>, so a call such as <span class="ic">stdio.println(...)</span> in its body is refused: there is no <span class="ic">stdio</span> in scope.</p>
         </div>
         <div class="code">
           <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">classify.capa</span></div>
@@ -86,7 +86,7 @@
         <div class="seq-head">
           <div class="seq-n"><b>02</b> Ask for what you need</div>
           <h3>Reading files requires <span style="font-family:var(--mono);color:var(--aink)">Fs</span></h3>
-          <p>To open a file the function must name <span class="ic">Fs</span> in its signature. The capability is the contract, and it is passed in, never ambient.</p>
+          <p>This function opens a file, so it names <span class="ic">Fs</span> in its signature. The capability is the contract, and it is passed in, never ambient.</p>
         </div>
         <div class="code">
           <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">summarise.capa</span></div>
@@ -100,8 +100,8 @@
       <div class="seq-i">
         <div class="seq-head">
           <div class="seq-n"><b>03</b> Get the manifest free</div>
-          <h3>The compiler emits the proof</h3>
-          <p><span class="ic">capa --manifest</span> lists every function with the capabilities it declared and the ones it can <strong>provably never reach</strong>. Same input feeds <span class="ic">--cyclonedx</span>, <span class="ic">--spdx</span>, <span class="ic">--vex</span> and <span class="ic">--provenance</span>.</p>
+          <h3>The compiler emits the record</h3>
+          <p><span class="ic">capa --manifest</span> lists every function with the capabilities it declared and the ones the compiler <strong>found no path to</strong>. The same per-function sets feed <span class="ic">--cyclonedx</span> and <span class="ic">--spdx</span>.</p>
         </div>
         <div class="code">
           <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">manifest.json</span></div>
@@ -123,8 +123,8 @@
 <section>
   <div class="wrap">
     <div class="shead">
-      <span class="eyebrow">Two more guarantees</span>
-      <h2>Narrow what a function holds, and prove where its data goes</h2>
+      <span class="eyebrow">Two more controls</span>
+      <h2>Narrow what a function holds, and check where its data goes</h2>
       <p class="lead">Capabilities say which effects a function may use. Attenuation shrinks them on the way down; information-flow control tracks where labelled data is allowed to travel.</p>
     </div>
     <div class="seq">
@@ -146,7 +146,7 @@
         <div class="seq-head">
           <span class="eyebrow">Information-flow control</span>
           <h3>Where your data can go</h3>
-          <p>Annotate a value <span class="ic">@secret</span> and the compiler propagates the label, then flags any secret that reaches a public sink: a <strong>warning</strong> by default, a hard error under <span class="ic">@strict_ifc()</span>. <span class="ic">env.get</span> is secret by default. The one auditable bridge is <span class="ic">declassify(value, reason: "…")</span>; every use is recorded in the SBOM as <strong>declassification_sites</strong>, so the disclosure ships with the manifest, not in a code-review thread. <a href="why.html#ifc-limits">What the check does and does not catch</a>.</p>
+          <p>Annotate a value <span class="ic">@secret</span> and the compiler propagates the label, then flags a secret it finds reaching a public sink: a <strong>warning</strong> by default, a hard error under <span class="ic">@strict_ifc()</span>. <span class="ic">env.get</span> is secret by default. The one auditable bridge is <span class="ic">declassify(value, reason: "…")</span>; every use is recorded in the Capa manifest (each function's <strong>declassifications</strong> list), so the deliberate disclosure ships with the manifest, not in a code-review thread. <a href="why.html#ifc-limits">What the check does and does not catch</a>.</p>
         </div>
         <div class="code">
           <div class="code-head"><span class="o"></span><span class="o"></span><span class="o"></span><span class="t">leak.capa</span></div>
@@ -178,7 +178,7 @@
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_claimdesk" style="grid-column:1/-1">
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_claimdesk</h3>
-        <p>An enterprise expense-reimbursement engine that exercises nearly the whole language at once: the claim lifecycle is a typestate, the payment authorization is a linear use-once token, the IBAN is held under information-flow control and reaches the audit ledger only through an audited <span class="ic">declassify</span>, and the policy engine dispatches over a <span class="ic">List&lt;Rule&gt;</span> via traits and generics. Runs byte-identically on both backends and ships its guarantees as proofs in the SBOM.</p>
+        <p>An enterprise expense-reimbursement engine that exercises nearly the whole language at once: the claim lifecycle is a typestate, the payment authorization is a linear use-once token, the IBAN is held under information-flow control and reaches the audit ledger through an audited <span class="ic">declassify</span>, and the policy engine dispatches over a <span class="ic">List&lt;Rule&gt;</span> via traits and generics. Runs byte-identically on both backends and records what each function holds, and each audited disclosure, in its manifest.</p>
         <span class="badge">widest-coverage showcase</span>
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/audit-trail-reporter">
@@ -188,7 +188,7 @@
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_paymentguard">
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_paymentguard</h3>
-        <p>Payment-security core. Information-flow control proves card data cannot leave unmasked: the only path to a sink is an audited <span class="ic">declassify</span>, recorded in the SBOM.</p>
+        <p>Payment-security core. Information-flow control checks every path it analyses from card data to a sink, and the build fails (<span class="ic">@strict_ifc</span> on <span class="ic">process</span>) if it detects one that is not masked; each sanctioned disclosure is an audited <span class="ic">declassify</span>, recorded in the manifest.</p>
         <span class="badge">IFC core</span>
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/sbom-watch">
@@ -203,17 +203,17 @@
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_dataguard">
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_dataguard</h3>
-        <p>Data-governance pipeline. Every path from PII to output runs through an audited <span class="ic">declassify</span>, and the compiler-rejected negative shows what happens when one does not.</p>
+        <p>Data-governance pipeline. Each deliberate disclosure of PII goes through an audited <span class="ic">declassify</span>, and a compiler-rejected negative shows the check refusing a direct flow under <span class="ic">@strict_ifc</span>.</p>
         <span class="badge">IFC governance</span>
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_configbroker">
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_configbroker</h3>
-        <p>Capability-secured config and secrets resolver. Secrets reach a log line only through an audited <span class="ic">declassify</span>, and its <span class="ic">Net</span> capability is narrowed to a single host, which currently bounds the host addressed rather than the host reached.</p>
+        <p>Capability-secured config and secrets resolver. A secret's deliberate disclosure to a log line goes through an audited <span class="ic">declassify</span>, and its <span class="ic">Net</span> capability is narrowed to a single host, which currently bounds the host addressed rather than the host reached.</p>
         <span class="badge">capability-scoped</span>
       </a>
       <a class="card repo" href="https://github.com/nelsonduarte/capa_ci_pipeline">
         <h3><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>capa_ci_pipeline</h3>
-        <p>A CI/release orchestrator built as a multi-package product. Four untrusted third-party actions run as sandbox-confined typed foreign Wasm components; the pure core holds no authority; the whole product's capability surface composes into one SBOM. A compromised build action that silently gains <span class="ic">Net</span> is caught twice over: by the signed authority diff and by an organization exclusion policy.</p>
+        <p>A CI/release orchestrator built as a multi-package product. Four untrusted third-party actions run as sandbox-confined typed foreign Wasm components; the core package holds no capability; the whole product's capability surface composes into one SBOM. A compromised build action that silently gains <span class="ic">Net</span> is caught twice over: by the signable authority diff and by an organization exclusion policy.</p>
         <span class="badge">supply-chain product</span>
       </a>
     </div>
@@ -233,7 +233,7 @@
       <span class="eyebrow">Release · {{CAPA_VERSION}}</span>
       <h2 style="font-size:2.1rem">Stable, on SemVer, and on PyPI</h2>
       <p><strong>{{CAPA_VERSION}}</strong> is the current release, and Capa is now on the Python Package Index: <span class="ic">pip install capa-language</span>. It is published through PyPI Trusted Publishing (OIDC), with no stored API token, and carries a PEP 740 attestation. The distribution name is <span class="ic">capa-language</span>; the import package and the <span class="ic">capa</span> command are unchanged.</p>
-      <p>The first stable release shipped on <strong>2026-06-03</strong> as 1.0.0. Minor releases since added byte-reproducible SBOMs and attestations via <span class="ic">SOURCE_DATE_EPOCH</span>, the <span class="ic">capa test</span> runner, selective import, and a security-hardening line that closed further soundness and supply-chain findings.</p>
+      <p>The first stable release shipped on <strong>2026-06-03</strong> as 1.0.0. Minor releases since added <span class="ic">SOURCE_DATE_EPOCH</span> support, so SBOMs and attestations can be rebuilt and diffed, the <span class="ic">capa test</span> runner, selective import, and a security-hardening line that closed further soundness and supply-chain findings.</p>
       <!-- historical-version: esta nota nomeia a release em que o facto aconteceu -->
       <p><strong>1.19.0</strong> (2026-07-20) makes two previously-succeeding builds fail on purpose. A <span class="ic">capa.toml</span> the compiler cannot parse is now a refusal (<span class="ic">capa: broken capa.toml: …</span>, exit 2) instead of a warning followed by a build that ignored the file, and the <span class="ic">capa = "&gt;=X.Y.Z"</span> compiler floor is enforced for the first time after being parsed and ignored since 2026-05-19. <a href="start.html#floor">What that means for your project</a>. <strong>1.18.0</strong> attached SLSA build provenance to the release binaries and the install scripts; <strong>1.18.1</strong> fixed <span class="ic">capa test</span> under a released binary and closed a fail-open in <span class="ic">capa install</span>.</p>
       <p class="muted">Surfaces listed in <a href="https://github.com/nelsonduarte/capa-language/blob/main/STABILITY.md">STABILITY.md</a> follow SemVer. The full inventory is in the <a href="https://github.com/nelsonduarte/capa-language/blob/main/CHANGELOG.md">CHANGELOG</a> and on the <a href="roadmap.html">roadmap</a>.</p>
@@ -249,7 +249,7 @@
     <ul class="linklist">
       <li><a href="why.html">Why Capa exists</a> <span class="desc">: the case for capability typing, against ambient authority, against the supply-chain status quo.</span></li>
       <!-- language-list: keep the "Python, JS, Rust or C/C++" here in sync with the why.html#complement "Calling a Capa check from another language" paragraph. Go / Java / C# are NOT included (not working end-to-end today); add a host to both lines only after it is confirmed end-to-end. -->
-      <li><a href="why.html#complement">Adopt Capa alongside your stack</a> <span class="desc">: no rewrite. Add one provable Capa piece for source-level SBOM and audit, gated in CI, with a yes/no check callable from Python, JS, Rust or C/C++.</span></li>
+      <li><a href="why.html#complement">Adopt Capa alongside your stack</a> <span class="desc">: no rewrite. Add one auditable Capa piece for source-level SBOM and audit, gated in CI, with a yes/no check callable from Python, JS, Rust or C/C++.</span></li>
       <li><a href="study.html">The capability-recall study</a> <span class="desc">: Capa measured head-to-head against a dependency SBOM, Semgrep and CodeQL on 25 pairs; 0 false-clearances against CodeQL's 10.</span></li>
       <li><a href="learn/index.html">Learn (14 chapters)</a> <span class="desc">: a guided tour from hello world to the audit artefacts.</span></li>
       <li><a href="book/Capa-The-Capability-Typed-Programming-Language.pdf">The book</a> <span class="desc">: <em>Capa: The Capability-Typed Programming Language</em>, a free PDF (288 pages, ~2 MB) with exercises and three projects, downloaded straight from here. <a href="https://github.com/nelsonduarte/capa-book">Source on GitHub</a>.</span></li>
