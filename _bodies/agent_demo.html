@@ -27,7 +27,7 @@
       <tbody>
         <tr><td><span class="ic">read_file</span></td><td><span class="ic">ReadOnlyFs</span></td><td>Read a file's contents.</td></tr>
         <tr><td><span class="ic">list_dir</span></td><td><span class="ic">ReadOnlyFs</span></td><td>List a directory's entries.</td></tr>
-        <tr><td><span class="ic">get_url</span></td><td><span class="ic">GetOnlyHttp</span></td><td>HTTP GET against an allow-listed host (no POST, PUT or DELETE).</td></tr>
+        <tr><td><span class="ic">get_url</span></td><td><span class="ic">GetOnlyHttp</span></td><td>HTTP GET to a URL that passes the allow-list check (no POST, PUT or DELETE).</td></tr>
         <tr><td><span class="ic">current_time</span></td><td><span class="ic">Clock</span></td><td>Return Unix seconds.</td></tr>
       </tbody>
     </table>
@@ -82,14 +82,14 @@ $ capa install
 $ export ANTHROPIC_API_KEY=sk-ant-...
 $ capa --run agent.capa -- "What's the weather in Lisbon today? \
     Use get_url with https://wttr.in/Lisbon?format=3"</code></pre></div>
-    <p class="muted">The <span class="ic">get_url</span> allow-list is hard-coded in <span class="ic">agent.capa</span> (<span class="ic">wttr.in</span> and <span class="ic">api.github.com</span>). Point the model at any other host and the wrapper refuses before a request is made. What the allow-list bounds is the URL the model asks for. The demo's HTTP transport is Python's <span class="ic">urllib</span> reached through <span class="ic">Unsafe</span>, not <span class="ic">Net</span>, and it follows a redirect to a host outside the allow-list, so an allow-listed host can send the request elsewhere. A <span class="ic">Net</span> narrowed with <span class="ic">restrict_to</span> refuses that hop: see <a href="learn/09-attenuating-capabilities.html#net-redirects">redirects</a>.</p>
+    <p class="muted">The <span class="ic">get_url</span> allow-list is hard-coded in <span class="ic">agent.capa</span> (<span class="ic">wttr.in</span> and <span class="ic">api.github.com</span>). The wrapper's check is a substring match on the URL text: it admits a URL that contains <span class="ic">://</span>, a listed host, then <span class="ic">/</span> or <span class="ic">:</span>, and refuses any other URL before a request is made. It does not parse the URL's host, so it is weaker than a host allow-list. It also applies only to the URL the model asks for: the demo's HTTP transport is Python's <span class="ic">urllib</span> reached through <span class="ic">Unsafe</span>, not <span class="ic">Net</span>, and it follows a redirect to a host that is not on the list, so a listed host can send the request elsewhere. A <span class="ic">Net</span> narrowed with <span class="ic">restrict_to</span> refuses that hop: see <a href="learn/09-attenuating-capabilities.html#net-redirects">redirects</a>.</p>
 
     <h3 style="margin-top:1.8em">Honest limits (v0.1)</h3>
     <ul class="bullets">
       <li><strong>Single user prompt per run.</strong> The loop already supports multi-turn; the entry point does not yet expose it.</li>
       <li><strong>Anthropic Messages API only.</strong> Adding another provider is one new <span class="ic">LlmClient</span> implementor.</li>
       <li><strong>One string input per tool.</strong> Multi-argument schemas would extend <span class="ic">dispatch_tool</span>'s JSON extraction.</li>
-      <li><strong>Hard-coded host allow-list and no streaming.</strong> Production would source the list from configuration, or move the transport onto a <span class="ic">Net</span> narrowed with <span class="ic">restrict_to</span> (one per host, since a narrowed set holds one host name), which re-checks every redirect hop; this demo's <span class="ic">urllib</span> transport does not. See <a href="learn/09-attenuating-capabilities.html#net-redirects">redirects</a>.</li>
+      <li><strong>Hard-coded, substring-matched allow-list and no streaming.</strong> Production would source the list from configuration and check the URL's parsed host (the demo's own comment says a production wrapper would parse the URL properly), or move the transport onto a <span class="ic">Net</span> narrowed with <span class="ic">restrict_to</span> (one per host, since a narrowed set holds one host name), which re-checks every redirect hop; this demo's <span class="ic">urllib</span> transport does not. See <a href="learn/09-attenuating-capabilities.html#net-redirects">redirects</a>.</li>
     </ul>
     <div class="nextgrid" style="margin-top:20px">
       <a class="nextcard" href="https://github.com/nelsonduarte/capa_agent_demo"><h4>Read the repository <span class="arr">→</span></h4><p>Four <span class="ic">.capa</span> files: the loop, the attenuated wrappers, the LLM client, the tools.</p></a>
